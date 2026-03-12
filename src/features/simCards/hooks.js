@@ -13,6 +13,33 @@ export const simCardKeys = {
   history: (id) => [...simCardKeys.detail(id), 'history'],
 };
 
+export const providerCompanyKeys = {
+  all: ['providerCompanies'],
+};
+
+export function useProviderCompanies() {
+  return useQuery({
+    queryKey: providerCompanyKeys.all,
+    queryFn: api.fetchProviderCompanies,
+  });
+}
+
+export function useCreateProviderCompany() {
+  const queryClient = useQueryClient();
+  const { t } = useTranslation('common');
+
+  return useMutation({
+    mutationFn: api.createProviderCompany,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: providerCompanyKeys.all });
+      toast.success(t('success.created'));
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'simCards.createFailed'));
+    },
+  });
+}
+
 export function useSimCards(filters = {}) {
   return useQuery({
     queryKey: simCardKeys.list(filters),
@@ -81,9 +108,21 @@ export function useUpdateSimCard() {
   });
 }
 
+function isRlsOrForbiddenError(error) {
+  if (!error) return false;
+  const msg = (error.message || '').toLowerCase();
+  const code = error.code || error.status;
+  return (
+    code === 403 ||
+    msg.includes('row-level security') ||
+    msg.includes('row level security') ||
+    msg.includes('policy') && msg.includes('violates')
+  );
+}
+
 export function useDeleteSimCard() {
   const queryClient = useQueryClient();
-  const { t } = useTranslation('common');
+  const { t } = useTranslation(['common', 'errors']);
 
   return useMutation({
     mutationFn: api.deleteSimCard,
@@ -92,7 +131,10 @@ export function useDeleteSimCard() {
       toast.success(t('success.deleted'));
     },
     onError: (error) => {
-      toast.error(getErrorMessage(error, 'simCards.deleteFailed'));
+      const message = isRlsOrForbiddenError(error)
+        ? t('errors:simCards.rlsOrForbidden')
+        : getErrorMessage(error, 'simCards.deleteFailed');
+      toast.error(message);
     },
   });
 }
@@ -144,6 +186,7 @@ export function useBulkCreateSimCards() {
     mutationFn: api.bulkCreateSimCards,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: simCardKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: providerCompanyKeys.all });
       toast.success(t('success.created'));
     },
     onError: (error) => {

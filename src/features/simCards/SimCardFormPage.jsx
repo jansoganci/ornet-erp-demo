@@ -4,7 +4,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useMemo } from 'react';
 import { Smartphone, Signal, User, MapPin, DollarSign, FileText, StickyNote } from 'lucide-react';
-import { useSimCard, useCreateSimCard, useUpdateSimCard } from './hooks';
+import { useSimCard, useCreateSimCard, useUpdateSimCard, useProviderCompanies } from './hooks';
 import { simCardSchema, simCardDefaultValues } from './schema';
 import { useCustomers } from '../customers/hooks';
 import { useSitesByCustomer } from '../customerSites/hooks';
@@ -29,7 +29,8 @@ export function SimCardFormPage() {
   const updateSimCard = useUpdateSimCard();
 
   const { data: customers } = useCustomers();
-  
+  const { data: providerCompanies } = useProviderCompanies();
+
   const {
     register,
     handleSubmit,
@@ -62,9 +63,13 @@ export function SimCardFormPage() {
         operator: simCard.operator || 'TURKCELL',
         capacity: simCard.capacity || '',
         status: simCard.status || 'available',
-        buyer_id: simCard.buyer_id || null,
+        provider_company_id: simCard.provider_company_id || null,
+        customer_label: simCard.customer_label || '',
         customer_id: simCard.customer_id || null,
         site_id: simCard.site_id || null,
+        imsi: simCard.imsi || '',
+        gprs_serial_no: simCard.gprs_serial_no || '',
+        account_no: simCard.account_no || '',
         cost_price: simCard.cost_price || 0,
         sale_price: simCard.sale_price || 0,
         currency: simCard.currency || 'TRY',
@@ -107,6 +112,11 @@ export function SimCardFormPage() {
     { value: 'active', label: t('status.active') },
     { value: 'subscription', label: t('status.subscription') },
     { value: 'cancelled', label: t('status.cancelled') },
+  ];
+
+  const providerOptions = [
+    { value: '', label: t('simCards:form.placeholders.selectProvider') },
+    ...(providerCompanies || []).map((p) => ({ value: p.id, label: p.name })),
   ];
 
   return (
@@ -158,6 +168,22 @@ export function SimCardFormPage() {
                 {...register('capacity')}
               />
 
+              <Controller
+                name="provider_company_id"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    label={t('simCards:list.columns.provider')}
+                    options={providerOptions}
+                    placeholder={t('simCards:form.placeholders.selectProvider')}
+                    error={errors.provider_company_id?.message}
+                    value={field.value || ''}
+                    onChange={(e) => field.onChange(e.target.value || null)}
+                    className="rounded-xl"
+                  />
+                )}
+              />
+
               <Select
                 label={t('simCards:list.columns.status')}
                 options={statusOptions}
@@ -183,23 +209,38 @@ export function SimCardFormPage() {
         } className="rounded-[2rem] p-8 border-neutral-200/60 dark:border-[#262626] shadow-sm">
           <div className="space-y-10 pt-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <Controller
-                name="buyer_id"
-                control={control}
-                render={({ field }) => (
-                  <Select
-                    label={t('simCards:form.buyer')}
-                    options={customerOptions}
-                    placeholder={t('simCards:form.placeholders.selectBuyer')}
-                    error={errors.buyer_id?.message}
-                    value={field.value || ''}
-                    onChange={(e) => field.onChange(e.target.value || null)}
-                    className="rounded-xl"
-                  />
-                )}
+              <Input
+                label={t('simCards:form.imsi')}
+                placeholder="IMSI"
+                error={errors.imsi?.message}
+                className="rounded-xl"
+                {...register('imsi')}
               />
 
-              <div className="hidden md:block" />
+              <Input
+                label={t('simCards:form.gprsSerialNo')}
+                placeholder="GPRS Seri No"
+                error={errors.gprs_serial_no?.message}
+                className="rounded-xl"
+                {...register('gprs_serial_no')}
+              />
+
+              <Input
+                label={t('simCards:form.accountNo')}
+                placeholder="Hesap No"
+                error={errors.account_no?.message}
+                className="rounded-xl"
+                {...register('account_no')}
+              />
+
+
+              <Input
+                label={t('simCards:form.customerLabel')}
+                placeholder={t('simCards:form.placeholders.customerLabel')}
+                error={errors.customer_label?.message}
+                className="rounded-xl"
+                {...register('customer_label')}
+              />
 
               <Controller
                 name="customer_id"

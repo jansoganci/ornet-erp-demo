@@ -172,11 +172,7 @@ export async function updateTransaction(id, data) {
 }
 
 export async function deleteTransaction(id) {
-  const { error } = await supabase
-    .from('financial_transactions')
-    .update({ deleted_at: new Date().toISOString() })
-    .eq('id', id);
-
+  const { error } = await supabase.rpc('soft_delete_transaction', { transaction_id: id });
   if (error) throw error;
 }
 

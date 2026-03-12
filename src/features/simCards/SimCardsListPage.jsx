@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import * as XLSX from 'xlsx';
 import { Plus, Download, Filter, Edit2, Trash2, FileSpreadsheet, Pencil, Cpu as SimIcon, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useSimCardsPaginated, useDeleteSimCard, useUpdateSimCard, useSimFinancialStats } from './hooks';
+import { useSimCardsPaginated, useDeleteSimCard, useUpdateSimCard, useSimFinancialStats, useProviderCompanies } from './hooks';
 import { fetchSimCards } from './api';
 import { useDebouncedValue } from '../../hooks/useDebouncedValue';
 import { PageContainer, PageHeader } from '../../components/layout';
@@ -40,6 +40,7 @@ export function SimCardsListPage() {
   const debouncedSearch = useDebouncedValue(localSearch, 300);
   const statusFilter = searchParams.get('status') || 'all';
   const operatorFilter = searchParams.get('operator') || 'all';
+  const providerFilter = searchParams.get('provider') || 'all';
   const yearParam = searchParams.get('year') || '';
   const monthParam = searchParams.get('month') || '';
   const page = Number(searchParams.get('page') || '0');
@@ -62,10 +63,11 @@ export function SimCardsListPage() {
 
   const handleFilterChange = (key, value) => {
     setSearchParams((prev) => {
-      if (value && value !== 'all') prev.set(key, value);
-      else prev.delete(key);
-      prev.delete('page');
-      return prev;
+      const next = new URLSearchParams(prev);
+      if (value && value !== 'all') next.set(key === 'provider_company_id' ? 'provider' : key, value);
+      else next.delete(key === 'provider_company_id' ? 'provider' : key);
+      next.delete('page');
+      return next;
     });
   };
 
@@ -82,6 +84,7 @@ export function SimCardsListPage() {
     search: debouncedSearch || undefined,
     status: statusFilter,
     operator: operatorFilter,
+    provider_company_id: providerFilter,
     year: yearParam || undefined,
     month: monthParam || undefined,
   };
@@ -97,6 +100,7 @@ export function SimCardsListPage() {
     pageSize,
   } = useSimCardsPaginated(filters, page);
   const { data: simStats } = useSimFinancialStats();
+  const { data: providerCompanies } = useProviderCompanies();
   const deleteSimMutation = useDeleteSimCard();
   const updateSimCardMutation = useUpdateSimCard();
 
@@ -112,15 +116,19 @@ export function SimCardsListPage() {
       if (!all?.length) return;
 
       const exportData = all.map(sim => ({
+        [t('list.columns.provider')]: sim.provider_company?.name || '-',
         [t('list.columns.phoneNumber')]: sim.phone_number,
+        [t('list.columns.imsi')]: sim.imsi || '-',
+        [t('list.columns.capacity')]: sim.capacity || '-',
         [t('list.columns.operator')]: t(`operators.${sim.operator}`),
-        [t('list.columns.status')]: t(`status.${sim.status}`),
-        [t('list.columns.buyer')]: sim.buyer?.company_name || '-',
-        [t('list.columns.customer')]: sim.customers?.company_name || '-',
-        [t('list.columns.site')]: sim.customer_sites?.site_name || '-',
+        [t('list.columns.gprsSerialNo')]: sim.gprs_serial_no || '-',
+        [t('list.columns.accountNo')]: sim.account_no || '-',
+        [t('list.columns.customerLabel')]: sim.customers?.company_name || sim.customer_label || '-',
+        [t('list.columns.activationDate')]: sim.activation_date ? formatDate(sim.activation_date) : '-',
         [t('list.columns.costPrice')]: sim.cost_price,
         [t('list.columns.salePrice')]: sim.sale_price,
-        [t('form.notes')]: sim.notes
+        [t('list.columns.status')]: t(`status.${sim.status}`),
+        [t('form.notes')]: sim.notes || '-'
       }));
 
       const ws = XLSX.utils.json_to_sheet(exportData);
@@ -183,6 +191,15 @@ export function SimCardsListPage() {
 
   const columns = [
     {
+      header: t('list.columns.provider'),
+      accessor: 'provider_company',
+      render: (_, row) => (
+        <span className="text-neutral-600 dark:text-neutral-400">
+          {row.provider_company?.name || '-'}
+        </span>
+      ),
+    },
+    {
       header: t('list.columns.phoneNumber'),
       accessor: 'phone_number',
       render: (value) => (
@@ -190,16 +207,19 @@ export function SimCardsListPage() {
       ),
     },
     {
-      header: t('list.columns.status'),
-      accessor: 'status',
-      render: (value, row) => (
-        <div onClick={quickEditMode ? (e) => e.stopPropagation() : undefined}>
-          {quickEditMode && row.status !== 'subscription' ? (
-            <QuickStatusSelect sim={row} onStatusChange={handleQuickStatusChange} t={t} />
-          ) : (
-            <Badge variant={getStatusVariant(value)}>{t(`status.${value}`)}</Badge>
-          )}
-        </div>
+      header: t('list.columns.imsi'),
+      accessor: 'imsi',
+      render: (value) => (
+        <span className="text-neutral-600 dark:text-neutral-400 font-mono text-sm">
+          {value || '-'}
+        </span>
+      ),
+    },
+    {
+      header: t('list.columns.capacity'),
+      accessor: 'capacity',
+      render: (value) => (
+        <span className="text-neutral-600 dark:text-neutral-400">{value || '-'}</span>
       ),
     },
     {
@@ -208,18 +228,31 @@ export function SimCardsListPage() {
       render: (value) => t(`operators.${value}`),
     },
     {
-      header: t('list.columns.buyer'),
-      accessor: 'buyer',
-      render: (_, row) => (
-        <span className="text-neutral-600 dark:text-neutral-400">
-          {row.buyer?.company_name || '-'}
+      header: t('list.columns.gprsSerialNo'),
+      accessor: 'gprs_serial_no',
+      render: (value) => (
+        <span className="text-neutral-600 dark:text-neutral-400 font-mono text-sm">
+          {value || '-'}
         </span>
       ),
     },
     {
-      header: t('list.columns.customer'),
+      header: t('list.columns.accountNo'),
+      accessor: 'account_no',
+      render: (value) => (
+        <span className="text-neutral-600 dark:text-neutral-400">{value || '-'}</span>
+      ),
+    },
+    {
+      header: t('list.columns.customerLabel'),
       accessor: 'customers',
-      render: (_, row) => row.customers?.company_name || '-',
+      maxWidth: 250,
+      cellClassName: 'whitespace-normal break-words align-top',
+      render: (_, row) => (
+        <span className="break-words">
+          {row.customers?.company_name || row.customer_label || '-'}
+        </span>
+      ),
     },
     {
       header: t('list.columns.activationDate'),
@@ -247,6 +280,19 @@ export function SimCardsListPage() {
         <span className="font-medium text-neutral-900 dark:text-neutral-50">
           {formatCurrency(value ?? 0, row.currency ?? 'TRY')}
         </span>
+      ),
+    },
+    {
+      header: t('list.columns.status'),
+      accessor: 'status',
+      render: (value, row) => (
+        <div onClick={quickEditMode ? (e) => e.stopPropagation() : undefined}>
+          {quickEditMode && row.status !== 'subscription' ? (
+            <QuickStatusSelect sim={row} onStatusChange={handleQuickStatusChange} t={t} />
+          ) : (
+            <Badge variant={getStatusVariant(value)}>{t(`status.${value}`)}</Badge>
+          )}
+        </div>
       ),
     },
     {
@@ -353,6 +399,18 @@ export function SimCardsListPage() {
                   { value: 'TURKCELL', label: t('operators.TURKCELL') },
                   { value: 'VODAFONE', label: t('operators.VODAFONE') },
                   { value: 'TURK_TELEKOM', label: t('operators.TURK_TELEKOM') },
+                ]}
+                size="sm"
+              />
+            </div>
+            <div className="w-full sm:flex-1 md:w-40">
+              <Select
+                label={t('list.filters.provider')}
+                value={providerFilter}
+                onChange={(e) => handleFilterChange('provider_company_id', e.target.value)}
+                options={[
+                  { value: 'all', label: t('list.filters.all') },
+                  ...(providerCompanies || []).map((p) => ({ value: p.id, label: p.name })),
                 ]}
                 size="sm"
               />

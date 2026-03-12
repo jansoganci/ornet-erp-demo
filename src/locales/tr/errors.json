@@ -40,7 +40,8 @@
     "loadFailed": "SIM kartlar yüklenemedi",
     "createFailed": "SIM kart oluşturulamadı",
     "updateFailed": "SIM kart güncellenemedi",
-    "deleteFailed": "SIM kart silinemedi"
+    "deleteFailed": "SIM kart silinemedi",
+    "rlsOrForbidden": "Bu işlem için yetkiniz bulunmuyor veya veritabanı kuralı ihlal edildi. Lütfen yönetici ile iletişime geçin."
   },
   "invalid": "Geçersiz işlem. Lütfen tekrar deneyin."
 }

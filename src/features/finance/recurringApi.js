@@ -72,11 +72,7 @@ export async function fetchTemplateLastGenerated() {
 }
 
 export async function deleteRecurringTemplate(id) {
-  const { error } = await supabase
-    .from('recurring_expense_templates')
-    .update({ deleted_at: new Date().toISOString() })
-    .eq('id', id);
-
+  const { error } = await supabase.rpc('soft_delete_recurring_template', { template_id: id });
   if (error) throw error;
 }
 

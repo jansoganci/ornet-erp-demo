@@ -3,9 +3,9 @@ import { normalizeForSearch } from '../../lib/normalizeForSearch';
 
 const SIM_CARD_SELECT = `
   *,
-  buyer:buyer_id (company_name),
   customers:customer_id (company_name),
-  customer_sites:site_id (site_name)
+  customer_sites:site_id (site_name),
+  provider_company:provider_company_id (id, name)
 `;
 
 export async function fetchSimCards(filters = {}) {
@@ -25,6 +25,9 @@ export async function fetchSimCards(filters = {}) {
   }
   if (filters.operator && filters.operator !== 'all') {
     query = query.eq('operator', filters.operator);
+  }
+  if (filters.provider_company_id && filters.provider_company_id !== 'all') {
+    query = query.eq('provider_company_id', filters.provider_company_id);
   }
   if (filters.dateFrom) {
     query = query.gte('created_at', filters.dateFrom);
@@ -59,6 +62,9 @@ export async function fetchSimCardsPaginated(filters = {}, page = 0, pageSize = 
   }
   if (filters.operator && filters.operator !== 'all') {
     query = query.eq('operator', filters.operator);
+  }
+  if (filters.provider_company_id && filters.provider_company_id !== 'all') {
+    query = query.eq('provider_company_id', filters.provider_company_id);
   }
   if (filters.year && filters.year !== 'all') {
     query = query
@@ -123,11 +129,7 @@ export async function updateSimCard({ id, ...updates }) {
 }
 
 export async function deleteSimCard(id) {
-  const { error } = await supabase
-    .from('sim_cards')
-    .update({ deleted_at: new Date().toISOString() })
-    .eq('id', id);
-
+  const { error } = await supabase.rpc('soft_delete_sim_card', { sim_card_id: id });
   if (error) throw error;
 }
 
@@ -230,6 +232,40 @@ export async function fetchAllTurkcellSimCards() {
 
   if (error) throw error;
   return data;
+}
+
+export async function fetchProviderCompanies() {
+  const { data, error } = await supabase
+    .from('provider_companies')
+    .select('id, name')
+    .order('name', { ascending: true });
+
+  if (error) throw error;
+  return data ?? [];
+}
+
+export async function createProviderCompany({ name }) {
+  const { data, error } = await supabase
+    .from('provider_companies')
+    .insert([{ name: String(name).trim() }])
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+/**
+ * Returns existing phone_number and imsi values for duplicate check (non-deleted only).
+ */
+export async function fetchExistingSimIdentifiers() {
+  const { data, error } = await supabase
+    .from('sim_cards')
+    .select('phone_number, imsi')
+    .is('deleted_at', null);
+
+  if (error) throw error;
+  return data ?? [];
 }
 
 export async function fetchSimFinancialStats() {

@@ -1,0 +1,23 @@
+-- ============================================================
+-- Fix: v_profit_and_loss reverted to SECURITY DEFINER
+-- Supabase Security Advisor lint: 0010 (security_definer_view)
+-- Date: 2026-03-11
+--
+-- ROOT CAUSE:
+--   Migration 00077 set security_invoker=true on v_profit_and_loss.
+--   Migration 00090 (static_ip_feature) later did DROP VIEW + CREATE VIEW
+--   to add static_ip_cost. Plain CREATE VIEW defaults to SECURITY DEFINER,
+--   so the fix was overwritten.
+--
+-- RISK:
+--   SECURITY DEFINER = view runs as postgres (owner), bypassing RLS
+--   on underlying tables (subscription_payments, financial_transactions,
+--   subscriptions, customer_sites, expense_categories). Any authenticated
+--   user could see data that RLS would otherwise restrict.
+--
+-- FIX:
+--   ALTER VIEW ... SET (security_invoker = true) so the view runs as
+--   the calling user and RLS is enforced.
+-- ============================================================
+
+ALTER VIEW public.v_profit_and_loss SET (security_invoker = true);

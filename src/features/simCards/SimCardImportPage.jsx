@@ -3,27 +3,70 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import * as XLSX from 'xlsx';
 import { Upload, AlertCircle, CheckCircle2, X, Save, HelpCircle, Download } from 'lucide-react';
-import { useBulkCreateSimCards } from './hooks';
-import { useCustomers } from '../customers/hooks';
+import { useBulkCreateSimCards, useCreateProviderCompany, useProviderCompanies } from './hooks';
+import { fetchProviderCompanies, fetchExistingSimIdentifiers } from './api';
+import { normalizeForSearch } from '../../lib/normalizeForSearch';
+import { useQueryClient } from '@tanstack/react-query';
+import { providerCompanyKeys } from './hooks';
 import { PageContainer, PageHeader } from '../../components/layout';
 import { Button, Card, Badge, Spinner, ErrorState } from '../../components/ui';
 import { getErrorMessage } from '../../lib/errorHandler';
+import { toast } from 'sonner';
+
+function parseCurrency(value) {
+  if (value === null || value === undefined || value === '') return null;
+  const s = String(value).replace(/₺|TL|tl|\s/g, '').replace(',', '.');
+  const n = parseFloat(s.replace(/[^\d.]/g, ''));
+  return Number.isNaN(n) ? null : n;
+}
+
+function parseImportDate(value) {
+  try {
+    if (value === null || value === undefined || value === '' || value === 0) return null;
+    const s = String(value).trim();
+    if (!s || s === '0') return null;
+
+    const excelSerial = Number(s);
+    if (!Number.isNaN(excelSerial) && excelSerial > 1) {
+      const d = new Date((excelSerial - 25569) * 86400 * 1000);
+      if (Number.isNaN(d.getTime()) || d.getFullYear() <= 1900) return null;
+      return d.toISOString().slice(0, 10);
+    }
+
+    const ddmmyyyy = s.match(/^(\d{1,2})[./](\d{1,2})[./](\d{4})$/);
+    if (ddmmyyyy) {
+      const result = `${ddmmyyyy[3]}-${ddmmyyyy[2].padStart(2, '0')}-${ddmmyyyy[1].padStart(2, '0')}`;
+      if (new Date(result).getFullYear() <= 1900) return null;
+      return result;
+    }
+
+    const d = new Date(s);
+    if (Number.isNaN(d.getTime()) || d.getFullYear() <= 1900) return null;
+    return d.toISOString().slice(0, 10);
+  } catch {
+    return null;
+  }
+}
 
 export function SimCardImportPage() {
   const { t } = useTranslation(['simCards', 'common']);
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const fileInputRef = useRef(null);
   const [data, setData] = useState([]);
   const [errors, setErrors] = useState([]);
   const [isParsing, setIsParsing] = useState(false);
+  const [skippedCount, setSkippedCount] = useState(0);
   const bulkCreateMutation = useBulkCreateSimCards();
-  const { data: customers } = useCustomers();
+  const createProviderMutation = useCreateProviderCompany();
+  const { data: providers } = useProviderCompanies();
 
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
     setIsParsing(true);
+    setSkippedCount(0);
     const reader = new FileReader();
 
     reader.onload = (event) => {
@@ -44,64 +87,73 @@ export function SimCardImportPage() {
     reader.readAsBinaryString(file);
   };
 
+  const headerMap = {
+    'HAT NO': 'phone_number',
+    'LINE NO': 'phone_number',
+    'ANA ŞİRKET': '_providerName',
+    'PROVIDER COMPANY': '_providerName',
+    'AYLIK MALIYET': 'cost_price',
+    'COST': 'cost_price',
+    'AYLIK SATIS FIYAT': 'sale_price',
+    'SALES': 'sale_price',
+    'SATIS': 'sale_price',
+    'TARİH': 'activation_date_raw',
+    'DATE': 'activation_date_raw',
+    'MÜŞTERİ ÜNVANI': 'customer_label',
+    'CUSTOMER TITLE': 'customer_label',
+    'MUSTERI UNVANI': 'customer_label',
+    'IMSI': 'imsi',
+    'GPRS SERI NO': 'gprs_serial_no',
+    'GPRS SERIAL NO': 'gprs_serial_no',
+    'ACCOUNT NO': 'account_no',
+    'HESAP NO': 'account_no',
+    'OPERATOR': 'operator',
+    'KAPASITE': 'capacity',
+    'CAPACITY': 'capacity',
+    'STATUS': 'status',
+    'DURUM': 'status',
+    'NOTLAR': 'notes',
+  };
+
   const validateAndFormatData = (rawRows, tFn) => {
     const formattedData = [];
     const validationErrors = [];
-
-    // Map Excel headers to database fields (case-insensitive and Turkish character friendly)
-    const headerMap = {
-      'HAT NO': 'phone_number',
-      'OPERATOR': 'operator',
-      'KAPASITE': 'capacity',
-      'ALICI': 'buyer_name',
-      'AYLIK MALIYET': 'cost_price',
-      'AYLIK SATIS FIYAT': 'sale_price',
-      'STATUS': 'status',
-      'DURUM': 'status',
-      'NOTLAR': 'notes'
-    };
-
-    // Build buyer name → UUID lookup
-    const buyerLookup = {};
-    (customers || []).forEach(c => {
-      buyerLookup[c.company_name.toLowerCase().trim()] = c.id;
-    });
 
     rawRows.forEach((row, index) => {
       const rowData = {};
       const rowErrors = [];
 
-      // Basic mapping
-      Object.keys(row).forEach(key => {
-        const normalizedKey = key.toUpperCase().trim();
-        // Find the matching key in headerMap
-        const dbKey = Object.keys(headerMap).find(k => normalizedKey.includes(k));
-        if (dbKey) {
-          rowData[headerMap[dbKey]] = row[key];
-        }
+      Object.keys(row).forEach((key) => {
+        const normalizedKey = normalizeForSearch(key);
+        const dbKey = Object.keys(headerMap).find((k) => normalizedKey.includes(normalizeForSearch(k)));
+        if (dbKey) rowData[headerMap[dbKey]] = row[key];
       });
 
-      // Validation
-      if (!rowData.phone_number) {
-        rowErrors.push(tFn('simCards:import.missingPhone', { row: index + 1 }));
-      }
+      const phone = rowData.phone_number != null ? String(rowData.phone_number).trim() : '';
+      rowData.phone_number = phone;
+      if (!phone) rowErrors.push(tFn('simCards:import.missingPhone', { row: index + 1 }));
 
-      // Format prices
-      if (rowData.cost_price) {
-        const price = parseFloat(String(rowData.cost_price).replace(/[^\d.,]/g, '').replace(',', '.'));
-        rowData.cost_price = isNaN(price) ? 0 : price;
-      } else {
-        rowData.cost_price = 0;
-      }
+      const providerName = rowData._providerName != null ? String(rowData._providerName).trim() : '';
+      if (!providerName) rowErrors.push(tFn('simCards:import.missingProvider', { row: index + 1 }));
 
-      if (rowData.sale_price) {
-        const price = parseFloat(String(rowData.sale_price).replace(/[^\d.,]/g, '').replace(',', '.'));
-        rowData.sale_price = isNaN(price) ? 0 : price;
-      } else {
-        rowData.sale_price = 0;
-      }
+      const cost = parseCurrency(rowData.cost_price);
+      if (cost === null) rowErrors.push(tFn('simCards:import.missingCost', { row: index + 1 }));
+      rowData.cost_price = cost !== null ? cost : 0;
 
-      // Format operator
+      const sale = parseCurrency(rowData.sale_price);
+      if (sale === null) rowErrors.push(tFn('simCards:import.missingSale', { row: index + 1 }));
+      rowData.sale_price = sale !== null ? sale : 0;
+
+      const activationDate = parseImportDate(rowData.activation_date_raw);
+      rowData.activation_date = activationDate || null;
+      delete rowData.activation_date_raw;
+
+      rowData.customer_label = rowData.customer_label ? String(rowData.customer_label).trim() || null : null;
+
+      rowData.imsi = rowData.imsi != null ? String(rowData.imsi).trim() || null : null;
+      rowData.gprs_serial_no = rowData.gprs_serial_no != null ? String(rowData.gprs_serial_no).trim() || null : null;
+      rowData.account_no = rowData.account_no != null ? String(rowData.account_no).trim() || null : null;
+
       if (rowData.operator) {
         const op = String(rowData.operator).toUpperCase();
         if (op.includes('TURKCELL')) rowData.operator = 'TURKCELL';
@@ -112,20 +164,11 @@ export function SimCardImportPage() {
         rowData.operator = 'TURKCELL';
       }
 
-      // Resolve buyer name to UUID
-      if (rowData.buyer_name) {
-        const buyerKey = String(rowData.buyer_name).toLowerCase().trim();
-        rowData.buyer_id = buyerLookup[buyerKey] || null;
-        if (!rowData.buyer_id) {
-          rowErrors.push(tFn('simCards:import.buyerNotFound', { row: index + 1, name: rowData.buyer_name }));
-        }
-      }
-      delete rowData.buyer_name;
-
       const VALID_STATUSES = ['available', 'active', 'subscription', 'cancelled'];
       const rawStatus = String(rowData.status || '').trim().toLowerCase();
       rowData.status = VALID_STATUSES.includes(rawStatus) ? rawStatus : 'available';
       rowData.currency = 'TRY';
+      rowData.notes = rowData.notes != null ? String(rowData.notes).trim() || null : null;
 
       if (rowErrors.length > 0) {
         validationErrors.push(...rowErrors);
@@ -140,21 +183,68 @@ export function SimCardImportPage() {
 
   const handleImport = async () => {
     if (data.length === 0) return;
-    
+
     try {
-      await bulkCreateMutation.mutateAsync(data);
-      navigate('/sim-cards');
-    } catch {
-      // error handled by mutation onError
+      let providersList = await queryClient.fetchQuery({ queryKey: providerCompanyKeys.all, queryFn: () => fetchProviderCompanies() });
+      const nameToId = {};
+      for (const row of data) {
+        const name = row._providerName ? String(row._providerName).trim() : '';
+        if (!name || nameToId[name]) continue;
+        const found = providersList.find((p) => p.name.toLowerCase().trim() === name.toLowerCase());
+        if (found) {
+          nameToId[name] = found.id;
+        } else {
+          const created = await createProviderMutation.mutateAsync({ name });
+          nameToId[name] = created.id;
+          providersList = [...providersList, created];
+        }
+      }
+
+      const toInsert = data.map((row) => {
+        const { _providerName, ...rest } = row;
+        const id = _providerName ? nameToId[String(_providerName).trim()] : null;
+        return { ...rest, provider_company_id: id || null };
+      });
+
+      const existing = await fetchExistingSimIdentifiers();
+      const existingPhones = new Set((existing || []).map((r) => (r.phone_number || '').trim().toLowerCase()).filter(Boolean));
+      const existingImsis = new Set((existing || []).map((r) => (r.imsi || '').trim()).filter(Boolean));
+
+      const seenPhones = new Set();
+      const seenImsis = new Set();
+      const filtered = toInsert.filter((row) => {
+        const phone = (row.phone_number || '').trim().toLowerCase();
+        const imsi = (row.imsi || '').trim();
+        if (existingPhones.has(phone) || seenPhones.has(phone)) return false;
+        if (imsi && (existingImsis.has(imsi) || seenImsis.has(imsi))) return false;
+        seenPhones.add(phone);
+        if (imsi) seenImsis.add(imsi);
+        return true;
+      });
+      const skipped = toInsert.length - filtered.length;
+      setSkippedCount(skipped);
+
+      if (filtered.length > 0) {
+        await bulkCreateMutation.mutateAsync(filtered);
+        if (skipped > 0) {
+          toast.info(t('simCards:import.skippedDuplicates', { count: skipped }));
+        }
+        navigate('/sim-cards');
+      } else if (skipped > 0) {
+        toast.warning(t('simCards:import.allSkippedDuplicates', { count: skipped }));
+      }
+    } catch (err) {
+      console.error('[handleImport] caught error:', err);
+      toast.error(err?.message || 'Import failed');
     }
   };
 
   if (bulkCreateMutation.isError) {
     return (
       <PageContainer maxWidth="xl">
-        <ErrorState 
-          message={getErrorMessage(bulkCreateMutation.error, 'simCards.createFailed')} 
-          onRetry={() => bulkCreateMutation.reset()} 
+        <ErrorState
+          message={getErrorMessage(bulkCreateMutation.error, 'simCards.createFailed')}
+          onRetry={() => bulkCreateMutation.reset()}
         />
       </PageContainer>
     );
@@ -163,14 +253,28 @@ export function SimCardImportPage() {
   const handleReset = () => {
     setData([]);
     setErrors([]);
+    setSkippedCount(0);
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const downloadTemplate = () => {
-    const headers = ['HAT NO', 'OPERATOR', 'KAPASITE', 'ALICI', 'AYLIK MALIYET', 'AYLIK SATIS FIYAT', 'STATUS', 'NOTLAR'];
+    const headers = [
+      'HAT NO',
+      'ANA ŞİRKET',
+      'AYLIK MALIYET',
+      'AYLIK SATIS FIYAT',
+      'TARİH',
+      'MÜŞTERİ ÜNVANI',
+      'IMSI',
+      'GPRS SERI NO',
+      'ACCOUNT NO',
+      'OPERATOR',
+      'KAPASITE',
+      'STATUS',
+      'NOTLAR',
+    ];
     const sampleRows = [
-      ['+90 555 123 4567', 'TURKCELL', '100MB', 'Metbel', '50', '70', 'available', ''],
-      ['+90 532 987 6543', 'VODAFONE', '1GB', '', '45', '65', 'active', ''],
+      ['+90 555 123 4567', 'Ornet', '50', '70', '01.01.2024', 'Örnek Müşteri', '', '', '', 'TURKCELL', '100MB', 'available', ''],
     ];
     const ws = XLSX.utils.aoa_to_sheet([headers, ...sampleRows]);
     const wb = XLSX.utils.book_new();
@@ -181,10 +285,10 @@ export function SimCardImportPage() {
   return (
     <PageContainer maxWidth="xl">
       <PageHeader
-        title={t('actions.import')}
+        title={t('simCards:actions.import')}
         breadcrumbs={[
-          { label: t('title'), to: '/sim-cards' },
-          { label: t('actions.import') }
+          { label: t('simCards:title'), to: '/sim-cards' },
+          { label: t('simCards:actions.import') },
         ]}
       />
 
@@ -221,14 +325,19 @@ export function SimCardImportPage() {
                 <HelpCircle className="w-4 h-4 text-neutral-500" />
                 {t('simCards:import.excelFormat')}
               </h4>
-              <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-3" dangerouslySetInnerHTML={{ __html: t('simCards:import.formatIntro') }} />
+              <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-3" dangerouslySetInnerHTML={{ __html: t('simCards:import.formatIntroNew') }} />
               <div className="text-xs text-neutral-500 dark:text-neutral-500 space-y-1">
                 <p>{t('simCards:import.formatHatNo')}</p>
-                <p>{t('simCards:import.formatOperator')}</p>
-                <p>{t('simCards:import.formatCapacity')}</p>
-                <p>{t('simCards:import.formatBuyer')}</p>
+                <p>{t('simCards:import.formatProvider')}</p>
                 <p>{t('simCards:import.formatCost')}</p>
                 <p>{t('simCards:import.formatSale')}</p>
+                <p>{t('simCards:import.formatDate')}</p>
+                <p>{t('simCards:import.formatCustomerTitle')}</p>
+                <p>{t('simCards:import.formatImsi')}</p>
+                <p>{t('simCards:import.formatGprsSerialNo')}</p>
+                <p>{t('simCards:import.formatAccountNo')}</p>
+                <p>{t('simCards:import.formatOperator')}</p>
+                <p>{t('simCards:import.formatCapacity')}</p>
                 <p>{t('simCards:import.formatStatus')}</p>
                 <p>{t('simCards:import.formatNotes')}</p>
               </div>
@@ -248,15 +357,20 @@ export function SimCardImportPage() {
                     <span className="font-medium text-red-600">{t('simCards:import.invalidRows', { count: errors.length })}</span>
                   </div>
                 )}
+                {skippedCount > 0 && (
+                  <span className="text-sm text-amber-600 dark:text-amber-400">
+                    {t('simCards:import.skippedDuplicates', { count: skippedCount })}
+                  </span>
+                )}
               </div>
               <div className="flex gap-2">
                 <Button variant="outline" onClick={handleReset} leftIcon={<X className="w-4 h-4" />}>
                   {t('simCards:import.cancel')}
                 </Button>
-                <Button 
-                  variant="primary" 
-                  onClick={handleImport} 
-                  loading={bulkCreateMutation.isPending}
+                <Button
+                  variant="primary"
+                  onClick={handleImport}
+                  loading={bulkCreateMutation.isPending || createProviderMutation.isPending}
                   leftIcon={<Save className="w-4 h-4" />}
                   disabled={data.length === 0}
                 >
@@ -285,29 +399,24 @@ export function SimCardImportPage() {
                   <thead className="bg-neutral-50 dark:bg-neutral-800/50 border-b border-neutral-200 dark:border-neutral-800">
                     <tr>
                       <th className="px-4 py-3 font-medium">{t('simCards:list.columns.phoneNumber')}</th>
+                      <th className="px-4 py-3 font-medium">{t('simCards:list.columns.provider')}</th>
                       <th className="px-4 py-3 font-medium">{t('simCards:list.columns.operator')}</th>
-                      <th className="px-4 py-3 font-medium">{t('simCards:list.columns.buyer')}</th>
                       <th className="px-4 py-3 font-medium">{t('simCards:form.costPrice')}</th>
                       <th className="px-4 py-3 font-medium">{t('simCards:form.salePrice')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-neutral-200 dark:divide-neutral-800">
-                    {data.slice(0, 10).map((row, i) => {
-                      const buyerName = row.buyer_id
-                        ? customers?.find(c => c.id === row.buyer_id)?.company_name || '-'
-                        : '-';
-                      return (
-                        <tr key={i}>
-                          <td className="px-4 py-3 font-medium">{row.phone_number}</td>
-                          <td className="px-4 py-3">
-                            <Badge variant="default">{row.operator}</Badge>
-                          </td>
-                          <td className="px-4 py-3">{buyerName}</td>
-                          <td className="px-4 py-3">{row.cost_price} ₺</td>
-                          <td className="px-4 py-3">{row.sale_price} ₺</td>
-                        </tr>
-                      );
-                    })}
+                    {data.slice(0, 10).map((row, i) => (
+                      <tr key={i}>
+                        <td className="px-4 py-3 font-medium">{row.phone_number}</td>
+                        <td className="px-4 py-3">{row._providerName || '-'}</td>
+                        <td className="px-4 py-3">
+                          <Badge variant="default">{row.operator}</Badge>
+                        </td>
+                        <td className="px-4 py-3">{row.cost_price} ₺</td>
+                        <td className="px-4 py-3">{row.sale_price} ₺</td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
                 {data.length > 10 && (

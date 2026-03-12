@@ -92,7 +92,11 @@ export function Table({
                       alignClasses[column.align || 'left'],
                       column.stickyRight && 'sticky right-0 bg-neutral-50 dark:bg-[#1a1a1a] shadow-[-4px_0_8px_-2px_rgba(0,0,0,0.05)] dark:shadow-[-4px_0_8px_-2px_rgba(0,0,0,0.3)] z-10'
                     )}
-                    style={column.width ? { width: column.width } : undefined}
+                    style={
+                      column.width || column.maxWidth
+                        ? { width: column.width, maxWidth: column.maxWidth }
+                        : undefined
+                    }
                   >
                     {column.header}
                   </th>
@@ -136,10 +140,14 @@ export function Table({
                       <td
                         key={fieldKey}
                         className={cn(
-                          'px-6 py-4 text-sm text-neutral-900 dark:text-neutral-50 whitespace-nowrap transition-colors duration-200',
+                          'px-6 py-4 text-sm text-neutral-900 dark:text-neutral-50 transition-colors duration-200',
+                          column.cellClassName ?? 'whitespace-nowrap',
                           alignClasses[column.align || 'left'],
                           column.stickyRight && 'sticky right-0 bg-white dark:bg-[#171717] shadow-[-4px_0_8px_-2px_rgba(0,0,0,0.05)] dark:shadow-[-4px_0_8px_-2px_rgba(0,0,0,0.3)] z-10'
                         )}
+                        style={
+                          column.maxWidth ? { maxWidth: column.maxWidth } : undefined
+                        }
                       >
                         {column.render
                           ? column.render(item[fieldKey], item, rowIndex)
