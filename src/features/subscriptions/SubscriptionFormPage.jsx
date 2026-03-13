@@ -3,8 +3,9 @@ import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Save, X, DollarSign, FileText, Users, StickyNote, CreditCard, Wallet, Banknote, RefreshCw } from 'lucide-react';
+import { Save, X, DollarSign, FileText, Users, StickyNote, CreditCard, Wallet, Banknote, RefreshCw, AlertTriangle } from 'lucide-react';
 import { cn, formatCurrency } from '../../lib/utils';
+import { supabase } from '../../lib/supabase';
 import { PageContainer } from '../../components/layout';
 import {
   Button,
@@ -13,6 +14,7 @@ import {
   Card,
   Spinner,
   Textarea,
+  Modal,
   SimCardCombobox,
   FormSkeleton,
 } from '../../components/ui';
@@ -80,6 +82,9 @@ export function SubscriptionFormPage() {
   const { data: selectedSim } = useSimCard(simCardId);
 
   const [selectedCustomerId, setSelectedCustomerId] = useState('');
+  const [conflictModal, setConflictModal] = useState(false);
+  const [pendingSubmitData, setPendingSubmitData] = useState(null);
+  const loadedUpdatedAtRef = useRef(null);
 
   // Preselect customer and site from URL params (create mode)
   useEffect(() => {
@@ -89,18 +94,22 @@ export function SubscriptionFormPage() {
     }
   }, [isEdit, urlCustomerId, urlSiteId, setValue]);
 
-  // Clear sim_card_id when site changes in create mode (selected SIM may not be valid for new site)
+  // Clear sim_card_id when site changes (selected SIM may not belong to the new site)
   const prevSiteIdRef = useRef('');
   useEffect(() => {
-    if (!isEdit && prevSiteIdRef.current !== selectedSiteId) {
+    if (prevSiteIdRef.current !== selectedSiteId) {
       prevSiteIdRef.current = selectedSiteId;
       setValue('sim_card_id', '', { shouldValidate: false });
     }
-  }, [selectedSiteId, isEdit, setValue]);
+  }, [selectedSiteId, setValue]);
 
   // Populate form when editing
   useEffect(() => {
     if (subscription && isEdit) {
+      // Capture the version we loaded — used for concurrent edit detection
+      loadedUpdatedAtRef.current = subscription.updated_at;
+      // Seed prevSiteIdRef so the sim_card_id clear effect doesn't fire on initial load
+      prevSiteIdRef.current = subscription.site_id || '';
       reset({
         site_id: subscription.site_id || '',
         subscription_type: subscription.subscription_type || 'recurring_card',
@@ -126,6 +135,9 @@ export function SubscriptionFormPage() {
         card_bank_name: subscription.card_bank_name || subscription.pm_bank_name || '',
         card_last4: subscription.card_last4 || subscription.pm_card_last4 || '',
         sim_card_id: subscription.sim_card_id || '',
+        alarm_center: subscription.alarm_center || '',
+        alarm_center_account: subscription.alarm_center_account || '',
+        subscriber_title: subscription.subscriber_title || '',
       });
       if (subscription.customer_id) setSelectedCustomerId(subscription.customer_id);
     }
@@ -159,48 +171,83 @@ export function SubscriptionFormPage() {
     label: t(`subscriptions:form.fields.${v}`),
   }));
 
+  const buildFormattedData = (data) => {
+    const cleanValue = (val) => {
+      if (val === '' || val === undefined) return null;
+      if (typeof val === 'string') return val.trim() || null;
+      return val;
+    };
+    return {
+      site_id: data.site_id,
+      subscription_type: data.subscription_type,
+      start_date: data.start_date,
+      billing_day: Number(data.billing_day),
+      base_price: Number(data.base_price) || 0,
+      sms_fee: Number(data.sms_fee) || 0,
+      line_fee: Number(data.line_fee) || 0,
+      vat_rate: Number(data.vat_rate) || 0,
+      cost: Number(data.cost) || 0,
+      static_ip_fee: Number(data.static_ip_fee) || 0,
+      static_ip_cost: Number(data.static_ip_cost) || 0,
+      currency: data.currency || 'TRY',
+      payment_method_id: cleanValue(data.payment_method_id),
+      sold_by: cleanValue(data.sold_by),
+      managed_by: cleanValue(data.managed_by),
+      notes: cleanValue(data.notes),
+      setup_notes: cleanValue(data.setup_notes),
+      service_type: cleanValue(data.service_type),
+      billing_frequency: data.billing_frequency || 'monthly',
+      cash_collector_id: cleanValue(data.cash_collector_id),
+      official_invoice: !!data.official_invoice,
+      card_bank_name: cleanValue(data.card_bank_name),
+      card_last4: cleanValue(data.card_last4) ? String(data.card_last4).trim().slice(0, 4) : null,
+      sim_card_id: cleanValue(data.sim_card_id),
+      alarm_center: cleanValue(data.alarm_center),
+      alarm_center_account: cleanValue(data.alarm_center_account),
+      subscriber_title: cleanValue(data.subscriber_title),
+    };
+  };
+
+  const saveSubscription = async (formattedData) => {
+    if (isEdit) {
+      await updateMutation.mutateAsync({ id, ...formattedData });
+      navigate(`/subscriptions/${id}`);
+    } else {
+      const newSub = await createMutation.mutateAsync(formattedData);
+      navigate(`/subscriptions/${newSub.id}`);
+    }
+  };
+
   const onSubmit = async (data) => {
     try {
-      const cleanValue = (val) => {
-        if (val === '' || val === undefined) return null;
-        if (typeof val === 'string') return val.trim() || null;
-        return val;
-      };
+      const formattedData = buildFormattedData(data);
 
-      const formattedData = {
-        site_id: data.site_id,
-        subscription_type: data.subscription_type,
-        start_date: data.start_date,
-        billing_day: Number(data.billing_day),
-        base_price: Number(data.base_price) || 0,
-        sms_fee: Number(data.sms_fee) || 0,
-        line_fee: Number(data.line_fee) || 0,
-        vat_rate: Number(data.vat_rate) || 0,
-        cost: Number(data.cost) || 0,
-        static_ip_fee: Number(data.static_ip_fee) || 0,
-        static_ip_cost: Number(data.static_ip_cost) || 0,
-        currency: data.currency || 'TRY',
-        payment_method_id: cleanValue(data.payment_method_id),
-        sold_by: cleanValue(data.sold_by),
-        managed_by: cleanValue(data.managed_by),
-        notes: cleanValue(data.notes),
-        setup_notes: cleanValue(data.setup_notes),
-        service_type: cleanValue(data.service_type),
-        billing_frequency: data.billing_frequency || 'monthly',
-        cash_collector_id: cleanValue(data.cash_collector_id),
-        official_invoice: !!data.official_invoice,
-        card_bank_name: cleanValue(data.card_bank_name),
-        card_last4: cleanValue(data.card_last4) ? String(data.card_last4).trim().slice(0, 4) : null,
-        sim_card_id: cleanValue(data.sim_card_id),
-      };
+      if (isEdit && loadedUpdatedAtRef.current) {
+        // Concurrent edit check: compare stored updated_at with current DB value
+        const { data: current } = await supabase
+          .from('subscriptions')
+          .select('updated_at')
+          .eq('id', id)
+          .single();
 
-      if (isEdit) {
-        await updateMutation.mutateAsync({ id, ...formattedData });
-        navigate(`/subscriptions/${id}`);
-      } else {
-        const newSub = await createMutation.mutateAsync(formattedData);
-        navigate(`/subscriptions/${newSub.id}`);
+        if (current?.updated_at && current.updated_at !== loadedUpdatedAtRef.current) {
+          // Someone else saved after we opened the form — ask the user
+          setPendingSubmitData(formattedData);
+          setConflictModal(true);
+          return;
+        }
       }
+
+      await saveSubscription(formattedData);
+    } catch (err) {
+      toast.error(err?.message || t('common:errors.saveFailed'));
+    }
+  };
+
+  const onForceSubmit = async () => {
+    setConflictModal(false);
+    try {
+      await saveSubscription(pendingSubmitData);
     } catch (err) {
       toast.error(err?.message || t('common:errors.saveFailed'));
     }
@@ -362,6 +409,31 @@ export function SubscriptionFormPage() {
                         className="rounded-xl"
                       />
                     )}
+                  />
+                </div>
+
+                {/* Subscriber title */}
+                <Input
+                  label={t('subscriptions:form.fields.subscriberTitle')}
+                  placeholder={t('subscriptions:form.placeholders.subscriberTitle')}
+                  error={errors.subscriber_title?.message}
+                  className="rounded-xl"
+                  {...register('subscriber_title')}
+                />
+
+                {/* Alarm center */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <Input
+                    label={t('subscriptions:form.fields.alarmCenter')}
+                    error={errors.alarm_center?.message}
+                    className="rounded-xl"
+                    {...register('alarm_center')}
+                  />
+                  <Input
+                    label={t('subscriptions:form.fields.alarmCenterAccount')}
+                    error={errors.alarm_center_account?.message}
+                    className="rounded-xl"
+                    {...register('alarm_center_account')}
                   />
                 </div>
 
@@ -633,6 +705,40 @@ export function SubscriptionFormPage() {
           </Button>
         </div>
       </form>
+
+      {/* Concurrent edit conflict warning */}
+      <Modal
+        open={conflictModal}
+        onClose={() => setConflictModal(false)}
+        title={t('subscriptions:form.conflict.title')}
+        size="sm"
+        footer={
+          <div className="flex gap-3 w-full">
+            <Button
+              variant="ghost"
+              onClick={() => { setConflictModal(false); navigate(`/subscriptions/${id}`); }}
+              className="flex-1"
+            >
+              {t('subscriptions:form.conflict.cancel')}
+            </Button>
+            <Button
+              variant="danger"
+              onClick={onForceSubmit}
+              loading={updateMutation.isPending}
+              className="flex-1"
+            >
+              {t('subscriptions:form.conflict.overwrite')}
+            </Button>
+          </div>
+        }
+      >
+        <div className="flex gap-3 p-4 rounded-lg bg-warning-50 dark:bg-warning-950/20 border border-warning-200 dark:border-warning-800/40">
+          <AlertTriangle className="w-5 h-5 text-warning-600 dark:text-warning-400 shrink-0 mt-0.5" />
+          <p className="text-sm text-warning-700 dark:text-warning-300">
+            {t('subscriptions:form.conflict.message')}
+          </p>
+        </div>
+      </Modal>
     </PageContainer>
   );
 }

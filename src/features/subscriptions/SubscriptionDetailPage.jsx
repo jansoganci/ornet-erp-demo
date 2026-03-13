@@ -156,6 +156,13 @@ export function SubscriptionDetailPage() {
               </div>
               <Badge variant="info" className="font-mono">{subscription.account_no || '---'}</Badge>
             </div>
+            {subscription.subscriber_title && (
+              <div className="px-6 py-3 bg-neutral-50 dark:bg-neutral-900/40 border-b border-primary-100 dark:border-primary-900/20">
+                <p className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">
+                  {subscription.subscriber_title}
+                </p>
+              </div>
+            )}
             <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="space-y-4">
                 <div>
@@ -177,6 +184,21 @@ export function SubscriptionDetailPage() {
                     {subscription.site_name || '---'}
                   </p>
                 </div>
+                {(subscription.alarm_center || subscription.alarm_center_account) && (
+                  <div>
+                    <p className="text-[10px] uppercase font-bold text-neutral-400 tracking-widest mb-1">
+                      {t('subscriptions:form.fields.alarmCenter')}
+                    </p>
+                    <p className="font-medium text-neutral-700 dark:text-neutral-300">
+                      {subscription.alarm_center || '---'}
+                    </p>
+                    {subscription.alarm_center_account && (
+                      <p className="text-xs font-mono text-neutral-500 mt-0.5">
+                        ACC: {subscription.alarm_center_account}
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
               <div className="space-y-4">
                 {subscription.site_address && (

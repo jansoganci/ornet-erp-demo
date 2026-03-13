@@ -1,66 +1,94 @@
 import * as XLSX from 'xlsx';
 import { SUBSCRIPTION_TYPES, SERVICE_TYPES } from './schema';
 
-/** Excel column headers (Turkish) - order for template */
+/**
+ * Excel column headers (Turkish) — matches the user's actual Excel format.
+ * Removed: ADET, ADRES (not needed without auto-create), KAM.ALR.VAR MI (redundant with TÜR),
+ *          ÖNCEKİ AYLARIN NOTLARI (merged into ACIKLAMA), KDV (hardcoded 20%),
+ *          Banka Adı / Son 4 (security risk), Fatura Günü (defaults to 1).
+ */
 export const TEMPLATE_HEADERS = [
-  'Müşteri',
-  'Lokasyon',
-  'Adres',
-  'Hesap No',
-  'Başlangıç',
-  'Baz Fiyat',
-  'SMS Ücreti',
-  'Hat Ücreti',
-  'KDV',
-  'Ödeme Sıklığı',
-  'Abonelik Tipi',
-  'Banka Adı',
-  'Son 4',
-  'Tahsil Eden',
-  'Resmi Fatura',
-  'Hizmet Türü',
-  'Fatura Günü',
+  'TÜR',
+  'MERKEZ',
+  'ACC.',
+  'MÜŞTERİ',
+  'LOKASYON',
+  'ABONE UNVANI',
+  'HESAP NO',
+  'BAŞLANGIÇ',
+  'TL',
+  'SMS TL',
+  'HAT TL',
+  'MALIYET',
+  'ODEME SIKLIGI',
+  'ABONELİK TİPİ',
+  'FATURA',
+  'ACIKLAMA',
 ];
 
 const MAX_ROWS = 500;
 
-const SUBSCRIPTION_TYPE_MAP = {
-  kart: 'recurring_card',
-  nakit: 'manual_cash',
-  havale: 'manual_bank',
-};
-
-const BILLING_FREQUENCY_MAP = {
-  aylık: 'monthly',
-  aylik: 'monthly',
-  '6 aylık': '6_month',
-  '6 aylik': '6_month',
-  '6_aylık': '6_month',
-  '6_aylik': '6_month',
-  yıllık: 'yearly',
-  yillik: 'yearly',
-  monthly: 'monthly',
-  '6_month': '6_month',
-  yearly: 'yearly',
-};
-
-const OFFICIAL_INVOICE_MAP = {
-  evet: true,
-  hayır: false,
-  hayir: false,
-  true: true,
-  false: false,
-  '1': true,
-  '0': false,
-};
-
+// TÜR (service_type) mapping — Turkish Excel values → DB enum
 const SERVICE_TYPE_MAP = {
-  'sadece alarm': 'alarm_only',
-  'sadece kamera': 'camera_only',
-  'sadece internet': 'internet_only',
-  alarm_only: 'alarm_only',
-  camera_only: 'camera_only',
-  internet_only: 'internet_only',
+  'alarm':                   'alarm_only',
+  'kamera':                  'camera_only',
+  'internet':                'internet_only',
+  'alarm ve kamera':         'alarm_camera',
+  'alarm + kamera':          'alarm_camera',
+  'alarm kamera':            'alarm_camera',
+  'alarm, kamera':           'alarm_camera',
+  'alarm, kamera, internet': 'alarm_camera_internet',
+  'alarm+kamera+internet':   'alarm_camera_internet',
+  'kamera ve internet':      'camera_internet',
+  'kamera internet':         'camera_internet',
+  // English passthrough
+  'alarm_only':              'alarm_only',
+  'camera_only':             'camera_only',
+  'internet_only':           'internet_only',
+  'alarm_camera':            'alarm_camera',
+  'alarm_camera_internet':   'alarm_camera_internet',
+  'camera_internet':         'camera_internet',
+};
+
+// ABONELİK TİPİ (subscription_type) mapping
+const SUBSCRIPTION_TYPE_MAP = {
+  nakit:           'manual_cash',
+  havale:          'manual_bank',
+  kart:            'recurring_card',
+  manual_cash:     'manual_cash',
+  manual_bank:     'manual_bank',
+  recurring_card:  'recurring_card',
+};
+
+// ODEME SIKLIGI (billing_frequency) mapping
+const BILLING_FREQUENCY_MAP = {
+  'aylık':    'monthly',
+  'aylik':    'monthly',
+  'monthly':  'monthly',
+  '3 aylık':  '3_month',
+  '3 aylik':  '3_month',
+  '3_aylık':  '3_month',
+  '3_aylik':  '3_month',
+  '3_month':  '3_month',
+  '6 aylık':  '6_month',
+  '6 aylik':  '6_month',
+  '6_aylık':  '6_month',
+  '6_aylik':  '6_month',
+  '6_month':  '6_month',
+  'yıllık':   'yearly',
+  'yillik':   'yearly',
+  'yearly':   'yearly',
+};
+
+// FATURA (official_invoice) mapping
+const OFFICIAL_INVOICE_MAP = {
+  evet:   true,
+  hayır:  false,
+  hayir:  false,
+  true:   true,
+  false:  false,
+  '1':    true,
+  '0':    false,
 };
 
 function trim(val) {
@@ -72,8 +100,7 @@ function parseDate(val) {
   const s = trim(val);
   if (!s) return null;
   // YYYY-MM-DD
-  const iso = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s);
-  if (iso) return s;
+  if (/^(\d{4})-(\d{2})-(\d{2})$/.test(s)) return s;
   // DD.MM.YYYY
   const dmy = /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/.exec(s);
   if (dmy) {
@@ -103,6 +130,8 @@ export function parseXlsxFile(arrayBuffer) {
   const rows = [];
   for (let i = 1; i < data.length; i++) {
     const arr = data[i];
+    // Skip completely empty rows
+    if (arr.every((v) => v === '' || v == null)) continue;
     const obj = {};
     headers.forEach((h, j) => {
       obj[h] = arr[j] != null ? arr[j] : '';
@@ -113,8 +142,9 @@ export function parseXlsxFile(arrayBuffer) {
 }
 
 /**
- * Validate and map Excel rows to internal payload. Max 500 rows.
- * Returns { rows, errors } where errors are { rowIndex, field, message }.
+ * Validate and map Excel rows to internal payload objects.
+ * Max 500 rows. Customer/site existence is NOT checked here — that happens in importApi.
+ * Returns { rows, errors } where errors are { rowIndex, field, message, rowNum }.
  */
 export function validateAndMapRows(excelRows) {
   const errors = [];
@@ -127,83 +157,101 @@ export function validateAndMapRows(excelRows) {
   const toProcess = excelRows.slice(0, MAX_ROWS);
 
   toProcess.forEach((raw, rowIndex) => {
-    const rowNum = rowIndex + 2; // 1-based + header
-    const get = (key) => trim(raw[key] ?? raw[TEMPLATE_HEADERS.find((h) => h === key)] ?? '');
+    const rowNum = rowIndex + 2; // 1-based + header row
+    const get = (key) => trim(raw[key] ?? '');
 
-    const company_name = get('Müşteri');
-    const site_name = get('Lokasyon');
-    const address = get('Adres');
-    const account_no = get('Hesap No') || null;
-    const startRaw = get('Başlangıç');
-    const base_priceRaw = get('Baz Fiyat');
-    const subscriptionTypeRaw = get('Abonelik Tipi');
+    const company_name = get('MÜŞTERİ');
+    const site_name    = get('LOKASYON');
+    const startRaw     = get('BAŞLANGIÇ');
+    const base_priceRaw = get('TL');
+    const subTypeRaw   = get('ABONELİK TİPİ');
 
-    // Required
-    if (!company_name) errors.push({ rowIndex, field: 'Müşteri', message: 'required', rowNum });
-    if (!site_name) errors.push({ rowIndex, field: 'Lokasyon', message: 'required', rowNum });
-    if (!address) errors.push({ rowIndex, field: 'Adres', message: 'required', rowNum });
+    // Required field validation
+    if (!company_name) errors.push({ rowIndex, field: 'MÜŞTERİ',     message: 'required', rowNum });
+    if (!site_name)    errors.push({ rowIndex, field: 'LOKASYON',     message: 'required', rowNum });
+    if (!startRaw)     errors.push({ rowIndex, field: 'BAŞLANGIÇ',    message: 'required', rowNum });
+    if (!subTypeRaw)   errors.push({ rowIndex, field: 'ABONELİK TİPİ', message: 'required', rowNum });
+
     const start_date = parseDate(startRaw);
-    if (!start_date) errors.push({ rowIndex, field: 'Başlangıç', message: 'invalid_date', rowNum });
+    if (startRaw && !start_date) errors.push({ rowIndex, field: 'BAŞLANGIÇ', message: 'invalid_date', rowNum });
+
     const base_price = toNum(base_priceRaw, NaN);
-    if (base_priceRaw !== '' && !Number.isFinite(base_price)) errors.push({ rowIndex, field: 'Baz Fiyat', message: 'invalid_number', rowNum });
-    if (base_price < 0) errors.push({ rowIndex, field: 'Baz Fiyat', message: 'min_zero', rowNum });
+    if (base_priceRaw !== '' && !Number.isFinite(base_price))
+      errors.push({ rowIndex, field: 'TL', message: 'invalid_number', rowNum });
+    if (Number.isFinite(base_price) && base_price < 0)
+      errors.push({ rowIndex, field: 'TL', message: 'min_zero', rowNum });
 
-    const subTypeLower = subscriptionTypeRaw.toLowerCase();
-    const subscription_type = SUBSCRIPTION_TYPE_MAP[subTypeLower] || (SUBSCRIPTION_TYPES.includes(subscriptionTypeRaw) ? subscriptionTypeRaw : null);
-    if (!subscription_type) errors.push({ rowIndex, field: 'Abonelik Tipi', message: 'invalid_type', rowNum });
+    const subTypeLower   = subTypeRaw.toLowerCase();
+    const subscription_type = SUBSCRIPTION_TYPE_MAP[subTypeLower] ?? null;
+    if (subTypeRaw && !subscription_type)
+      errors.push({ rowIndex, field: 'ABONELİK TİPİ', message: 'invalid_type', rowNum });
 
-    if (subscription_type === 'recurring_card') {
-      const card_bank = get('Banka Adı');
-      const card_last4 = get('Son 4');
-      if (!card_bank || !card_last4 || String(card_last4).length !== 4) {
-        errors.push({ rowIndex, field: 'Kart', message: 'card_required', rowNum });
-      }
-    }
+    // TÜR (service_type) — optional but validated if provided
+    const turRaw = get('TÜR').toLowerCase().trim();
+    const service_type = turRaw ? (SERVICE_TYPE_MAP[turRaw] ?? null) : null;
+    if (turRaw && !service_type)
+      errors.push({ rowIndex, field: 'TÜR', message: 'invalid_service_type', rowNum });
 
-    const billingFreqRaw = get('Ödeme Sıklığı').toLowerCase();
-    const billing_frequency = BILLING_FREQUENCY_MAP[billingFreqRaw] || 'monthly';
+    // Billing frequency — default monthly
+    const freqRaw = get('ODEME SIKLIGI').toLowerCase().trim();
+    const billing_frequency = BILLING_FREQUENCY_MAP[freqRaw] ?? 'monthly';
 
-    const officialRaw = get('Resmi Fatura').toLowerCase();
-    const official_invoice = OFFICIAL_INVOICE_MAP[officialRaw] !== undefined ? OFFICIAL_INVOICE_MAP[officialRaw] : true;
+    // Official invoice — default true
+    const faturaRaw = get('FATURA').toLowerCase().trim();
+    const official_invoice = OFFICIAL_INVOICE_MAP[faturaRaw] !== undefined
+      ? OFFICIAL_INVOICE_MAP[faturaRaw]
+      : true;
 
-    const serviceTypeRaw = get('Hizmet Türü').toLowerCase().replace(/\s+/g, ' ');
-    const service_type = SERVICE_TYPE_MAP[serviceTypeRaw] || (SERVICE_TYPES.includes(trim(raw['Hizmet Türü'])) ? trim(raw['Hizmet Türü']) : null) || null;
-
-    let billing_day = toNum(get('Fatura Günü'), 1);
-    if (billing_day < 1 || billing_day > 28) billing_day = 1;
-
-    const payload = {
+    rows.push({
       company_name,
       site_name,
-      address,
-      account_no,
-      start_date,
-      base_price: Number.isFinite(base_price) ? base_price : 0,
-      sms_fee: toNum(get('SMS Ücreti'), 0),
-      line_fee: toNum(get('Hat Ücreti'), 0),
-      vat_rate: toNum(get('KDV'), 20),
+      subscriber_title:      get('ABONE UNVANI') || null,
+      alarm_center:          get('MERKEZ') || null,
+      alarm_center_account:  get('ACC.') || null,
+      account_no:            get('HESAP NO') || null,
+      start_date:            start_date ?? startRaw,
+      base_price:            Number.isFinite(base_price) ? base_price : 0,
+      sms_fee:               toNum(get('SMS TL'), 0),
+      line_fee:              toNum(get('HAT TL'), 0),
+      cost:                  toNum(get('MALIYET'), 0),
+      vat_rate:              20, // hardcoded — strict 20% per business rule
       billing_frequency,
       subscription_type,
-      card_bank_name: subscription_type === 'recurring_card' ? get('Banka Adı') : null,
-      card_last4: subscription_type === 'recurring_card' ? String(get('Son 4')).slice(0, 4) : null,
-      cash_collector_name: subscription_type === 'manual_cash' ? get('Tahsil Eden') || null : null,
-      official_invoice,
       service_type,
-      billing_day,
-    };
-
-    rows.push(payload);
+      official_invoice,
+      notes:                 get('ACIKLAMA') || null,
+    });
   });
 
   return { rows, errors };
 }
 
 /**
- * Build template sheet (headers + one empty row) and return as blob for download
+ * Build template sheet (headers + one example row) and return as Blob for download.
  */
 export function buildTemplateBlob() {
-  const wsData = [TEMPLATE_HEADERS, TEMPLATE_HEADERS.map(() => '')];
+  const exampleRow = [
+    'alarm',        // TÜR
+    'Güvenlik A.Ş.',// MERKEZ
+    'ACC-001',      // ACC.
+    'Örnek Firma',  // MÜŞTERİ
+    'Merkez Şube',  // LOKASYON
+    'Alarm+Kamera Abonesi', // ABONE UNVANI
+    'GSM-001',      // HESAP NO
+    '2024-01-01',   // BAŞLANGIÇ
+    '500',          // TL
+    '50',           // SMS TL
+    '0',            // HAT TL
+    '100',          // MALIYET
+    'aylık',        // ODEME SIKLIGI
+    'nakit',        // ABONELİK TİPİ
+    'evet',         // FATURA
+    '',             // ACIKLAMA
+  ];
+  const wsData = [TEMPLATE_HEADERS, exampleRow];
   const ws = XLSX.utils.aoa_to_sheet(wsData);
+  // Column widths
+  ws['!cols'] = TEMPLATE_HEADERS.map(() => ({ wch: 20 }));
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Abonelikler');
   const buf = XLSX.write(wb, { type: 'array', bookType: 'xlsx' });

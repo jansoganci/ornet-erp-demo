@@ -43,7 +43,7 @@ export const CustomerSelect = forwardRef(({ value, onChange, error, label }, ref
         <div className="flex items-center gap-2 overflow-hidden">
           {selectedCustomer ? (
             <span className="font-medium text-neutral-900 dark:text-neutral-50 truncate">
-              {selectedCustomer.name}
+              {selectedCustomer.company_name}
             </span>
           ) : (
             <span className="text-neutral-500 dark:text-neutral-500">
@@ -101,7 +101,7 @@ export const CustomerSelect = forwardRef(({ value, onChange, error, label }, ref
                   }}
                 >
                   <div>
-                    <p className="font-medium text-neutral-900 dark:text-neutral-50">{customer.name}</p>
+                    <p className="font-medium text-neutral-900 dark:text-neutral-50">{customer.company_name}</p>
                     <p className="text-xs text-neutral-500 dark:text-neutral-400">{customer.phone}</p>
                   </div>
                   {value === customer.id && <Check className="w-4 h-4 text-primary-600 dark:text-primary-400" />}

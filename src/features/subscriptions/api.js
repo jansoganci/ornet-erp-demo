@@ -142,6 +142,10 @@ export async function fetchSubscriptionsPaginated(filters = {}, page = 0, pageSi
     query = query.lte('start_date', filters.dateTo);
   }
 
+  if (filters.overdue) {
+    query = query.eq('has_overdue_pending', true);
+  }
+
   // Year + month filter on start_date (server-side)
   if (filters.year && filters.year !== 'all') {
     query = query
@@ -384,35 +388,21 @@ export async function pauseSubscription(id, reason) {
 }
 
 /**
- * Cancel a subscription — optionally write off unpaid amounts
+ * Cancel a subscription — optionally write off unpaid amounts.
+ * Uses fn_cancel_subscription RPC so both the status update and the
+ * payment write-off execute inside a single DB transaction.
  */
 export async function cancelSubscription(id, { reason, writeOffUnpaid = false }) {
-  const { data, error } = await supabase
-    .from('subscriptions')
-    .update({ 
-      status: 'cancelled', 
-      cancel_reason: reason,
-      cancelled_at: new Date().toISOString()
-    })
-    .eq('id', id)
-    .select()
-    .single();
+  const { data, error } = await supabase.rpc('fn_cancel_subscription', {
+    p_subscription_id:  id,
+    p_reason:           reason ?? null,
+    p_write_off_unpaid: writeOffUnpaid,
+  });
 
   if (error) throw error;
 
-  if (writeOffUnpaid) {
-    const { error: writeOffErr } = await supabase
-      .from('subscription_payments')
-      .update({ status: 'write_off' })
-      .eq('subscription_id', id)
-      .eq('status', 'pending');
-
-    if (writeOffErr) throw writeOffErr;
-  }
-
-  await insertAuditLog('subscriptions', id, 'cancel', null, { reason, writeOffUnpaid }, 'Abonelik iptal edildi');
-
-  return data;
+  // RPC returns SETOF — unwrap the single row
+  return Array.isArray(data) ? data[0] : data;
 }
 
 /**
@@ -421,9 +411,14 @@ export async function cancelSubscription(id, { reason, writeOffUnpaid = false })
 export async function reactivateSubscription(id) {
   const { data, error } = await supabase
     .from('subscriptions')
-    .update({ 
+    .update({
       status: 'active',
-      reactivated_at: new Date().toISOString()
+      reactivated_at: new Date().toISOString(),
+      // Clear stale pause/cancel fields so the status history is unambiguous
+      pause_reason: null,
+      paused_at: null,
+      cancel_reason: null,
+      cancelled_at: null,
     })
     .eq('id', id)
     .select()

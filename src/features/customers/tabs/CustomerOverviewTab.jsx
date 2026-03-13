@@ -37,9 +37,10 @@ export function CustomerOverviewTab() {
       })
     : '—';
 
-  const fullAddress = [customer.address, customer.district, customer.city]
-    .filter(Boolean)
-    .join(', ');
+  const primarySite = sites[0];
+  const fullAddress = primarySite
+    ? [primarySite.address, primarySite.district, primarySite.city].filter(Boolean).join(', ')
+    : '';
 
   const mapsHref = fullAddress
     ? `https://maps.google.com/?q=${encodeURIComponent(fullAddress)}`

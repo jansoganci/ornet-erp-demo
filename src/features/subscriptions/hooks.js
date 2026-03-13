@@ -21,6 +21,7 @@ import { importSubscriptionsFromRows } from './importApi';
 import {
   fetchPaymentsBySubscription,
   recordPayment,
+  revertWriteOff,
   fetchOverdueInvoices,
   fetchSubscriptionStats,
 } from './paymentsApi';
@@ -87,12 +88,10 @@ export function useSubscriptions(filters = {}) {
   });
 }
 
-const PAGE_SIZE = 50;
-
-export function useSubscriptionsPaginated(filters = {}, page = 0) {
+export function useSubscriptionsPaginated(filters = {}, page = 0, pageSize = 50) {
   const query = useQuery({
-    queryKey: [...subscriptionKeys.list(filters), 'paginated', page],
-    queryFn: () => fetchSubscriptionsPaginated(filters, page, PAGE_SIZE),
+    queryKey: [...subscriptionKeys.list(filters), 'paginated', page, pageSize],
+    queryFn: () => fetchSubscriptionsPaginated(filters, page, pageSize),
     placeholderData: keepPreviousData,
   });
 
@@ -101,8 +100,8 @@ export function useSubscriptionsPaginated(filters = {}, page = 0) {
     ...query,
     data: query.data?.data ?? [],
     totalCount: count,
-    pageCount: Math.ceil(count / PAGE_SIZE),
-    pageSize: PAGE_SIZE,
+    pageCount: Math.ceil(count / pageSize),
+    pageSize,
   };
 }
 
@@ -267,6 +266,22 @@ export function useRecordPayment() {
       queryClient.invalidateQueries({ queryKey: financeDashboardKeys.all });
       queryClient.invalidateQueries({ queryKey: transactionKeys.lists() });
       toast.success(t('payment.success'));
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'common.updateFailed'));
+    },
+  });
+}
+
+export function useRevertWriteOff() {
+  const queryClient = useQueryClient();
+  const { t } = useTranslation('subscriptions');
+
+  return useMutation({
+    mutationFn: (paymentId) => revertWriteOff(paymentId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: subscriptionKeys.all });
+      toast.success(t('payment.revertWriteOff.success'));
     },
     onError: (error) => {
       toast.error(getErrorMessage(error, 'common.updateFailed'));

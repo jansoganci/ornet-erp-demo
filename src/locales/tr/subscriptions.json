@@ -17,11 +17,16 @@
       "selectYear": "Yıl Seç",
       "selectMonth": "Ay Seç",
       "status": "Durum",
-      "type": "Ödeme Türü"
+      "type": "Ödeme Türü",
+      "overduePayments": "Gecikmiş Ödemeler"
     },
     "empty": {
       "title": "Henüz abonelik yok",
       "description": "Yeni bir abonelik oluşturarak başlayın."
+    },
+    "pagination": {
+      "subscriptions": "abonelik",
+      "perPage": "{{count}} / sayfa"
     },
     "columns": {
       "customer": "Müşteri",
@@ -110,6 +115,9 @@
       "setupNotes": "Kurulum Notları",
       "serviceType": "Hizmet Türü",
       "simCard": "SIM Kart",
+      "subscriberTitle": "Abone Ünvanı",
+      "alarmCenter": "Merkez",
+      "alarmCenterAccount": "Merkez ACC",
       "noSim": "SIM kartı seçilmedi",
       "simCardSearchHint": "Farklı bir arama deneyin veya yeni SIM ekleyin",
       "simCardSelectSiteFirst": "Önce lokasyon seçin",
@@ -131,11 +139,18 @@
       "selectPerson": "Kişi seçin...",
       "selectServiceType": "Hizmet türü seçin...",
       "notes": "Abonelik hakkında notlar...",
-      "setupNotes": "Kurulum detayları, ekipman notları..."
+      "setupNotes": "Kurulum detayları, ekipman notları...",
+      "subscriberTitle": "Örn: Alarm + Kamera Abonesi"
     },
     "success": {
       "created": "Abonelik başarıyla oluşturuldu",
       "updated": "Abonelik başarıyla güncellendi"
+    },
+    "conflict": {
+      "title": "Eş Zamanlı Düzenleme Uyarısı",
+      "message": "Bu abonelik, siz formu açtıktan sonra başka bir kullanıcı tarafından değiştirildi. Yine de kaydetmek, diğer kullanıcının değişikliklerinin üzerine yazacaktır.",
+      "overwrite": "Yine de Kaydet",
+      "cancel": "İptal Et ve Geri Dön"
     }
   },
   "types": {
@@ -203,7 +218,17 @@
       "noInvoiceWarning": "Bu ödeme faturasız kaydedilecektir",
       "vatRate": "KDV Oranı (%)"
     },
-    "success": "Ödeme başarıyla kaydedildi"
+    "success": "Ödeme başarıyla kaydedildi",
+    "errors": {
+      "paymentLocked": "Bu ödeme faturalanmış ve değiştirilemez.",
+      "paymentNotFound": "Ödeme kaydı bulunamadı."
+    },
+    "revertWriteOff": {
+      "title": "Bu ödeme silinmiş olarak işaretlenmiştir.",
+      "description": "Geri almak için aşağıdaki butona tıklayın. Ödeme tekrar 'Bekliyor' durumuna alınacaktır.",
+      "button": "Silmeyi Geri Al",
+      "success": "Ödeme başarıyla geri alındı"
+    }
   },
   "compliance": {
     "overdueAlert": "fatura süresi 7 günü geçti!",
@@ -271,6 +296,7 @@
       "startMonth": "Başlangıç Ayı",
       "all": "Tümü",
       "monthly": "Aylık",
+      "3_month": "3 Aylık",
       "6_month": "6 Aylık",
       "yearly": "Yıllık",
       "months": {
@@ -335,6 +361,7 @@
     },
     "frequencyLabelsForMessage": {
       "monthly": "aylık",
+      "3_month": "3 aylık",
       "6_month": "6 aylık",
       "yearly": "yıllık"
     },
@@ -349,6 +376,12 @@
     },
     "saveButton": "Değişiklikleri kaydet",
     "saveSuccess": "Fiyatlar başarıyla güncellendi",
+    "confirm": {
+      "title": "Fiyat Güncellemesini Onayla",
+      "message": "{{count}} aboneliğin fiyatını güncellemek üzeresiniz. Bekleyen tüm ödemelerin tutarları da yeniden hesaplanacaktır.",
+      "warning": "Bu işlem geri alınamaz. Devam etmek istediğinizden emin misiniz?",
+      "save": "Evet, Güncelle"
+    },
     "empty": {
       "title": "Abonelik bulunamadı",
       "description": "Seçilen filtreye uyan abonelik yok."

@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import * as XLSX from 'xlsx';
-import { CreditCard, ArrowLeft, StickyNote, Copy, Check, Download } from 'lucide-react';
+import { CreditCard, ArrowLeft, StickyNote, Copy, Check, Download, AlertTriangle } from 'lucide-react';
 import { PageContainer, PageHeader } from '../../components/layout';
 import {
   Button,
@@ -11,6 +11,7 @@ import {
   Badge,
   Card,
   Input,
+  Modal,
   EmptyState,
   ErrorState,
   Spinner,
@@ -96,6 +97,7 @@ export function PriceRevisionPage() {
   const [notesModalSubscription, setNotesModalSubscription] = useState(null);
   const [messageMonth, setMessageMonth] = useState(() => new Date().getMonth() + 1);
   const [copiedId, setCopiedId] = useState(null);
+  const [confirmModal, setConfirmModal] = useState(false);
 
   const filters = useMemo(() => {
     const f = {
@@ -149,8 +151,8 @@ export function PriceRevisionPage() {
     }));
   };
 
-  const handleSaveClick = () => {
-    const payload = Object.keys(editsById).map((id) => {
+  const buildPayload = () =>
+    Object.keys(editsById).map((id) => {
       const row = subscriptions.find((s) => s.id === id);
       const merged = row ? { ...row, ...editsById[id] } : { ...editsById[id], id };
       return {
@@ -162,9 +164,22 @@ export function PriceRevisionPage() {
         cost: toNum(merged.cost, 0),
       };
     });
+
+  // Opens the confirmation modal
+  const handleSaveClick = () => {
+    if (Object.keys(editsById).length === 0) return;
+    setConfirmModal(true);
+  };
+
+  // Called when user confirms in the modal
+  const handleConfirmedSave = () => {
+    const payload = buildPayload();
     if (payload.length === 0) return;
     bulkUpdateMutation.mutate(payload, {
-      onSuccess: () => setEditsById({}),
+      onSuccess: () => {
+        setEditsById({});
+        setConfirmModal(false);
+      },
     });
   };
 
@@ -633,6 +648,45 @@ export function PriceRevisionPage() {
         onClose={() => setNotesModalSubscription(null)}
         subscription={notesModalSubscription}
       />
+
+      <Modal
+        open={confirmModal}
+        onClose={() => setConfirmModal(false)}
+        title={t('subscriptions:priceRevision.confirm.title')}
+        size="sm"
+        footer={
+          <div className="flex gap-3 w-full">
+            <Button
+              variant="ghost"
+              onClick={() => setConfirmModal(false)}
+              className="flex-1"
+              disabled={bulkUpdateMutation.isPending}
+            >
+              {t('common:actions.cancel')}
+            </Button>
+            <Button
+              variant="primary"
+              onClick={handleConfirmedSave}
+              loading={bulkUpdateMutation.isPending}
+              className="flex-1"
+            >
+              {t('subscriptions:priceRevision.confirm.save')}
+            </Button>
+          </div>
+        }
+      >
+        <div className="space-y-4">
+          <div className="flex gap-3 p-4 rounded-lg bg-warning-50 dark:bg-warning-950/20 border border-warning-200 dark:border-warning-800/40">
+            <AlertTriangle className="w-5 h-5 text-warning-600 dark:text-warning-400 shrink-0 mt-0.5" />
+            <p className="text-sm text-warning-700 dark:text-warning-300">
+              {t('subscriptions:priceRevision.confirm.message', { count: Object.keys(editsById).length })}
+            </p>
+          </div>
+          <p className="text-xs text-neutral-500 dark:text-neutral-400">
+            {t('subscriptions:priceRevision.confirm.warning')}
+          </p>
+        </div>
+      </Modal>
     </PageContainer>
   );
 }

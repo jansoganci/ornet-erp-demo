@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Plus, CreditCard, Filter, Tag, TrendingUp, TrendingDown, Minus, Users, Pause, AlertTriangle, FileSpreadsheet, Receipt, Wallet, Building2, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, CreditCard, Filter, Tag, TrendingUp, TrendingDown, Minus, Users, Pause, AlertTriangle, FileSpreadsheet, Receipt, Wallet, Building2, Calendar, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { PageContainer, PageHeader } from '../../components/layout';
 import {
   Button,
@@ -39,7 +39,9 @@ export function SubscriptionsListPage() {
   const billingFrequency = searchParams.get('billing_frequency') || 'all';
   const yearParam = searchParams.get('year') || '';
   const monthParam = searchParams.get('month') || '';
+  const overdue = searchParams.get('overdue') === 'true';
   const page = Number(searchParams.get('page') || '0');
+  const pageSize = Number(searchParams.get('per_page') || '50');
 
   // Sync local search from URL
   useEffect(() => {
@@ -64,6 +66,7 @@ export function SubscriptionsListPage() {
     billing_frequency: billingFrequency === 'all' ? undefined : billingFrequency,
     year: yearParam || undefined,
     month: monthParam || undefined,
+    overdue: overdue || undefined,
   };
 
   const {
@@ -73,9 +76,8 @@ export function SubscriptionsListPage() {
     refetch,
     totalCount,
     pageCount,
-    pageSize,
     isFetching,
-  } = useSubscriptionsPaginated(filters, page);
+  } = useSubscriptionsPaginated(filters, page, pageSize);
   const { data: stats } = useSubscriptionStats();
   const { data: currentProfile } = useCurrentProfile();
   const isAdmin = currentProfile?.role === 'admin';
@@ -106,6 +108,25 @@ export function SubscriptionsListPage() {
       const next = new URLSearchParams(prev);
       if (newPage > 0) next.set('page', String(newPage));
       else next.delete('page');
+      return next;
+    });
+  };
+
+  const handleToggleOverdue = () => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (overdue) next.delete('overdue');
+      else next.set('overdue', 'true');
+      next.delete('page');
+      return next;
+    });
+  };
+
+  const handlePageSizeChange = (newSize) => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.set('per_page', String(newSize));
+      next.delete('page'); // reset to first page when page size changes
       return next;
     });
   };
@@ -319,13 +340,25 @@ export function SubscriptionsListPage() {
             value={stats.unpaid_count ?? 0}
             color="text-error-600 dark:text-error-400"
             subtitle={t('subscriptions:stats.unpaidHint')}
-            onClick={() => navigate('/subscriptions')}
+            onClick={() => navigate('/subscriptions?overdue=true')}
           />
         </div>
       )}
 
       {/* Filters */}
       <Card className="p-3 border-neutral-200/60 dark:border-neutral-800/60">
+        {overdue && (
+          <div className="flex items-center gap-2 mb-3 px-1">
+            <button
+              onClick={handleToggleOverdue}
+              className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-error-100 dark:bg-error-950/40 text-error-700 dark:text-error-400 text-xs font-medium border border-error-200 dark:border-error-800/40 hover:bg-error-200 dark:hover:bg-error-900/40 transition-colors"
+            >
+              <AlertTriangle className="w-3 h-3" />
+              {t('subscriptions:list.filters.overduePayments')}
+              <X className="w-3 h-3" />
+            </button>
+          </div>
+        )}
         <div className="flex flex-col lg:flex-row items-end gap-3">
           <div className="flex-1 min-w-[200px] w-full">
             <SearchInput
@@ -411,11 +444,26 @@ export function SubscriptionsListPage() {
             onRowClick={(row) => navigate(`/subscriptions/${row.id}`)}
             className="border-none"
           />
-          {pageCount > 1 && (
-            <div className="flex items-center justify-between px-4 py-3 border-t border-neutral-200 dark:border-neutral-800">
-              <span className="text-sm text-neutral-500 dark:text-neutral-400">
-                {page * pageSize + 1}–{Math.min((page + 1) * pageSize, totalCount)} / {totalCount} abonelik
-              </span>
+          {totalCount > 0 && (
+            <div className="flex items-center justify-between px-4 py-3 border-t border-neutral-200 dark:border-neutral-800 flex-wrap gap-3">
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-neutral-500 dark:text-neutral-400">
+                  {totalCount > 0
+                    ? `${page * pageSize + 1}–${Math.min((page + 1) * pageSize, totalCount)} / ${totalCount} ${t('subscriptions:list.pagination.subscriptions')}`
+                    : ''}
+                </span>
+                <select
+                  value={pageSize}
+                  onChange={(e) => handlePageSizeChange(Number(e.target.value))}
+                  className="text-sm border border-neutral-200 dark:border-neutral-700 rounded-lg px-2 py-1 bg-white dark:bg-[#171717] text-neutral-700 dark:text-neutral-300 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+                >
+                  {[25, 50, 100].map((n) => (
+                    <option key={n} value={n}>
+                      {t('subscriptions:list.pagination.perPage', { count: n })}
+                    </option>
+                  ))}
+                </select>
+              </div>
               <div className="flex items-center gap-1">
                 <button
                   onClick={() => handlePageChange(page - 1)}
@@ -425,7 +473,7 @@ export function SubscriptionsListPage() {
                   <ChevronLeft className="w-4 h-4" />
                 </button>
                 <span className="text-sm text-neutral-600 dark:text-neutral-400 px-2">
-                  {page + 1} / {pageCount}
+                  {page + 1} / {Math.max(pageCount, 1)}
                 </span>
                 <button
                   onClick={() => handlePageChange(page + 1)}

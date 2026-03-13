@@ -73,11 +73,6 @@ export function CustomerHero({
                 <h1 className="text-xl sm:text-2xl font-bold text-neutral-900 dark:text-neutral-50 leading-tight truncate">
                   {customer.company_name}
                 </h1>
-                {customer.account_number && (
-                  <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-0.5 font-mono">
-                    {customer.account_number}
-                  </p>
-                )}
               </div>
               <Badge variant="success" size="sm" dot className="flex-shrink-0 mt-1">
                 {t('common:status.active')}

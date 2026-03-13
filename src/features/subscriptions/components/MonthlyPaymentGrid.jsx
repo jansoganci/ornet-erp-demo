@@ -53,7 +53,7 @@ export function MonthlyPaymentGrid({ payments = [] }) {
   const [selectedPayment, setSelectedPayment] = useState(null);
 
   const handleCellClick = (payment) => {
-    if (['pending', 'failed'].includes(payment.status)) {
+    if (['pending', 'failed', 'write_off'].includes(payment.status)) {
       setSelectedPayment(payment);
     }
   };
@@ -76,7 +76,7 @@ export function MonthlyPaymentGrid({ payments = [] }) {
             const monthIdx = getMonthIndex(payment.payment_month);
             const config = statusConfig[payment.status] || statusConfig.pending;
             const Icon = config.icon;
-            const isClickable = ['pending', 'failed'].includes(payment.status);
+            const isClickable = ['pending', 'failed', 'write_off'].includes(payment.status);
 
             return (
               <button

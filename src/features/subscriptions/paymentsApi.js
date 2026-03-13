@@ -1,4 +1,5 @@
 import { supabase } from '../../lib/supabase';
+import i18next from 'i18next';
 
 /**
  * Fetch all payment records for a subscription, ordered by month
@@ -62,15 +63,26 @@ export async function recordPayment(paymentId, paymentData) {
   if (error) {
     // Translate DB exceptions to user-friendly messages
     if (error.message?.includes('payment_locked')) {
-      throw new Error('Bu ödeme faturalanmış ve değiştirilemez.');
+      throw new Error(i18next.t('subscriptions:payment.errors.paymentLocked'));
     }
     if (error.message?.includes('payment_not_found')) {
-      throw new Error('Ödeme kaydı bulunamadı.');
+      throw new Error(i18next.t('subscriptions:payment.errors.paymentNotFound'));
     }
     throw error;
   }
 
   // RPC returns SETOF — unwrap single row
+  return Array.isArray(data) ? data[0] : data;
+}
+
+/**
+ * Revert a write_off payment back to pending via fn_revert_write_off RPC.
+ */
+export async function revertWriteOff(paymentId) {
+  const { data, error } = await supabase.rpc('fn_revert_write_off', {
+    p_payment_id: paymentId,
+  });
+  if (error) throw error;
   return Array.isArray(data) ? data[0] : data;
 }
 

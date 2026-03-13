@@ -4,7 +4,7 @@ import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Modal, Button, Input, Select, Textarea } from '../../../components/ui';
 import { paymentRecordSchema, paymentRecordDefaultValues, PAYMENT_METHODS, INVOICE_TYPES } from '../schema';
-import { useRecordPayment } from '../hooks';
+import { useRecordPayment, useRevertWriteOff } from '../hooks';
 import { formatCurrency } from '../../../lib/utils';
 
 function getMonthLabel(paymentMonth, t) {
@@ -16,8 +16,10 @@ function getMonthLabel(paymentMonth, t) {
 export function PaymentRecordModal({ open, onClose, payment }) {
   const { t } = useTranslation(['subscriptions', 'common']);
   const recordMutation = useRecordPayment();
+  const revertMutation = useRevertWriteOff();
 
   const isLocked = payment?.status === 'paid' && !!payment?.invoice_no;
+  const isWriteOff = payment?.status === 'write_off';
 
   const {
     register,
@@ -56,7 +58,7 @@ export function PaymentRecordModal({ open, onClose, payment }) {
     }
 
     const rate = watchedVatRate != null ? Number(watchedVatRate) : 20;
-    const vat = Math.round(baseAmount * rate) / 100;
+    const vat = Math.round(baseAmount * (rate / 100) * 100) / 100;
     return { amount: baseAmount, vatAmount: vat, totalAmount: baseAmount + vat };
   }, [payment, watchedShouldInvoice, watchedVatRate]);
 
@@ -71,6 +73,11 @@ export function PaymentRecordModal({ open, onClose, payment }) {
 
   const onSubmit = async (data) => {
     await recordMutation.mutateAsync({ paymentId: payment.id, data });
+    onClose();
+  };
+
+  const onRevertWriteOff = async () => {
+    await revertMutation.mutateAsync(payment.id);
     onClose();
   };
 
@@ -94,7 +101,21 @@ export function PaymentRecordModal({ open, onClose, payment }) {
       title={`${t('subscriptions:payment.recordTitle')} — ${getMonthLabel(payment?.payment_month, t)}`}
       size="sm"
       footer={
-        !isLocked && (
+        isWriteOff ? (
+          <div className="flex gap-3 w-full">
+            <Button variant="ghost" onClick={onClose} className="flex-1">
+              {t('common:actions.cancel')}
+            </Button>
+            <Button
+              variant="outline"
+              onClick={onRevertWriteOff}
+              loading={revertMutation.isPending}
+              className="flex-1"
+            >
+              {t('subscriptions:payment.revertWriteOff.button')}
+            </Button>
+          </div>
+        ) : !isLocked ? (
           <div className="flex gap-3 w-full">
             <Button variant="ghost" onClick={onClose} className="flex-1">
               {t('common:actions.cancel')}
@@ -107,7 +128,7 @@ export function PaymentRecordModal({ open, onClose, payment }) {
               {t('subscriptions:actions.recordPayment')}
             </Button>
           </div>
-        )
+        ) : null
       }
     >
       <div className="space-y-5">
@@ -127,14 +148,23 @@ export function PaymentRecordModal({ open, onClose, payment }) {
           </div>
         </div>
 
-        {isLocked ? (
+        {isWriteOff ? (
+          <div className="p-4 rounded-lg bg-warning-50 dark:bg-warning-950/20 border border-warning-200 dark:border-warning-800/40 text-center space-y-1">
+            <p className="text-sm text-warning-700 dark:text-warning-400 font-medium">
+              {t('subscriptions:payment.revertWriteOff.title')}
+            </p>
+            <p className="text-xs text-warning-600 dark:text-warning-500">
+              {t('subscriptions:payment.revertWriteOff.description')}
+            </p>
+          </div>
+        ) : isLocked ? (
           <div className="p-4 rounded-lg bg-success-50 dark:bg-success-950/20 border border-success-200 dark:border-success-800/40 text-center">
             <p className="text-sm text-success-700 dark:text-success-400 font-medium">
-              Bu ödeme faturalanmış ve kilitlenmiştir.
+              {t('subscriptions:payment.errors.paymentLocked')}
             </p>
             {payment.invoice_no && (
               <p className="text-xs text-success-600 dark:text-success-500 mt-1">
-                Fatura: {payment.invoice_no}
+                {t('subscriptions:payment.fields.invoiceNo')}: {payment.invoice_no}
               </p>
             )}
           </div>

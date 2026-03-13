@@ -117,9 +117,10 @@ export function SubscriptionImportModal({ open, onClose }) {
                       <th className="text-left p-2 font-semibold text-neutral-700 dark:text-neutral-300">#</th>
                       <th className="text-left p-2 font-semibold text-neutral-700 dark:text-neutral-300">Müşteri</th>
                       <th className="text-left p-2 font-semibold text-neutral-700 dark:text-neutral-300">Lokasyon</th>
+                      <th className="text-left p-2 font-semibold text-neutral-700 dark:text-neutral-300">Abone Ünvanı</th>
+                      <th className="text-left p-2 font-semibold text-neutral-700 dark:text-neutral-300">TÜR</th>
                       <th className="text-left p-2 font-semibold text-neutral-700 dark:text-neutral-300">Başlangıç</th>
-                      <th className="text-right p-2 font-semibold text-neutral-700 dark:text-neutral-300">Baz Fiyat</th>
-                      <th className="text-left p-2 font-semibold text-neutral-700 dark:text-neutral-300">Tip</th>
+                      <th className="text-right p-2 font-semibold text-neutral-700 dark:text-neutral-300">TL</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -128,9 +129,10 @@ export function SubscriptionImportModal({ open, onClose }) {
                         <td className="p-2 text-neutral-500">{i + 2}</td>
                         <td className="p-2">{row.company_name}</td>
                         <td className="p-2">{row.site_name}</td>
+                        <td className="p-2 text-neutral-500 text-xs">{row.subscriber_title || '—'}</td>
+                        <td className="p-2">{row.service_type || '—'}</td>
                         <td className="p-2">{row.start_date}</td>
                         <td className="p-2 text-right">{row.base_price}</td>
-                        <td className="p-2">{row.subscription_type}</td>
                       </tr>
                     ))}
                   </tbody>

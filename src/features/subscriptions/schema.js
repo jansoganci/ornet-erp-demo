@@ -4,7 +4,7 @@ import i18n from '../../lib/i18n';
 // Constants
 export const SUBSCRIPTION_TYPES = ['recurring_card', 'manual_cash', 'manual_bank'];
 export const SERVICE_TYPES = ['alarm_only', 'camera_only', 'internet_only', 'alarm_camera', 'alarm_camera_internet', 'camera_internet'];
-export const BILLING_FREQUENCIES = ['monthly', '6_month', 'yearly'];
+export const BILLING_FREQUENCIES = ['monthly', '3_month', '6_month', 'yearly'];
 export const SUBSCRIPTION_STATUSES = ['active', 'paused', 'cancelled'];
 export const PAYMENT_STATUSES = ['pending', 'paid', 'failed', 'skipped', 'write_off'];
 export const PAYMENT_METHODS = ['card', 'cash', 'bank_transfer'];
@@ -45,6 +45,9 @@ export const subscriptionSchema = z.object({
   card_bank_name: optionalString,
   card_last4: z.union([z.string().max(4), z.literal('')]).optional().transform((v) => (v === '' ? undefined : v)),
   sim_card_id: optionalUuid,
+  alarm_center: optionalString,
+  alarm_center_account: optionalString,
+  subscriber_title: optionalString,
 }).refine((data) => {
   if (data.subscription_type === 'recurring_card') {
     const hasPaymentMethod = data.payment_method_id && String(data.payment_method_id).trim();
@@ -90,6 +93,9 @@ export const subscriptionDefaultValues = {
   card_bank_name: '',
   card_last4: '',
   sim_card_id: '',
+  alarm_center: '',
+  alarm_center_account: '',
+  subscriber_title: '',
 };
 
 // Payment record schema
