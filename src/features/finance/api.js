@@ -432,7 +432,24 @@ export async function fetchFinanceDashboardKpis({ period, viewMode = 'total' } =
 
 export async function fetchRevenueExpensesByMonth({ months = 6, viewMode = 'total' } = {}) {
   const periodList = getLastNMonths(months);
-  const data = await fetchProfitAndLoss(null, viewMode);
+  const oldestPeriod = periodList[periodList.length - 1];
+
+  // Query only the columns needed and filter server-side to the date window.
+  // Previously called fetchProfitAndLoss(null, ...) which returned all-time rows.
+  let query = supabase
+    .from('v_profit_and_loss')
+    .select('period, amount_try')
+    .gte('period', oldestPeriod);
+
+  if (viewMode === 'official') {
+    query = query.eq('is_official', true);
+  } else if (viewMode === 'unofficial') {
+    query = query.eq('is_official', false);
+  }
+
+  const { data, error } = await query;
+  if (error) throw error;
+
   const byPeriod = {};
 
   for (const p of periodList) {
