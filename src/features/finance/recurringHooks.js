@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { getErrorMessage } from '../../lib/errorHandler';
 import * as recurringApi from './recurringApi';
 import { recurringKeys } from './recurringApi';
-import { transactionKeys, profitAndLossKeys } from './api';
+import { transactionKeys, profitAndLossKeys, financeDashboardKeys, vatReportKeys } from './api';
 
 // Templates
 export function useTemplateLastGenerated() {
@@ -89,9 +89,14 @@ export function useTriggerRecurringGeneration() {
   return useMutation({
     mutationFn: recurringApi.triggerRecurringGeneration,
     onSuccess: (count) => {
+      // recurring templates (last-generated dates change)
       queryClient.invalidateQueries({ queryKey: recurringKeys.all });
+      // transaction lists (new rows were inserted)
       queryClient.invalidateQueries({ queryKey: transactionKeys.all });
+      // computed reports — all three must stay in sync after generation
       queryClient.invalidateQueries({ queryKey: profitAndLossKeys.all });
+      queryClient.invalidateQueries({ queryKey: financeDashboardKeys.all });
+      queryClient.invalidateQueries({ queryKey: vatReportKeys.all });
       if (typeof count === 'number') {
         toast.success(t('generate.success', { count }));
       } else {
