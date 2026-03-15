@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import i18n from '../../lib/i18n';
+import { isoDateStringOptional, currencyEnum } from '../../lib/zodHelpers';
 
 const optionalNum = () => z.coerce.number().min(0).optional().nullable();
 const optionalStr = () => z.string().optional().or(z.literal(''));
@@ -27,16 +28,16 @@ export const proposalSchema = z.object({
   title: z.string().min(1, i18n.t('errors:validation.required')),
   scope_of_work: optionalStr(),
   notes: optionalStr(),
-  currency: z.string().default('USD'),
+  currency: currencyEnum().default('USD'),
   items: z.array(proposalItemSchema).min(1, i18n.t('errors:validation.required')),
   // Header fields
   company_name: optionalStr(),
-  proposal_date: optionalStr(),
-  survey_date: optionalStr(),
+  proposal_date: isoDateStringOptional(),
+  survey_date: isoDateStringOptional(),
   authorized_person: optionalStr(),
-  installation_date: optionalStr(),
+  installation_date: isoDateStringOptional(),
   customer_representative: optionalStr(),
-  completion_date: optionalStr(),
+  completion_date: isoDateStringOptional(),
   discount_percent: z.coerce.number().min(0).max(100).optional().nullable(),
   terms_engineering: optionalStr(),
   terms_pricing: optionalStr(),

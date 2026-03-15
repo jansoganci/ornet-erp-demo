@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import i18n from '../../lib/i18n';
+import { isoDateString, currencyEnum } from '../../lib/zodHelpers';
 
 // Constants
 export const SUBSCRIPTION_TYPES = ['recurring_card', 'manual_cash', 'manual_bank'];
@@ -23,7 +24,7 @@ const optionalEnum = (enumValues) => z.union([z.enum(enumValues), z.literal('')]
 export const subscriptionSchema = z.object({
   site_id: z.string().min(1, i18n.t('errors:validation.required')),
   subscription_type: z.enum(SUBSCRIPTION_TYPES),
-  start_date: z.string().min(1, i18n.t('errors:validation.required')),
+  start_date: isoDateString(),
   billing_day: z.preprocess(toNumber, z.number().int().min(1).max(28).default(1)),
   base_price: z.preprocess(toNumber, z.number({ invalid_type_error: i18n.t('errors:validation.invalidNumber') }).min(0)),
   sms_fee: z.preprocess(toNumber, z.number().min(0).default(0)),
@@ -32,7 +33,7 @@ export const subscriptionSchema = z.object({
   cost: z.preprocess(toNumber, z.number().min(0).default(0)),
   static_ip_fee: z.preprocess(toNumber, z.number().min(0).default(0)),
   static_ip_cost: z.preprocess(toNumber, z.number().min(0).default(0)),
-  currency: z.string().default('TRY'),
+  currency: currencyEnum().default('TRY'),
   payment_method_id: optionalString,
   sold_by: optionalString,
   managed_by: optionalString,
@@ -100,7 +101,7 @@ export const subscriptionDefaultValues = {
 
 // Payment record schema
 export const paymentRecordSchema = z.object({
-  payment_date: z.string().min(1, i18n.t('errors:validation.required')),
+  payment_date: isoDateString(),
   payment_method: z.enum(PAYMENT_METHODS),
   should_invoice: z.boolean().default(true),
   vat_rate: z.preprocess(toNumber, z.number().min(0).max(100).default(20)),

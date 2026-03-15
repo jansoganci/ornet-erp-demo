@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import i18n from '../../lib/i18n';
+import { currencyEnum } from '../../lib/zodHelpers';
 
 export const simCardSchema = z.object({
   phone_number: z.string().min(1, i18n.t('simCards:form.validation.phoneNumberRequired')),
@@ -16,7 +17,7 @@ export const simCardSchema = z.object({
   account_no: z.string().optional().or(z.literal('')),
   cost_price: z.number().min(0).default(0),
   sale_price: z.number().min(0).default(0),
-  currency: z.string().default('TRY'),
+  currency: currencyEnum().default('TRY'),
   customer_label: z.string().optional().or(z.literal('')),
   notes: z.string().optional().or(z.literal('')),
 });
