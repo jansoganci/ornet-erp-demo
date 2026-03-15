@@ -5,21 +5,11 @@ import { Percent, Download } from 'lucide-react';
 import { PageContainer, PageHeader } from '../../components/layout';
 import { Button, Card, Select, Table, EmptyState, Spinner, ErrorState } from '../../components/ui';
 import { useVatReport } from './hooks';
+import { getLastNMonths } from './api';
 import { ViewModeToggle } from './components/ViewModeToggle';
 import { formatCurrency } from '../../lib/utils';
+import { getErrorMessage } from '../../lib/errorHandler';
 import { toCSV, downloadCSV } from '../../lib/csvExport';
-
-function getLast12Months() {
-  const months = [];
-  const d = new Date();
-  for (let i = 0; i < 12; i++) {
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, '0');
-    months.push({ value: `${y}-${m}`, label: `${y}-${m}` });
-    d.setMonth(d.getMonth() - 1);
-  }
-  return months;
-}
 
 function getLast4Quarters() {
   const quarters = [];
@@ -55,7 +45,7 @@ export function VatReportPage() {
   const period = searchParams.get('period') || (periodType === 'month' ? defaultMonth : defaultQuarter);
   const viewMode = searchParams.get('viewMode') || 'total';
 
-  const monthOptions = useMemo(() => getLast12Months(), []);
+  const monthOptions = useMemo(() => getLastNMonths(12).map((v) => ({ value: v, label: v })), []);
   const quarterOptions = useMemo(() => getLast4Quarters(), []);
 
   const periodOptions = periodType === 'month' ? monthOptions : quarterOptions;
@@ -89,14 +79,20 @@ export function VatReportPage() {
 
   const totals = useMemo(() => {
     if (rows.length <= 1) return null;
-    return rows.reduce(
+    const sums = rows.reduce(
       (acc, r) => ({
         output_vat: acc.output_vat + (r.output_vat || 0),
         input_vat: acc.input_vat + (r.input_vat || 0),
-        net_vat: acc.net_vat + (r.net_vat || 0),
       }),
-      { output_vat: 0, input_vat: 0, net_vat: 0 }
+      { output_vat: 0, input_vat: 0 }
     );
+    // Compute net_vat from summed components to avoid floating-point
+    // artifacts that accumulate when summing pre-rounded per-row values.
+    return {
+      output_vat: sums.output_vat,
+      input_vat: sums.input_vat,
+      net_vat: sums.output_vat - sums.input_vat,
+    };
   }, [rows]);
 
   const periodTypeOptions = [
@@ -181,7 +177,7 @@ export function VatReportPage() {
     return (
       <PageContainer maxWidth="xl" padding="default">
         <PageHeader title={t('finance:vatReport.title')} breadcrumbs={breadcrumbs} />
-        <ErrorState message={error.message} onRetry={refetch} />
+        <ErrorState message={getErrorMessage(error)} onRetry={refetch} />
       </PageContainer>
     );
   }
@@ -228,7 +224,7 @@ export function VatReportPage() {
         <EmptyState
           icon={Percent}
           title={t('finance:vatReport.empty')}
-          description={t('finance:vatReport.empty')}
+          description={t('finance:vatReport.emptyDescription')}
         />
       ) : (
         <div className="bg-white dark:bg-[#171717] rounded-2xl border border-neutral-200 dark:border-[#262626] overflow-hidden shadow-sm">

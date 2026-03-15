@@ -51,7 +51,6 @@
       "amountTry": "Tutar (TRY)",
       "incomeType": "Gelir Tipi",
       "customer": "Müşteri",
-      "site": "Lokasyon",
       "proposal": "Teklif",
       "workOrder": "İş Emri",
       "paymentMethod": "Ödeme Yöntemi",
@@ -196,14 +195,11 @@
     "month": "Ay",
     "quarter": "Çeyrek",
     "total": "Toplam",
-    "empty": "Seçilen dönemde KDV verisi yok"
+    "empty": "Seçilen dönemde KDV verisi yok",
+    "emptyDescription": "Farklı bir dönem seçerek tekrar deneyin."
   },
   "exchangeRates": {
     "title": "Döviz Kurları",
-    "usdLabel": "Amerikan Doları",
-    "eurLabel": "Euro",
-    "effectiveBuy": "Efektif Alış",
-    "effectiveSell": "Efektif Satış",
     "addRate": "Kur Ekle",
     "currency": "Para Birimi",
     "date": "Tarih",
@@ -212,6 +208,7 @@
     "effectiveRate": "Geçerli Kur",
     "source": "Kaynak",
     "empty": "Henüz kur kaydı yok",
+    "emptyDescription": "TCMB'den kur çekerek veya manuel olarak ekleyerek başlayın.",
     "duplicateDate": "Bu tarih için kur zaten mevcut.",
     "fetchTcmb": "TCMB'den Getir",
     "fetchSuccess": "{{count}} kur başarıyla güncellendi ({{date}})",

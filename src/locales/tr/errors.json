@@ -6,7 +6,8 @@
     "email": "Geçerli bir e-posta girin",
     "accountNoRequired": "Bu iş tipi için hesap numarası gereklidir",
     "invalidNumber": "Geçerli bir sayı girin",
-    "invalidForTransactionType": "Bu alan bu işlem tipi için geçersizdir"
+    "invalidForTransactionType": "Bu alan bu işlem tipi için geçersizdir",
+    "invalidDate": "Geçerli bir tarih girin (YYYY-AA-GG)"
   },
   "workOrder": {
     "notFound": "İş emri bulunamadı."

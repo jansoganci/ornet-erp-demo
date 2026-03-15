@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import i18n from '../../lib/i18n';
+import { isoDateString, currencyEnum } from '../../lib/zodHelpers';
 
 const isoDateSchema = z.string().regex(
   /^\d{4}-\d{2}-\d{2}$/,
@@ -21,17 +22,16 @@ export const transactionSchema = z
     direction: z.enum(DIRECTIONS),
     income_type: z.enum(INCOME_TYPES).optional().or(z.literal('')),
     expense_category_id: optionalUuid(),
-    amount_original: z.preprocess(toNumber, z.number({ invalid_type_error: i18n.t('errors:validation.invalidNumber') }).min(0)),
+    amount_original: z.preprocess(toNumber, z.number({ invalid_type_error: i18n.t('errors:validation.invalidNumber') }).positive()),
     original_currency: z.enum(CURRENCIES).default('TRY'),
-    amount_try: z.preprocess(toNumber, z.number({ invalid_type_error: i18n.t('errors:validation.invalidNumber') }).min(0)),
-    exchange_rate: z.preprocess(toNumber, z.number().positive().optional()),
+    amount_try: z.preprocess(toNumber, z.number({ invalid_type_error: i18n.t('errors:validation.invalidNumber') }).positive()),
+    exchange_rate: z.preprocess(toNumber, z.number().positive().max(10000).optional()),
     should_invoice: z.boolean().optional(),
     has_invoice: z.boolean().optional(),
     output_vat: z.preprocess(toNumber, z.number().optional()),
     input_vat: z.preprocess(toNumber, z.number().optional()),
     vat_rate: z.preprocess(toNumber, z.number().min(0).max(100).default(20)),
     cogs_try: z.preprocess(toNumber, z.number().min(0).optional()),
-    transaction_date: isoDateSchema,
     customer_id: optionalUuid(),
     site_id: optionalUuid(),
     description: z.string().optional().or(z.literal('')),
@@ -102,11 +102,6 @@ export const categoryDefaultValues = {
 };
 
 export const rateSchema = z.object({
-  currency: z.enum(['TRY', 'USD']).default('USD'),
-  buy_rate: z.preprocess(toNumber, z.number().positive().optional()),
-  sell_rate: z.preprocess(toNumber, z.number().positive().optional()),
-  effective_rate: z.preprocess(toNumber, z.number({ invalid_type_error: i18n.t('errors:validation.invalidNumber') }).positive()),
-  rate_date: isoDateSchema,
   source: z.string().default('TCMB'),
 });
 
@@ -122,8 +117,6 @@ export const rateDefaultValues = {
 // Expense quick-entry form (subset of transaction)
 export const expenseSchema = z.object({
   expense_category_id: z.string().min(1, i18n.t('errors:validation.required')).uuid(),
-  amount_try: z.preprocess(toNumber, z.number({ invalid_type_error: i18n.t('errors:validation.invalidNumber') }).min(0)),
-  transaction_date: isoDateSchema,
   payment_method: z.enum(PAYMENT_METHODS),
   has_invoice: z.boolean().default(true),
   description: z.string().optional().or(z.literal('')),
@@ -143,11 +136,8 @@ export const expenseDefaultValues = {
 // Income quick-entry form (subset of transaction)
 export const incomeSchema = z
   .object({
-    amount_original: z.preprocess(toNumber, z.number({ invalid_type_error: i18n.t('errors:validation.invalidNumber') }).min(0)),
+    amount_original: z.preprocess(toNumber, z.number({ invalid_type_error: i18n.t('errors:validation.invalidNumber') }).positive()),
     original_currency: z.enum(CURRENCIES).default('TRY'),
-    amount_try: z.preprocess(toNumber, z.number({ invalid_type_error: i18n.t('errors:validation.invalidNumber') }).min(0)),
-    exchange_rate: z.preprocess(toNumber, z.number().positive().optional()),
-    transaction_date: isoDateSchema,
     income_type: z.enum(INCOME_TYPES),
     customer_id: optionalUuid(),
     site_id: optionalUuid(),

@@ -53,22 +53,9 @@ export async function updateRecurringTemplate(id, data) {
 
 // Fetch last generated transaction date per template (for "last generated" indicator)
 export async function fetchTemplateLastGenerated() {
-  const { data, error } = await supabase
-    .from('financial_transactions')
-    .select('recurring_template_id, transaction_date')
-    .not('recurring_template_id', 'is', null)
-    .order('transaction_date', { ascending: false });
-
+  const { data, error } = await supabase.rpc('fn_last_generated_per_template');
   if (error) throw error;
-
-  // Build a map: templateId -> latest transaction_date
-  const map = {};
-  for (const row of data) {
-    if (!map[row.recurring_template_id]) {
-      map[row.recurring_template_id] = row.transaction_date;
-    }
-  }
-  return map;
+  return Object.fromEntries(data.map((r) => [r.recurring_template_id, r.last_date]));
 }
 
 export async function deleteRecurringTemplate(id) {

@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { getErrorMessage } from '../../lib/errorHandler';
 import * as recurringApi from './recurringApi';
 import { recurringKeys } from './recurringApi';
-import { transactionKeys, profitAndLossKeys } from './api';
+import { transactionKeys, profitAndLossKeys, financeDashboardKeys, vatReportKeys } from './api';
 
 // Templates
 export function useTemplateLastGenerated() {
@@ -45,22 +45,21 @@ export function useUpdateRecurringTemplate() {
     mutationFn: ({ id, data }) => recurringApi.updateRecurringTemplate(id, data),
     onMutate: async ({ id, data }) => {
       await queryClient.cancelQueries({ queryKey: recurringKeys.lists() });
-      const previous = queryClient.getQueryData(recurringKeys.list(undefined));
-      if (previous) {
-        queryClient.setQueryData(recurringKeys.list(undefined), (old) =>
-          old?.map((tpl) => (tpl.id === id ? { ...tpl, ...data } : tpl))
-        );
-      }
-      return { previous };
+      // Snapshot all active list variants (with or without filters) for rollback.
+      const previousData = queryClient.getQueriesData({ queryKey: recurringKeys.lists() });
+      queryClient.setQueriesData({ queryKey: recurringKeys.lists() }, (old) =>
+        Array.isArray(old) ? old.map((tpl) => (tpl.id === id ? { ...tpl, ...data } : tpl)) : old
+      );
+      return { previousData };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: recurringKeys.all });
       toast.success(t('success.updated'));
     },
     onError: (error, _variables, context) => {
-      if (context?.previous) {
-        queryClient.setQueryData(recurringKeys.list(undefined), context.previous);
-      }
+      context?.previousData?.forEach(([queryKey, data]) => {
+        queryClient.setQueryData(queryKey, data);
+      });
       toast.error(getErrorMessage(error, 'common.updateFailed'));
     },
   });
@@ -89,9 +88,14 @@ export function useTriggerRecurringGeneration() {
   return useMutation({
     mutationFn: recurringApi.triggerRecurringGeneration,
     onSuccess: (count) => {
+      // recurring templates (last-generated dates change)
       queryClient.invalidateQueries({ queryKey: recurringKeys.all });
+      // transaction lists (new rows were inserted)
       queryClient.invalidateQueries({ queryKey: transactionKeys.all });
+      // computed reports — all three must stay in sync after generation
       queryClient.invalidateQueries({ queryKey: profitAndLossKeys.all });
+      queryClient.invalidateQueries({ queryKey: financeDashboardKeys.all });
+      queryClient.invalidateQueries({ queryKey: vatReportKeys.all });
       if (typeof count === 'number') {
         toast.success(t('generate.success', { count }));
       } else {

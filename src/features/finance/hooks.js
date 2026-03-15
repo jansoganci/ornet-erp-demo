@@ -35,9 +35,12 @@ export function useCreateTransaction() {
   return useMutation({
     mutationFn: api.createTransaction,
     onSuccess: () => {
+      // transaction lists
       queryClient.invalidateQueries({ queryKey: transactionKeys.lists() });
+      // computed reports — all three must stay in sync after any transaction change
       queryClient.invalidateQueries({ queryKey: profitAndLossKeys.all });
       queryClient.invalidateQueries({ queryKey: financeDashboardKeys.all });
+      queryClient.invalidateQueries({ queryKey: vatReportKeys.all });
       toast.success(t('success.created'));
     },
     onError: (error) => {
@@ -53,10 +56,13 @@ export function useUpdateTransaction() {
   return useMutation({
     mutationFn: ({ id, data }) => api.updateTransaction(id, data),
     onSuccess: (data) => {
+      // transaction detail + lists
       queryClient.invalidateQueries({ queryKey: transactionKeys.detail(data.id) });
       queryClient.invalidateQueries({ queryKey: transactionKeys.lists() });
+      // computed reports — all three must stay in sync after any transaction change
       queryClient.invalidateQueries({ queryKey: profitAndLossKeys.all });
       queryClient.invalidateQueries({ queryKey: financeDashboardKeys.all });
+      queryClient.invalidateQueries({ queryKey: vatReportKeys.all });
       toast.success(t('success.updated'));
     },
     onError: (error) => {
@@ -72,9 +78,12 @@ export function useDeleteTransaction() {
   return useMutation({
     mutationFn: api.deleteTransaction,
     onSuccess: () => {
+      // transaction lists + detail (all, covers both)
       queryClient.invalidateQueries({ queryKey: transactionKeys.all });
+      // computed reports — all three must stay in sync after any transaction change
       queryClient.invalidateQueries({ queryKey: profitAndLossKeys.all });
       queryClient.invalidateQueries({ queryKey: financeDashboardKeys.all });
+      queryClient.invalidateQueries({ queryKey: vatReportKeys.all });
       toast.success(t('success.deleted'));
     },
     onError: (error) => {

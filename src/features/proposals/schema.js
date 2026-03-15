@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import i18n from '../../lib/i18n';
+import { isoDateStringOptional, currencyEnum } from '../../lib/zodHelpers';
 
 const isoDateSchema = z.string().regex(
   /^\d{4}-\d{2}-\d{2}$/,
@@ -35,16 +36,6 @@ export const proposalSchema = z.object({
   title: z.string().min(1, i18n.t('errors:validation.required')),
   scope_of_work: optionalStr(),
   notes: optionalStr(),
-  currency: z.enum(['TRY', 'USD']).default('USD'),
-  items: z.array(proposalItemSchema).min(1, i18n.t('errors:validation.required')),
-  // Header fields
-  company_name: optionalStr(),
-  proposal_date: isoDateSchema.optional().or(z.literal('')),
-  survey_date: isoDateSchema.optional().or(z.literal('')),
-  authorized_person: optionalStr(),
-  installation_date: isoDateSchema.optional().or(z.literal('')),
-  customer_representative: optionalStr(),
-  completion_date: isoDateSchema.optional().or(z.literal('')),
   discount_percent: z.coerce.number().min(0).max(100).optional().nullable(),
   terms_engineering: optionalStr(),
   terms_pricing: optionalStr(),

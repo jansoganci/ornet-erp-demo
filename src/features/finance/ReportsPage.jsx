@@ -5,22 +5,12 @@ import { FileText, Download } from 'lucide-react';
 import { PageContainer, PageHeader } from '../../components/layout';
 import { Button, Card, Select, ErrorState, EmptyState, TableSkeleton } from '../../components/ui';
 import { useProfitAndLoss } from './hooks';
+import { getLastNMonths } from './api';
 import { ViewModeToggle } from './components/ViewModeToggle';
 import { formatCurrency, formatDate } from '../../lib/utils';
+import { getErrorMessage } from '../../lib/errorHandler';
 import { toCSV, downloadCSV } from '../../lib/csvExport';
 import { getSourceLabel } from './exportUtils';
-
-function getLast6Months() {
-  const months = [];
-  const d = new Date();
-  for (let i = 0; i < 6; i++) {
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, '0');
-    months.push({ value: `${y}-${m}`, label: `${y}-${m}` });
-    d.setMonth(d.getMonth() - 1);
-  }
-  return months;
-}
 
 function aggregatePL(plData) {
   let revenue = 0;
@@ -58,7 +48,7 @@ export function ReportsPage() {
   const period = searchParams.get('period') || defaultPeriod;
   const viewMode = searchParams.get('viewMode') || 'total';
 
-  const monthOptions = useMemo(() => getLast6Months(), []);
+  const monthOptions = useMemo(() => getLastNMonths(6).map((v) => ({ value: v, label: v })), []);
 
   const handleFilterChange = (key, value) => {
     setSearchParams((prev) => {
@@ -124,7 +114,7 @@ export function ReportsPage() {
     return (
       <PageContainer maxWidth="xl" padding="default">
         <PageHeader title={t('finance:reports.title')} breadcrumbs={breadcrumbs} />
-        <ErrorState message={error.message} onRetry={refetch} />
+        <ErrorState message={getErrorMessage(error)} onRetry={refetch} />
       </PageContainer>
     );
   }
