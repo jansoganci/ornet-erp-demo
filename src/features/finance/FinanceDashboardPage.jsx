@@ -27,27 +27,17 @@ import {
 } from 'recharts';
 import { PageContainer, PageHeader } from '../../components/layout';
 import { Card, Select, Spinner, ErrorState, Button } from '../../components/ui';
+import { useTheme } from '../../hooks/themeContext';
 import {
   useFinanceDashboardKpis,
   useRevenueExpensesByMonth,
   useExpenseByCategory,
   useRecentTransactions,
 } from './hooks';
+import { getLastNMonths } from './api';
 import { KpiCard } from './components/KpiCard';
 import { ViewModeToggle } from './components/ViewModeToggle';
 import { formatDate, formatCurrency } from '../../lib/utils';
-
-function getLast6Months() {
-  const months = [];
-  const d = new Date();
-  for (let i = 0; i < 6; i++) {
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, '0');
-    months.push({ value: `${y}-${m}`, label: `${y}-${m}` });
-    d.setMonth(d.getMonth() - 1);
-  }
-  return months;
-}
 
 // Design system colors (success, info, warning, error, primary, info-600)
 const CHART_COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#dc2626', '#2563eb'];
@@ -80,7 +70,11 @@ export function FinanceDashboardPage() {
     });
   };
 
-  const monthOptions = useMemo(() => getLast6Months(), []);
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+  const tooltipStyle = isDark ? { backgroundColor: '#171717', border: '1px solid #262626', color: '#f5f5f5' } : undefined;
+
+  const monthOptions = useMemo(() => getLastNMonths(6).map((v) => ({ value: v, label: v })), []);
 
   const { data: kpis, isLoading: kpisLoading, error: kpisError, refetch } = useFinanceDashboardKpis({ period, viewMode });
   const { data: revenueExpenses = [], isLoading: chartLoading } = useRevenueExpensesByMonth({ months: 6, viewMode });
@@ -243,7 +237,7 @@ export function FinanceDashboardPage() {
                   <CartesianGrid strokeDasharray="3 3" className="stroke-neutral-200 dark:stroke-[#262626]" />
                   <XAxis dataKey="period" tick={{ fontSize: 11 }} />
                   <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => (v >= 1000 ? `${v / 1000}k` : v)} />
-                  <Tooltip formatter={(v) => formatCurrency(v)} />
+                  <Tooltip formatter={(v) => formatCurrency(v)} contentStyle={tooltipStyle} />
                   <Bar dataKey="revenue" name={t('finance:list.titleIncome')} fill="#10b981" radius={[4, 4, 0, 0]} />
                   <Bar dataKey="expenses" name={t('finance:list.title')} fill="#ef4444" radius={[4, 4, 0, 0]} />
                 </BarChart>
@@ -281,7 +275,7 @@ export function FinanceDashboardPage() {
                       <Cell key={i} fill={entry.fill} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(v) => formatCurrency(v)} />
+                  <Tooltip formatter={(v) => formatCurrency(v)} contentStyle={tooltipStyle} />
                   <Legend />
                 </PieChart>
               </ResponsiveContainer>
@@ -306,7 +300,7 @@ export function FinanceDashboardPage() {
           </Button>
         </div>
         {recentTransactions.length === 0 ? (
-          <div className="py-8 text-center text-neutral-500 text-sm">
+          <div className="py-8 text-center text-neutral-500 dark:text-neutral-400 text-sm">
             {t('common:empty.noData')}
           </div>
         ) : (

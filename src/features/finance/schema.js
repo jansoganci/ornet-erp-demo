@@ -17,9 +17,9 @@ export const transactionSchema = z
     direction: z.enum(DIRECTIONS),
     income_type: z.enum(INCOME_TYPES).optional().or(z.literal('')),
     expense_category_id: optionalUuid(),
-    amount_original: z.preprocess(toNumber, z.number({ invalid_type_error: i18n.t('errors:validation.invalidNumber') }).min(0)),
+    amount_original: z.preprocess(toNumber, z.number({ invalid_type_error: i18n.t('errors:validation.invalidNumber') }).positive()),
     original_currency: z.enum(CURRENCIES).default('TRY'),
-    amount_try: z.preprocess(toNumber, z.number({ invalid_type_error: i18n.t('errors:validation.invalidNumber') }).min(0)),
+    amount_try: z.preprocess(toNumber, z.number({ invalid_type_error: i18n.t('errors:validation.invalidNumber') }).positive()),
     exchange_rate: z.preprocess(toNumber, z.number().positive().max(10000).optional()),
     should_invoice: z.boolean().optional(),
     has_invoice: z.boolean().optional(),
@@ -118,7 +118,7 @@ export const rateDefaultValues = {
 // Expense quick-entry form (subset of transaction)
 export const expenseSchema = z.object({
   expense_category_id: z.string().min(1, i18n.t('errors:validation.required')).uuid(),
-  amount_try: z.preprocess(toNumber, z.number({ invalid_type_error: i18n.t('errors:validation.invalidNumber') }).min(0)),
+  amount_try: z.preprocess(toNumber, z.number({ invalid_type_error: i18n.t('errors:validation.invalidNumber') }).positive()),
   transaction_date: isoDateString(),
   payment_method: z.enum(PAYMENT_METHODS),
   has_invoice: z.boolean().default(true),
@@ -139,9 +139,9 @@ export const expenseDefaultValues = {
 // Income quick-entry form (subset of transaction)
 export const incomeSchema = z
   .object({
-    amount_original: z.preprocess(toNumber, z.number({ invalid_type_error: i18n.t('errors:validation.invalidNumber') }).min(0)),
+    amount_original: z.preprocess(toNumber, z.number({ invalid_type_error: i18n.t('errors:validation.invalidNumber') }).positive()),
     original_currency: z.enum(CURRENCIES).default('TRY'),
-    amount_try: z.preprocess(toNumber, z.number({ invalid_type_error: i18n.t('errors:validation.invalidNumber') }).min(0)),
+    amount_try: z.preprocess(toNumber, z.number({ invalid_type_error: i18n.t('errors:validation.invalidNumber') }).positive()),
     exchange_rate: z.preprocess(toNumber, z.number().positive().max(10000).optional()),
     transaction_date: isoDateString(),
     income_type: z.enum(INCOME_TYPES),

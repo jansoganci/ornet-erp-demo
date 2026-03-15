@@ -41,7 +41,7 @@ export const financeDashboardKeys = {
   recentTransactions: (limit) => [...financeDashboardKeys.all, 'recentTransactions', limit],
 };
 
-function getLastNMonths(n) {
+export function getLastNMonths(n) {
   const periods = [];
   const d = new Date();
   for (let i = 0; i < n; i++) {

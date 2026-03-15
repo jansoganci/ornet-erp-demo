@@ -9,7 +9,7 @@ export const templateSchema = z.object({
   name: z.string().min(1, i18n.t('errors:validation.required')),
   expense_category_id: z.string().min(1, i18n.t('errors:validation.required')).uuid(),
   is_variable: z.boolean().default(false),
-  amount: z.preprocess(toNumber, z.number({ invalid_type_error: i18n.t('errors:validation.invalidNumber') }).min(0)),
+  amount: z.preprocess(toNumber, z.number({ invalid_type_error: i18n.t('errors:validation.invalidNumber') }).positive()),
   day_of_month: z.preprocess(toNumber, z.number({ invalid_type_error: i18n.t('errors:validation.invalidNumber') }).int().min(1).max(31)),
   is_active: z.boolean().default(true),
   payment_method: z.enum(PAYMENT_METHODS),

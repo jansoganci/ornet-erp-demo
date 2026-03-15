@@ -9,13 +9,13 @@ import {
   Card,
   Select,
   EmptyState,
-  Spinner,
   ErrorState,
   IconButton,
   Modal,
   TableSkeleton,
 } from '../../components/ui';
 import { useTransactions, useDeleteTransaction } from './hooks';
+import { getLastNMonths } from './api';
 import { useCustomers } from '../customers/hooks';
 import { QuickEntryModal } from './components/QuickEntryModal';
 import { ViewModeToggle } from './components/ViewModeToggle';
@@ -23,18 +23,6 @@ import { KpiCard } from './components/KpiCard';
 import { formatDate, formatCurrency } from '../../lib/utils';
 import { getErrorMessage } from '../../lib/errorHandler';
 import { PAYMENT_METHODS, INCOME_TYPES } from './schema';
-
-function getLast12Months() {
-  const months = [];
-  const d = new Date();
-  for (let i = 0; i < 12; i++) {
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, '0');
-    months.push({ value: `${y}-${m}`, label: `${y}-${m}` });
-    d.setMonth(d.getMonth() - 1);
-  }
-  return months;
-}
 
 export function IncomePage() {
   const { t } = useTranslation(['finance', 'common']);
@@ -123,7 +111,7 @@ export function IncomePage() {
     })),
   ];
 
-  const monthOptions = useMemo(() => getLast12Months(), []);
+  const monthOptions = useMemo(() => getLastNMonths(12).map((v) => ({ value: v, label: v })), []);
 
   const handleAdd = () => {
     setEditingTransaction(null);

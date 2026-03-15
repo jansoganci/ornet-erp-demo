@@ -9,7 +9,6 @@ import {
   Card,
   Select,
   EmptyState,
-  Spinner,
   ErrorState,
   IconButton,
   Modal,
@@ -17,6 +16,7 @@ import {
   TableSkeleton,
 } from '../../components/ui';
 import { useTransactions, useDeleteTransaction, useCategories } from './hooks';
+import { getLastNMonths } from './api';
 import { useCustomers } from '../customers/hooks';
 import { QuickEntryModal } from './components/QuickEntryModal';
 import { CategoryManagementModal } from './components/CategoryManagementModal';
@@ -27,18 +27,6 @@ import { KpiCard } from './components/KpiCard';
 import { formatDate, formatCurrency } from '../../lib/utils';
 import { getErrorMessage } from '../../lib/errorHandler';
 import { PAYMENT_METHODS } from './schema';
-
-function getLast12Months() {
-  const months = [];
-  const d = new Date();
-  for (let i = 0; i < 12; i++) {
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, '0');
-    months.push({ value: `${y}-${m}`, label: `${y}-${m}` });
-    d.setMonth(d.getMonth() - 1);
-  }
-  return months;
-}
 
 export function ExpensesPage() {
   const { t } = useTranslation(['finance', 'common']);
@@ -150,7 +138,7 @@ export function ExpensesPage() {
     { value: 'recurring_only', label: t('finance:filters.recurringOnly') },
   ];
 
-  const monthOptions = useMemo(() => getLast12Months(), []);
+  const monthOptions = useMemo(() => getLastNMonths(12).map((v) => ({ value: v, label: v })), []);
 
   const handleGoToRecurringTemplate = (templateId) => {
     navigate('/finance/recurring', { state: { highlightTemplateId: templateId } });

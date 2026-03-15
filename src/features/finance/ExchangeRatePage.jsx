@@ -235,7 +235,7 @@ export function ExchangeRatePage() {
         <EmptyState
           icon={DollarSign}
           title={t('finance:exchangeRates.empty')}
-          description={t('finance:exchangeRates.empty')}
+          description={t('finance:exchangeRates.emptyDescription')}
         />
       ) : (
         <div className="bg-white dark:bg-[#171717] rounded-2xl border border-neutral-200 dark:border-[#262626] overflow-hidden shadow-sm">
