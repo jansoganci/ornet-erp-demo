@@ -88,7 +88,7 @@ export function ProfilePage() {
 
   if (profileError) {
     return (
-      <PageContainer maxWidth="xl" padding="default" className="space-y-6">
+      <PageContainer maxWidth="lg" padding="default" className="space-y-6">
         <PageHeader title={t('profile:title')} breadcrumbs={breadcrumbs} />
         <ErrorState message={profileError.message} onRetry={refetchProfile} />
       </PageContainer>
@@ -96,7 +96,7 @@ export function ProfilePage() {
   }
 
   return (
-    <PageContainer maxWidth="xl" padding="default" className="space-y-6">
+    <PageContainer maxWidth="lg" padding="default" className="space-y-6">
       <PageHeader title={t('profile:title')} breadcrumbs={breadcrumbs} />
 
       <div className="mt-6 space-y-6">

@@ -24,6 +24,7 @@ import {
   revertWriteOff,
   fetchOverdueInvoices,
   fetchSubscriptionStats,
+  ensurePaymentsForYear,
 } from './paymentsApi';
 import {
   profitAndLossKeys,
@@ -284,6 +285,23 @@ export function useRevertWriteOff() {
   });
 }
 
+export function useEnsurePaymentsForYear() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ subscriptionId, year }) =>
+      ensurePaymentsForYear(subscriptionId, year),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: subscriptionKeys.payments(variables.subscriptionId),
+      });
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'common.updateFailed'));
+    },
+  });
+}
+
 export function useOverdueInvoices() {
   return useQuery({
     queryKey: subscriptionKeys.overdueInvoices(),
@@ -304,9 +322,15 @@ export function useImportSubscriptions() {
 
   return useMutation({
     mutationFn: importSubscriptionsFromRows,
-    onSuccess: () => {
+    onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: subscriptionKeys.all });
-      toast.success(t('import.success'));
+      if (result.failed === 0) {
+        toast.success(t('import.success', { created: result.created }));
+      } else if (result.created > 0) {
+        toast.warning(t('import.partialSuccess', { created: result.created, failed: result.failed }));
+      } else {
+        toast.error(t('import.failed'));
+      }
     },
     onError: (error) => {
       toast.error(getErrorMessage(error, 'subscriptions.importFailed'));

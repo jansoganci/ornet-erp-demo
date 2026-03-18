@@ -437,7 +437,7 @@ input:-webkit-autofill:focus {
 
 /* ============================================
    DASHBOARD ANIMATIONS
-   Used by KPIStatCard, SparklineStatCard,
+   Used by KpiCard,
    TodayScheduleFeed, TodayTaskChecklist,
    OverduePaymentsList
    ============================================ */

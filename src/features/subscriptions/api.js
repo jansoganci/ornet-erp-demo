@@ -55,10 +55,6 @@ export async function fetchSubscriptions(filters = {}) {
     query = query.eq('status', filters.status);
   }
 
-  if (filters.type && filters.type !== 'all') {
-    query = query.eq('subscription_type', filters.type);
-  }
-
   if (filters.managedBy) {
     query = query.eq('managed_by', filters.managedBy);
   }
@@ -113,10 +109,6 @@ export async function fetchSubscriptionsPaginated(filters = {}, page = 0, pageSi
 
   if (filters.status && filters.status !== 'all') {
     query = query.eq('status', filters.status);
-  }
-
-  if (filters.type && filters.type !== 'all') {
-    query = query.eq('subscription_type', filters.type);
   }
 
   if (filters.managedBy) {
@@ -214,7 +206,6 @@ export async function createSubscription(subscriptionData) {
 
   // Card + inline: create payment_method and set payment_method_id if not provided
   if (
-    payload.subscription_type === 'recurring_card' &&
     payload.card_bank_name &&
     payload.card_last4 &&
     (!payload.payment_method_id || payload.payment_method_id === null)
@@ -272,7 +263,6 @@ export async function updateSubscription({ id, ...updateData }) {
   if (fetchErr) throw fetchErr;
 
   let payload = cleanSubscriptionPayload(updateData);
-  const subscription_type = payload.subscription_type ?? current.subscription_type;
 
   // Automatically set timestamps when status changes
   if (payload.status && payload.status !== current.status) {
@@ -288,7 +278,6 @@ export async function updateSubscription({ id, ...updateData }) {
 
   // Card + inline: create payment_method and set payment_method_id if not provided
   if (
-    subscription_type === 'recurring_card' &&
     payload.card_bank_name &&
     payload.card_last4 &&
     (!payload.payment_method_id || payload.payment_method_id === null)

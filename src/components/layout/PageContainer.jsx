@@ -7,7 +7,7 @@ import { cn } from '../../lib/utils';
  * Responsive padding: 16px mobile, 32px desktop.
  * 
  * @param {Object} props
- * @param {'sm' | 'md' | 'lg' | 'xl' | 'full'} [props.maxWidth='xl'] - Max width constraint
+ * @param {'sm' | 'md' | 'lg' | 'xl' | '4xl' | 'full'} [props.maxWidth='xl'] - Max width constraint
  * @param {boolean | 'none' | 'compact' | 'default' | 'large'} [props.padding='default'] - Padding option
  * @param {'white' | 'transparent' | 'muted'} [props.background='white'] - Background color
  * @param {string} [props.className] - Additional CSS classes
@@ -26,6 +26,7 @@ export function PageContainer({
     md: 'max-w-screen-md',   // 800px
     lg: 'max-w-screen-lg',   // 1024px
     xl: 'max-w-screen-xl',   // 1280px
+    '4xl': 'max-w-screen-2xl', // 1536px - wide but readable for forms
     full: 'max-w-full',      // 100%
   };
 

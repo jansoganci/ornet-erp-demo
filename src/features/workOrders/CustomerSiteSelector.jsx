@@ -1,23 +1,21 @@
 import { useState, useMemo } from 'react';
-import { useDebouncedValue } from '../../hooks/useDebouncedValue';
 import { useTranslation } from 'react-i18next';
-import { Plus, User, MapPin, Phone, Info, ChevronRight, Search } from 'lucide-react';
-import { useCustomers } from '../customers/hooks';
+import { Plus, User, MapPin, Phone, Info } from 'lucide-react';
+import { useCustomer } from '../customers/hooks';
 import { useSitesByCustomer } from '../customerSites/hooks';
-import { 
-  SearchInput, 
-  Button, 
-  Select, 
-  Card, 
-  Badge, 
-  Spinner, 
-  EmptyState 
+import {
+  Button,
+  Select,
+  Card,
+  Spinner,
+  EmptyState,
+  CustomerCombobox,
 } from '../../components/ui';
 
-export function CustomerSiteSelector({ 
-  selectedCustomerId, 
-  selectedSiteId, 
-  onCustomerChange, 
+export function CustomerSiteSelector({
+  selectedCustomerId,
+  selectedSiteId,
+  onCustomerChange,
   onSiteChange,
   onAddNewSite,
   onAddNewCustomer,
@@ -25,29 +23,15 @@ export function CustomerSiteSelector({
   siteOptional = false,
 }) {
   const { t } = useTranslation(['workOrders', 'customers', 'common', 'proposals']);
-  const [searchTerm, setSearchTerm] = useState('');
   const [isSearching, setIsSearching] = useState(false);
-  const debouncedSearch = useDebouncedValue(searchTerm, 300);
 
-  const { data: customers = [], isLoading: isLoadingCustomers } = useCustomers({ search: debouncedSearch });
-  
-  const selectedCustomer = useMemo(() => 
-    customers.find(c => c.id === selectedCustomerId), 
-    [customers, selectedCustomerId]
-  );
-
+  const { data: selectedCustomer } = useCustomer(selectedCustomerId);
   const { data: sites = [], isLoading: isLoadingSites } = useSitesByCustomer(selectedCustomerId);
 
-  const selectedSite = useMemo(() => 
-    sites.find(s => s.id === selectedSiteId), 
+  const selectedSite = useMemo(
+    () => sites.find((s) => s.id === selectedSiteId),
     [sites, selectedSiteId]
   );
-
-  const handleCustomerSelect = (customer) => {
-    onCustomerChange(customer.id);
-    setIsSearching(false);
-    setSearchTerm('');
-  };
 
   const handleSiteSelect = (e) => {
     const newSiteId = e.target.value;
@@ -64,76 +48,20 @@ export function CustomerSiteSelector({
 
       {!selectedCustomerId || isSearching ? (
         <div className="space-y-2">
-          <div className="relative">
-            <SearchInput
-              value={searchTerm}
-              onChange={(val) => {
-                setSearchTerm(val);
-                setIsSearching(true);
-              }}
-              placeholder={t('workOrders:form.placeholders.searchCustomer')}
-              className="w-full"
-              autoFocus={isSearching}
-            />
-            
-            {isSearching && (
-              <div className="absolute z-10 w-full mt-1 bg-white dark:bg-[#171717] border border-neutral-200 dark:border-[#262626] rounded-lg shadow-xl max-h-64 overflow-y-auto">
-                {isLoadingCustomers ? (
-                  <div className="p-4 flex justify-center">
-                    <Spinner size="sm" />
-                  </div>
-                ) : customers.length > 0 ? (
-                  <div className="py-1">
-                    {customers.map((customer) => (
-                      <button
-                        type="button"
-                        key={customer.id}
-                        onClick={() => handleCustomerSelect(customer)}
-                        className="w-full px-4 py-3 text-left hover:bg-neutral-50 dark:hover:bg-[#262626] flex items-center justify-between group transition-colors"
-                      >
-                        <div>
-                          <p className="font-medium text-neutral-900 dark:text-neutral-100">
-                            {customer.company_name}
-                          </p>
-                          <p className="text-xs text-neutral-500 dark:text-neutral-400 flex items-center mt-0.5">
-                            <Phone className="w-3 h-3 mr-1" />
-                            {customer.phone}
-                          </p>
-                        </div>
-                        <div className="flex items-center">
-                          <Badge variant="secondary" className="mr-2">
-                            {t('customers:sites.siteCount', { count: customer.sites_count || 0 })}
-                          </Badge>
-                          <ChevronRight className="w-4 h-4 text-neutral-300 group-hover:text-primary-600 transition-colors" />
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                ) : searchTerm.length > 0 ? (
-                  <div className="p-4 text-center">
-                    <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-3">
-                      {t('common:noResults')}
-                    </p>
-                    <Button 
-                      type="button"
-                      size="sm" 
-                      variant="outline" 
-                      leftIcon={<Plus className="w-4 h-4" />}
-                      onClick={() => onAddNewCustomer(searchTerm)}
-                    >
-                      {t('workOrders:form.buttons.addCustomer')}
-                    </Button>
-                  </div>
-                ) : null}
-              </div>
-            )}
-          </div>
-          
+          <CustomerCombobox
+            value={selectedCustomerId || ''}
+            selectedCustomer={selectedCustomer}
+            onChange={(id) => {
+              onCustomerChange(id || null);
+              setIsSearching(false);
+            }}
+            placeholder={t('workOrders:form.placeholders.searchCustomer')}
+          />
           {!isSearching && !selectedCustomerId && (
-            <Button 
+            <Button
               type="button"
-              variant="outline" 
-              className="w-full border-dashed" 
+              variant="outline"
+              className="w-full border-dashed"
               leftIcon={<Plus className="w-4 h-4" />}
               onClick={() => onAddNewCustomer('')}
             >
@@ -170,10 +98,10 @@ export function CustomerSiteSelector({
                 </div>
               </div>
             </div>
-            <Button 
+            <Button
               type="button"
-              variant="ghost" 
-              size="sm" 
+              variant="ghost"
+              size="sm"
               onClick={() => setIsSearching(true)}
               className="text-primary-600 hover:text-primary-700 hover:bg-primary-50 dark:hover:bg-primary-950/30 font-bold"
             >
@@ -192,10 +120,10 @@ export function CustomerSiteSelector({
                   </span>
                 )}
               </label>
-              <Button 
+              <Button
                 type="button"
-                variant="ghost" 
-                size="sm" 
+                variant="ghost"
+                size="sm"
                 leftIcon={<Plus className="w-4 h-4" />}
                 onClick={onAddNewSite}
                 className="h-8 px-3 text-primary-600 font-bold"
@@ -216,13 +144,13 @@ export function CustomerSiteSelector({
                   onChange={handleSiteSelect}
                   options={[
                     ...(siteOptional ? [{ value: '', label: t('proposals:form.noSite') }] : []),
-                    ...sites.map(s => {
+                    ...sites.map((s) => {
                       const loc = [s.site_name, s.address, s.district, s.city].filter(Boolean).join(', ');
                       return {
                         value: s.id,
-                        label: loc ? `${loc} (${s.account_no || '---'})` : `Hesap: ${s.account_no || '---'}`
+                        label: loc ? `${loc} (${s.account_no || '---'})` : `Hesap: ${s.account_no || '---'}`,
                       };
-                    })
+                    }),
                   ]}
                   placeholder={t('workOrders:form.placeholders.selectSite')}
                   error={error}

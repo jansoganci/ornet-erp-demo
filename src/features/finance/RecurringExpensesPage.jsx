@@ -113,7 +113,7 @@ export function RecurringExpensesPage() {
 
   if (isLoading) {
     return (
-      <PageContainer maxWidth="xl" padding="default">
+      <PageContainer maxWidth="full" padding="default">
         <PageHeader title={t('recurring:title')} breadcrumbs={breadcrumbs} />
         <div className="flex justify-center py-12">
           <Spinner size="lg" />
@@ -124,7 +124,7 @@ export function RecurringExpensesPage() {
 
   if (error) {
     return (
-      <PageContainer maxWidth="xl" padding="default">
+      <PageContainer maxWidth="full" padding="default">
         <PageHeader title={t('recurring:title')} breadcrumbs={breadcrumbs} />
         <ErrorState message={getErrorMessage(error)} onRetry={refetch} />
       </PageContainer>
@@ -132,7 +132,7 @@ export function RecurringExpensesPage() {
   }
 
   return (
-    <PageContainer maxWidth="xl" padding="default" className="space-y-6">
+    <PageContainer maxWidth="full" padding="default" className="space-y-6">
       <PageHeader
         title={t('recurring:title')}
         breadcrumbs={breadcrumbs}

@@ -55,6 +55,10 @@ export async function fetchCustomer(id) {
     .eq('id', id)
     .single();
 
+  if (error?.status === 406 || error?.code === 'PGRST116') {
+    return null;
+  }
+
   if (error) throw error;
   return data;
 }
@@ -101,13 +105,13 @@ export async function fetchExistingCustomerNames() {
 }
 
 /**
- * Delete a customer
+ * Soft-delete a customer (and cascade to sites / subscriptions).
+ * Uses SECURITY DEFINER RPC to bypass RLS evaluation-order issues.
  */
 export async function deleteCustomer(id) {
-  const { error } = await supabase
-    .from('customers')
-    .update({ deleted_at: new Date().toISOString() })
-    .eq('id', id);
+  const { error } = await supabase.rpc('soft_delete_customer', {
+    p_customer_id: id,
+  });
 
   if (error) throw error;
   return { success: true };

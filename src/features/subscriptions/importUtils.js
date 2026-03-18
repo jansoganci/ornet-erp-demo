@@ -1,11 +1,10 @@
 import * as XLSX from 'xlsx';
-import { SUBSCRIPTION_TYPES, SERVICE_TYPES } from './schema';
+import { SERVICE_TYPES } from './schema';
 
 /**
  * Excel column headers (Turkish) — matches the user's actual Excel format.
- * Removed: ADET, ADRES (not needed without auto-create), KAM.ALR.VAR MI (redundant with TÜR),
- *          ÖNCEKİ AYLARIN NOTLARI (merged into ACIKLAMA), KDV (hardcoded 20%),
- *          Banka Adı / Son 4 (security risk), Fatura Günü (defaults to 1).
+ * Ignored columns (safe to have in Excel, just not read):
+ *   ADRES, HESAP NO (duplicate of ACC.), KAM.ALR.VAR MI, KDV/total columns.
  */
 export const TEMPLATE_HEADERS = [
   'TÜR',
@@ -14,51 +13,21 @@ export const TEMPLATE_HEADERS = [
   'MÜŞTERİ',
   'LOKASYON',
   'ABONE UNVANI',
-  'HESAP NO',
   'BAŞLANGIÇ',
-  'TL',
+  'KIRALAMA ÜCRETİ',
+  'SIM ÜCRETİ',
   'SMS TL',
   'HAT TL',
   'MALIYET',
   'ODEME SIKLIGI',
-  'ABONELİK TİPİ',
+  'ODEME NOTU',
   'FATURA',
+  'KAM. ALR.VAR MI',
   'ACIKLAMA',
+  'ONCEKI AYLARIN NOTLARI',
 ];
 
 const MAX_ROWS = 500;
-
-// TÜR (service_type) mapping — Turkish Excel values → DB enum
-const SERVICE_TYPE_MAP = {
-  'alarm':                   'alarm_only',
-  'kamera':                  'camera_only',
-  'internet':                'internet_only',
-  'alarm ve kamera':         'alarm_camera',
-  'alarm + kamera':          'alarm_camera',
-  'alarm kamera':            'alarm_camera',
-  'alarm, kamera':           'alarm_camera',
-  'alarm, kamera, internet': 'alarm_camera_internet',
-  'alarm+kamera+internet':   'alarm_camera_internet',
-  'kamera ve internet':      'camera_internet',
-  'kamera internet':         'camera_internet',
-  // English passthrough
-  'alarm_only':              'alarm_only',
-  'camera_only':             'camera_only',
-  'internet_only':           'internet_only',
-  'alarm_camera':            'alarm_camera',
-  'alarm_camera_internet':   'alarm_camera_internet',
-  'camera_internet':         'camera_internet',
-};
-
-// ABONELİK TİPİ (subscription_type) mapping
-const SUBSCRIPTION_TYPE_MAP = {
-  nakit:           'manual_cash',
-  havale:          'manual_bank',
-  kart:            'recurring_card',
-  manual_cash:     'manual_cash',
-  manual_bank:     'manual_bank',
-  recurring_card:  'recurring_card',
-};
 
 // ODEME SIKLIGI (billing_frequency) mapping
 const BILLING_FREQUENCY_MAP = {
@@ -91,21 +60,70 @@ const OFFICIAL_INVOICE_MAP = {
   '0':    false,
 };
 
+// ODEME NOTU → payment_start_month (1-12) mapping
+const TURKISH_MONTH_MAP = {
+  'ocak':     1,  'january':  1,
+  'şubat':    2,  'subat':    2,  'february': 2,
+  'mart':     3,  'march':    3,
+  'nisan':    4,  'april':    4,
+  'mayıs':    5,  'mayis':    5,  'may':      5,
+  'haziran':  6,  'june':     6,
+  'temmuz':   7,  'july':     7,
+  'ağustos':  8,  'agustos':  8,  'august':   8,
+  'eylül':    9,  'eylul':    9,  'september':9,
+  'ekim':    10,  'october': 10,
+  'kasım':   11,  'kasim':   11,  'november':11,
+  'aralık':  12,  'aralik':  12,  'december':12,
+};
+
+function parsePaymentStartMonth(raw) {
+  if (!raw) return null;
+  const normalized = raw.toString().toLowerCase().trim();
+  if (TURKISH_MONTH_MAP[normalized]) return TURKISH_MONTH_MAP[normalized];
+  const firstWord = normalized.split(/[\s,\/\-]+/)[0];
+  return TURKISH_MONTH_MAP[firstWord] ?? null;
+}
+
 function trim(val) {
   if (val == null) return '';
   return String(val).trim();
 }
 
+function excelSerialToDate(serial) {
+  const utcMs = (serial - 25569) * 86400 * 1000;
+  const date = new Date(utcMs);
+  const offsetMs = date.getTimezoneOffset() * 60 * 1000;
+  return new Date(utcMs + offsetMs);
+}
+
 function parseDate(val) {
   const s = trim(val);
   if (!s) return null;
-  // YYYY-MM-DD
-  if (/^(\d{4})-(\d{2})-(\d{2})$/.test(s)) return s;
-  // DD.MM.YYYY
-  const dmy = /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/.exec(s);
+  // YYYY-MM-DD (strict or flexible digit count)
+  const ymd = /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(s);
+  if (ymd) {
+    const [, y, m, d] = ymd;
+    return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+  }
+  // DD.MM.YYYY or DD/MM/YYYY or DD-MM-YYYY
+  const dmy = /^(\d{1,2})[./\-](\d{1,2})[./\-](\d{4})$/.exec(s);
   if (dmy) {
     const [, d, m, y] = dmy;
     return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+  }
+  // M/D/YYYY (US format — Excel may produce this)
+  const mdy = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(s);
+  if (mdy) {
+    const [, m, d, y] = mdy;
+    return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+  }
+  // Excel serial number (e.g. 44927)
+  const serial = Number(s);
+  if (Number.isFinite(serial) && serial > 1) {
+    const d = excelSerialToDate(serial);
+    if (!Number.isNaN(d.getTime()) && d.getFullYear() > 1900) {
+      return d.toISOString().slice(0, 10);
+    }
   }
   return null;
 }
@@ -126,7 +144,9 @@ export function parseXlsxFile(arrayBuffer) {
   const ws = wb.Sheets[firstSheet];
   const data = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
   if (!data.length) return [];
-  const headers = data[0].map((h) => trim(h));
+  // Normalize headers: trim + replace non-breaking space (Excel bazen \xa0 kullanır)
+  // Normalize ALL unicode whitespace (non-breaking, thin, figure, narrow no-break, etc.) to regular space
+  const headers = data[0].map((h) => trim(String(h)).replace(/[\u00a0\u2007\u2009\u200a\u200b\u202f\u205f\u3000]/g, ' ').replace(/\s+/g, ' '));
   const rows = [];
   for (let i = 1; i < data.length; i++) {
     const arr = data[i];
@@ -156,45 +176,81 @@ export function validateAndMapRows(excelRows) {
 
   const toProcess = excelRows.slice(0, MAX_ROWS);
 
+  // DEBUG: İlk satırın raw key'lerini ve parse sonucunu logla (sorun çözülünce kaldır)
+  if (toProcess.length > 0 && typeof console !== 'undefined') {
+    const first = toProcess[0];
+    const keys = Object.keys(first);
+    const tlVal = first['TL'] ?? first[keys.find((k) => /^TL$/i.test(k.trim()))];
+    const hatVal = first['HAT TL'] ?? first[keys.find((k) => /HAT\s*TL/i.test(String(k).replace(/\u00a0/g, ' ')))];
+    console.log('[Import DEBUG] İlk satır raw keys:', keys);
+    console.log('[Import DEBUG] TL:', tlVal, '| HAT TL:', hatVal);
+  }
+
+  // HAT TL / SIM sütununu bulmak için: key tam eşleşmezse "HAT" veya "SIM" içeren key ara
+  const findSimColumn = (raw) => {
+    const hatKey = Object.keys(raw).find((k) => /HAT\s*TL|SIM\s*(TL|ÜCRETİ|UCRETI)/i.test(trim(String(k)).replace(/[\u00a0\u2007\u2009\u200a\u200b\u202f\u205f\u3000]/g, ' ')));
+    return hatKey ? trim(raw[hatKey] ?? '') : '';
+  };
+
   toProcess.forEach((raw, rowIndex) => {
     const rowNum = rowIndex + 2; // 1-based + header row
-    const get = (key) => trim(raw[key] ?? '');
+    // Lookup with fallback: if exact key miss, try normalizing all keys
+    const get = (key) => {
+      if (raw[key] != null) return trim(raw[key]);
+      // Fallback: find key that matches after whitespace normalization
+      const normKey = key.replace(/\s+/g, ' ');
+      const found = Object.keys(raw).find(
+        (k) => k.replace(/[\u00a0\u2007\u2009\u200a\u200b\u202f\u205f\u3000\s]+/g, ' ').trim() === normKey,
+      );
+      return found != null ? trim(raw[found]) : '';
+    };
+    const getMulti = (...keys) => keys.map(get).find((v) => v) ?? '';
 
-    const company_name = get('MÜŞTERİ');
-    const site_name    = get('LOKASYON');
-    const startRaw     = get('BAŞLANGIÇ');
-    const base_priceRaw = get('TL');
-    const subTypeRaw   = get('ABONELİK TİPİ');
+    const company_name = getMulti('MÜŞTERİ', 'MUSTERI');
+    const site_name    = getMulti('LOKASYON');
+    const startRaw     = getMulti('BAŞLANGIÇ', 'BASLANGIC');
+    // Kiralama Ücreti (rental) → base_price; TL is fallback for backward compatibility
+    const base_priceRaw = getMulti('KIRALAMA ÜCRETİ', 'KIRALAMA UCRETI', 'TL');
+    // SIM Ücreti → sim_amount; HAT TL (Excel formatında SIM bedeli) — tam eşleşmezse findSimColumn
+    const sim_amountRaw = getMulti('HAT TL', 'SIM ÜCRETİ', 'SIM UCRETI', 'SIM TL') || findSimColumn(raw);
 
     // Required field validation
     if (!company_name) errors.push({ rowIndex, field: 'MÜŞTERİ',     message: 'required', rowNum });
     if (!site_name)    errors.push({ rowIndex, field: 'LOKASYON',     message: 'required', rowNum });
     if (!startRaw)     errors.push({ rowIndex, field: 'BAŞLANGIÇ',    message: 'required', rowNum });
-    if (!subTypeRaw)   errors.push({ rowIndex, field: 'ABONELİK TİPİ', message: 'required', rowNum });
 
     const start_date = parseDate(startRaw);
     if (startRaw && !start_date) errors.push({ rowIndex, field: 'BAŞLANGIÇ', message: 'invalid_date', rowNum });
 
     const base_price = toNum(base_priceRaw, NaN);
     if (base_priceRaw !== '' && !Number.isFinite(base_price))
-      errors.push({ rowIndex, field: 'TL', message: 'invalid_number', rowNum });
+      errors.push({ rowIndex, field: 'KIRALAMA ÜCRETİ', message: 'invalid_number', rowNum });
     if (Number.isFinite(base_price) && base_price < 0)
-      errors.push({ rowIndex, field: 'TL', message: 'min_zero', rowNum });
+      errors.push({ rowIndex, field: 'KIRALAMA ÜCRETİ', message: 'min_zero', rowNum });
 
-    const subTypeLower   = subTypeRaw.toLowerCase();
-    const subscription_type = SUBSCRIPTION_TYPE_MAP[subTypeLower] ?? null;
-    if (subTypeRaw && !subscription_type)
-      errors.push({ rowIndex, field: 'ABONELİK TİPİ', message: 'invalid_type', rowNum });
+    const sim_amount = toNum(sim_amountRaw, NaN);
+    if (sim_amountRaw !== '' && !Number.isFinite(sim_amount))
+      errors.push({ rowIndex, field: 'SIM ÜCRETİ', message: 'invalid_number', rowNum });
+    if (Number.isFinite(sim_amount) && sim_amount < 0)
+      errors.push({ rowIndex, field: 'SIM ÜCRETİ', message: 'min_zero', rowNum });
 
-    // TÜR (service_type) — optional but validated if provided
-    const turRaw = get('TÜR').toLowerCase().trim();
-    const service_type = turRaw ? (SERVICE_TYPE_MAP[turRaw] ?? null) : null;
+    // TÜR (service_type) — optional; must match one of the 12 allowed codes
+    const turRaw = (get('TÜR') || get('TUR') || '').trim();
+    const turCanonical = turRaw ? turRaw.toUpperCase().replace(/ı/g, 'I') : '';
+    const service_type = turCanonical && SERVICE_TYPES.includes(turCanonical) ? turCanonical : null;
     if (turRaw && !service_type)
       errors.push({ rowIndex, field: 'TÜR', message: 'invalid_service_type', rowNum });
 
     // Billing frequency — default monthly
     const freqRaw = get('ODEME SIKLIGI').toLowerCase().trim();
     const billing_frequency = BILLING_FREQUENCY_MAP[freqRaw] ?? 'monthly';
+
+    // Payment start month — required for non-monthly
+    const paymentNoteRaw = get('ODEME NOTU');
+    const payment_start_month = parsePaymentStartMonth(paymentNoteRaw);
+    if (billing_frequency !== 'monthly' && payment_start_month === null) {
+      errors.push({ rowIndex, field: 'ODEME NOTU', message: 'required_for_non_monthly', rowNum });
+    }
 
     // Official invoice — default true
     const faturaRaw = get('FATURA').toLowerCase().trim();
@@ -208,20 +264,26 @@ export function validateAndMapRows(excelRows) {
       subscriber_title:      get('ABONE UNVANI') || null,
       alarm_center:          get('MERKEZ') || null,
       alarm_center_account:  get('ACC.') || null,
-      account_no:            get('HESAP NO') || null,
       start_date:            start_date ?? startRaw,
       base_price:            Number.isFinite(base_price) ? base_price : 0,
+      sim_amount:            Number.isFinite(sim_amount) ? sim_amount : 0,
       sms_fee:               toNum(get('SMS TL'), 0),
-      line_fee:              toNum(get('HAT TL'), 0),
+      line_fee:              0,
       cost:                  toNum(get('MALIYET'), 0),
-      vat_rate:              20, // hardcoded — strict 20% per business rule
+      vat_rate:              20,
       billing_frequency,
-      subscription_type,
+      payment_start_month: billing_frequency !== 'monthly' ? payment_start_month : null,
       service_type,
       official_invoice,
-      notes:                 get('ACIKLAMA') || null,
+      notes:                 [get('ACIKLAMA'), get('KAM. ALR.VAR MI') ? `KAM. ALR.: ${get('KAM. ALR.VAR MI')}` : ''].filter(Boolean).join(' | ') || null,
+      setup_notes:           get('ONCEKI AYLARIN NOTLARI') || null,
     });
   });
+
+  // DEBUG: İlk satırın parse sonucunu logla
+  if (rows.length > 0 && typeof console !== 'undefined') {
+    console.log('[Import DEBUG] İlk satır parsed:', { base_price: rows[0].base_price, sim_amount: rows[0].sim_amount });
+  }
 
   return { rows, errors };
 }
@@ -231,22 +293,24 @@ export function validateAndMapRows(excelRows) {
  */
 export function buildTemplateBlob() {
   const exampleRow = [
-    'alarm',        // TÜR
+    'A.KIRA.KK',    // TÜR
     'Güvenlik A.Ş.',// MERKEZ
     'ACC-001',      // ACC.
     'Örnek Firma',  // MÜŞTERİ
     'Merkez Şube',  // LOKASYON
     'Alarm+Kamera Abonesi', // ABONE UNVANI
-    'GSM-001',      // HESAP NO
     '2024-01-01',   // BAŞLANGIÇ
-    '500',          // TL
-    '50',           // SMS TL
+    '450',          // KIRALAMA ÜCRETİ
+    '50',           // SIM ÜCRETİ
+    '0',            // SMS TL
     '0',            // HAT TL
     '100',          // MALIYET
     'aylık',        // ODEME SIKLIGI
-    'nakit',        // ABONELİK TİPİ
+    '',             // ODEME NOTU (e.g. OCAK, TEMMUZ — required for non-monthly)
     'evet',         // FATURA
+    'YOK',          // KAM. ALR.VAR MI
     '',             // ACIKLAMA
+    '',             // ONCEKI AYLARIN NOTLARI
   ];
   const wsData = [TEMPLATE_HEADERS, exampleRow];
   const ws = XLSX.utils.aoa_to_sheet(wsData);

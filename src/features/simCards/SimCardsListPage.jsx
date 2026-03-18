@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import * as XLSX from 'xlsx';
-import { Plus, Download, Filter, Edit2, Trash2, FileSpreadsheet, Pencil, Cpu as SimIcon, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, Download, Filter, Edit2, Trash2, FileSpreadsheet, Pencil, Cpu as SimIcon, Calendar, ChevronLeft, ChevronRight, Package, CheckCircle2, TrendingUp, CreditCard } from 'lucide-react';
 import { useSimCardsPaginated, useDeleteSimCard, useUpdateSimCard, useSimFinancialStats, useProviderCompanies } from './hooks';
 import { fetchSimCards } from './api';
 import { useDebouncedValue } from '../../hooks/useDebouncedValue';
@@ -20,10 +20,10 @@ import {
   IconButton,
   Modal,
   DateRangeFilter,
+  KpiCard,
 } from '../../components/ui';
 import { formatCurrency, formatDate } from '../../lib/utils';
 import { getErrorMessage } from '../../lib/errorHandler';
-import { SimCardStats } from './components/SimCardStats';
 import { QuickStatusSelect } from './components/QuickStatusSelect';
 
 export function SimCardsListPage() {
@@ -171,7 +171,7 @@ export function SimCardsListPage() {
 
   if (isLoading) {
     return (
-      <PageContainer maxWidth="xl">
+      <PageContainer maxWidth="full">
         <PageHeader title={t('title')} />
         <div className="space-y-4">
           <Skeleton className="h-32 w-full" />
@@ -183,7 +183,7 @@ export function SimCardsListPage() {
 
   if (error) {
     return (
-      <PageContainer maxWidth="xl">
+      <PageContainer maxWidth="full">
         <ErrorState message={getErrorMessage(error, 'simCards.loadFailed')} onRetry={() => refetch()} />
       </PageContainer>
     );
@@ -322,7 +322,7 @@ export function SimCardsListPage() {
   ];
 
   return (
-    <PageContainer maxWidth="xl" className="space-y-6">
+    <PageContainer maxWidth="full" className="space-y-6">
       <PageHeader
         title={t('title')}
         breadcrumbs={[
@@ -358,7 +358,40 @@ export function SimCardsListPage() {
         }
       />
 
-      <SimCardStats simCards={simCards} statsData={simStats} />
+      <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-5 mb-6">
+        <KpiCard
+          title={t('stats.total')}
+          value={simStats?.total_count ?? simCards?.length ?? 0}
+          icon={Package}
+          variant="default"
+        />
+        <KpiCard
+          title={t('stats.available')}
+          value={simStats?.available_count ?? simCards?.filter((s) => s.status === 'available').length ?? 0}
+          icon={SimIcon}
+          variant="success"
+        />
+        <KpiCard
+          title={t('stats.active')}
+          value={simStats?.active_sim_count ?? simCards?.filter((s) => s.status === 'active').length ?? 0}
+          icon={TrendingUp}
+          variant="info"
+        />
+        <KpiCard
+          title={t('stats.subscription')}
+          value={simStats?.subscription_count ?? simCards?.filter((s) => s.status === 'subscription').length ?? 0}
+          icon={CreditCard}
+          variant="info"
+        />
+        <KpiCard
+          title={t('stats.monthlyProfit')}
+          value={new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(
+            simStats?.total_monthly_profit ?? (simCards || []).reduce((acc, curr) => acc + ((curr.sale_price || 0) - (curr.cost_price || 0)), 0)
+          )}
+          icon={CheckCircle2}
+          variant="success"
+        />
+      </div>
 
       <Card className="p-3 border-neutral-200/60 dark:border-neutral-800/60">
         <div className="flex flex-col lg:flex-row items-end gap-3">

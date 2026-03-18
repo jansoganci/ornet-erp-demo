@@ -167,14 +167,14 @@ export function SiteAssetsListPage() {
 
   if (error) {
     return (
-      <PageContainer>
+      <PageContainer maxWidth="full">
         <ErrorState message={t('common:errors.loadFailed')} />
       </PageContainer>
     );
   }
 
   return (
-    <PageContainer>
+    <PageContainer maxWidth="full">
       <PageHeader
         title={t('siteAssets:title')}
         description={

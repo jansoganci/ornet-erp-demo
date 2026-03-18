@@ -3,7 +3,7 @@ import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Save, X, DollarSign, FileText, Users, StickyNote, CreditCard, Wallet, Banknote, RefreshCw, AlertTriangle } from 'lucide-react';
+import { Save, X, DollarSign, FileText, Users, StickyNote, RefreshCw, AlertTriangle } from 'lucide-react';
 import { cn, formatCurrency } from '../../lib/utils';
 import { PageContainer } from '../../components/layout';
 import {
@@ -17,7 +17,7 @@ import {
   SimCardCombobox,
   FormSkeleton,
 } from '../../components/ui';
-import { subscriptionSchema, subscriptionDefaultValues, SUBSCRIPTION_TYPES, SERVICE_TYPES, BILLING_FREQUENCIES } from './schema';
+import { subscriptionSchema, subscriptionDefaultValues, SERVICE_TYPES, BILLING_FREQUENCIES } from './schema';
 import { getSubscriptionUpdatedAt } from './api';
 import {
   useSubscription,
@@ -30,6 +30,7 @@ import { useSite } from '../customerSites/hooks';
 import { useSimCard } from '../simCards/hooks';
 import { CustomerSiteSelector } from '../workOrders/CustomerSiteSelector';
 import { SubscriptionFormHero } from './components/SubscriptionFormHero';
+import { getErrorMessage } from '../../lib/errorHandler';
 import { toast } from 'sonner';
 
 const BILLING_DAY_OPTIONS = Array.from({ length: 28 }, (_, i) => ({
@@ -41,7 +42,7 @@ export function SubscriptionFormPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { t } = useTranslation(['subscriptions', 'common', 'errors', 'customers']);
+  const { t } = useTranslation(['subscriptions', 'common', 'errors', 'customers', 'notifications']);
   const { t: tCommon } = useTranslation('common');
   const isEdit = !!id;
 
@@ -70,7 +71,7 @@ export function SubscriptionFormPage() {
 
   const selectedSiteId = watch('site_id');
   const simCardId = watch('sim_card_id');
-  const subscriptionType = watch('subscription_type');
+  const watchedFrequency = watch('billing_frequency');
   const basePrice = watch('base_price');
   const smsFee = watch('sms_fee');
   const lineFee = watch('line_fee');
@@ -103,6 +104,22 @@ export function SubscriptionFormPage() {
     }
   }, [selectedSiteId, setValue]);
 
+  // Month options for payment_start_month selector
+  const monthOptions = useMemo(() => [
+    { value: '', label: t('subscriptions:form.placeholders.selectMonth') },
+    ...Array.from({ length: 12 }, (_, i) => ({
+      value: String(i + 1),
+      label: t(`notifications:months.${i + 1}`),
+    })),
+  ], [t]);
+
+  // Reset payment_start_month when switching to monthly
+  useEffect(() => {
+    if (watchedFrequency === 'monthly') {
+      setValue('payment_start_month', null, { shouldValidate: false });
+    }
+  }, [watchedFrequency, setValue]);
+
   // Populate form when editing
   useEffect(() => {
     if (subscription && isEdit) {
@@ -112,7 +129,6 @@ export function SubscriptionFormPage() {
       prevSiteIdRef.current = subscription.site_id || '';
       reset({
         site_id: subscription.site_id || '',
-        subscription_type: subscription.subscription_type || 'recurring_card',
         start_date: subscription.start_date || '',
         billing_day: subscription.billing_day || 1,
         base_price: subscription.base_price ?? '',
@@ -138,6 +154,7 @@ export function SubscriptionFormPage() {
         alarm_center: subscription.alarm_center || '',
         alarm_center_account: subscription.alarm_center_account || '',
         subscriber_title: subscription.subscriber_title || '',
+        payment_start_month: subscription.payment_start_month ?? null,
       });
       if (subscription.customer_id) setSelectedCustomerId(subscription.customer_id);
     }
@@ -179,7 +196,6 @@ export function SubscriptionFormPage() {
     };
     return {
       site_id: data.site_id,
-      subscription_type: data.subscription_type,
       start_date: data.start_date,
       billing_day: Number(data.billing_day),
       base_price: Number(data.base_price) || 0,
@@ -205,6 +221,7 @@ export function SubscriptionFormPage() {
       alarm_center: cleanValue(data.alarm_center),
       alarm_center_account: cleanValue(data.alarm_center_account),
       subscriber_title: cleanValue(data.subscriber_title),
+      payment_start_month: data.payment_start_month != null ? Number(data.payment_start_month) : null,
     };
   };
 
@@ -235,8 +252,8 @@ export function SubscriptionFormPage() {
       }
 
       await saveSubscription(formattedData);
-    } catch {
-      toast.error(t('common:errors.saveFailed'));
+    } catch (err) {
+      toast.error(getErrorMessage(err, 'common.saveFailed'));
     }
   };
 
@@ -244,23 +261,14 @@ export function SubscriptionFormPage() {
     setConflictModal(false);
     try {
       await saveSubscription(pendingSubmitData);
-    } catch {
-      toast.error(t('common:errors.saveFailed'));
+    } catch (err) {
+      toast.error(getErrorMessage(err, 'common.saveFailed'));
     }
   };
 
   if (isEdit && isSubLoading) {
     return <FormSkeleton />;
   }
-
-  const getSubIcon = (type) => {
-    switch (type) {
-      case 'recurring_card': return <CreditCard className="w-5 h-5" />;
-      case 'manual_cash': return <Wallet className="w-5 h-5" />;
-      case 'manual_bank': return <Banknote className="w-5 h-5" />;
-      default: return <RefreshCw className="w-5 h-5" />;
-    }
-  };
 
   return (
     <PageContainer maxWidth="4xl" padding="default" className="space-y-8 pb-24 mx-auto">
@@ -280,7 +288,10 @@ export function SubscriptionFormPage() {
           <CustomerSiteSelector
             selectedCustomerId={selectedCustomerId}
             selectedSiteId={selectedSiteId}
-            onCustomerChange={(cid) => setSelectedCustomerId(cid)}
+            onCustomerChange={(cid) => {
+            setSelectedCustomerId(cid || '');
+            setValue('site_id', '', { shouldValidate: true });
+          }}
             onSiteChange={(sid) => setValue('site_id', sid, { shouldValidate: true })}
             onAddNewCustomer={() => navigate('/customers/new')}
             onAddNewSite={() => {}}
@@ -305,73 +316,23 @@ export function SubscriptionFormPage() {
               className="rounded-[2rem] p-8 border-neutral-200/60 dark:border-[#262626] shadow-sm"
             >
               <div className="space-y-10 pt-4">
-                {/* Subscription type grid */}
-                <div className="space-y-6">
-                  <label className="block text-xs font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest ml-1">
-                    {t('subscriptions:form.fields.subscriptionType')}
-                  </label>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    {SUBSCRIPTION_TYPES.map((tp) => (
-                      <label
-                        key={tp}
-                        className={cn(
-                          'relative flex flex-col items-center justify-center p-5 rounded-2xl border-2 cursor-pointer transition-all duration-300 group',
-                          subscriptionType === tp
-                            ? 'bg-primary-50/50 border-primary-600 dark:bg-primary-950/20 dark:border-primary-500 shadow-md scale-[1.02]'
-                            : 'bg-white border-neutral-100 hover:border-neutral-300 dark:bg-[#171717] dark:border-[#262626] hover:shadow-sm'
-                        )}
-                      >
-                        <input
-                          type="radio"
-                          className="sr-only"
-                          value={tp}
-                          {...register('subscription_type')}
-                        />
-                        <div className={cn(
-                          "mb-3 p-2 rounded-xl transition-colors",
-                          subscriptionType === tp ? "bg-primary-100 dark:bg-primary-900/40 text-primary-600 dark:text-primary-400" : "bg-neutral-50 dark:bg-neutral-900 text-neutral-400 group-hover:text-neutral-600"
-                        )}>
-                          {getSubIcon(tp)}
-                        </div>
-                        <span
-                          className={cn(
-                            'text-sm font-bold tracking-tight text-center',
-                            subscriptionType === tp
-                              ? 'text-primary-700 dark:text-primary-400'
-                              : 'text-neutral-600 dark:text-neutral-400 group-hover:text-neutral-900'
-                          )}
-                        >
-                          {t(`subscriptions:types.${tp}`)}
-                        </span>
-                      </label>
-                    ))}
-                  </div>
-                  {errors.subscription_type && (
-                    <p className="text-sm text-red-600 mt-2 ml-1">{errors.subscription_type.message}</p>
-                  )}
-                </div>
-
-                {/* Inline payment fields by type */}
-                {subscriptionType === 'recurring_card' && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-6 bg-neutral-50/50 dark:bg-neutral-900/30 rounded-2xl border border-neutral-100 dark:border-[#262626]">
-                    <Input
-                      label={t('subscriptions:form.fields.cardBankName')}
-                      error={errors.card_bank_name?.message}
-                      className="rounded-xl"
-                      {...register('card_bank_name')}
-                    />
-                    <Input
-                      label={t('subscriptions:form.fields.cardLast4')}
-                      maxLength={4}
-                      placeholder="1234"
-                      error={errors.card_last4?.message || errors.payment_method_id?.message}
-                      className="rounded-xl"
-                      {...register('card_last4')}
-                    />
-                  </div>
-                )}
-                {subscriptionType === 'manual_cash' && (
-                  <div className="p-6 bg-neutral-50/50 dark:bg-neutral-900/30 rounded-2xl border border-neutral-100 dark:border-[#262626]">
+                {/* Payment fields (optional) */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-6 bg-neutral-50/50 dark:bg-neutral-900/30 rounded-2xl border border-neutral-100 dark:border-[#262626]">
+                  <Input
+                    label={t('subscriptions:form.fields.cardBankName')}
+                    error={errors.card_bank_name?.message}
+                    className="rounded-xl"
+                    {...register('card_bank_name')}
+                  />
+                  <Input
+                    label={t('subscriptions:form.fields.cardLast4')}
+                    maxLength={4}
+                    placeholder="1234"
+                    error={errors.card_last4?.message || errors.payment_method_id?.message}
+                    className="rounded-xl"
+                    {...register('card_last4')}
+                  />
+                  <div className="md:col-span-2">
                     <Select
                       label={t('subscriptions:form.fields.cashCollector')}
                       options={profileOptions}
@@ -380,7 +341,7 @@ export function SubscriptionFormPage() {
                       {...register('cash_collector_id')}
                     />
                   </div>
-                )}
+                </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <Select
@@ -433,7 +394,10 @@ export function SubscriptionFormPage() {
                   />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className={cn(
+                  "grid grid-cols-1 gap-8",
+                  watchedFrequency && watchedFrequency !== 'monthly' ? "md:grid-cols-3" : "md:grid-cols-2"
+                )}>
                   <Select
                     label={t('subscriptions:form.fields.billingFrequency')}
                     options={billingFrequencyOptions}
@@ -441,6 +405,15 @@ export function SubscriptionFormPage() {
                     className="rounded-xl"
                     {...register('billing_frequency')}
                   />
+                  {watchedFrequency && watchedFrequency !== 'monthly' && (
+                    <Select
+                      label={t('subscriptions:form.fields.paymentStartMonth')}
+                      options={monthOptions}
+                      error={errors.payment_start_month?.message}
+                      className="rounded-xl"
+                      {...register('payment_start_month')}
+                    />
+                  )}
                   <div className="flex items-end pb-3">
                     <Controller
                       name="official_invoice"

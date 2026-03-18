@@ -38,6 +38,13 @@
       "startDate": "Başlangıç",
       "billingFrequency": "Ödeme Sıklığı",
       "monthly": "Aylık",
+      "simTl": "SIM TL",
+      "totalAmount": "Toplam TL",
+      "totalAmountCalc": "Toplam Tutar (TL)",
+      "totalWithVatCalc": "KDV Dahil Toplam",
+      "vat": "KDV (%20)",
+      "vatIncluded": "KDV Dahil",
+      "cost": "Maliyet",
       "status": "Durum"
     }
   },
@@ -77,7 +84,8 @@
       "serviceType": "Hizmet Türü",
       "billingFrequency": "Ödeme Sıklığı",
       "officialInvoice": "Fatura",
-      "cashCollector": "Tahsil eden"
+      "cashCollector": "Tahsil eden",
+      "paymentStartMonth": "Ödeme Başlangıç Ayı"
     },
     "officialInvoiceResmi": "Resmi",
     "officialInvoiceGayri": "Gayri resmi",
@@ -130,7 +138,8 @@
       "officialInvoice": "Resmi fatura (Paraşüt'e gönderilir)",
       "cardBankName": "Banka Adı",
       "cardLast4": "Son 4 Hane",
-      "cashCollector": "Tahsil Eden Kişi"
+      "cashCollector": "Tahsil Eden Kişi",
+      "paymentStartMonth": "Ödeme Başlangıç Ayı"
     },
     "placeholders": {
       "selectSite": "Lokasyon seçin...",
@@ -138,6 +147,7 @@
       "selectPaymentMethod": "Ödeme yöntemi seçin...",
       "selectPerson": "Kişi seçin...",
       "selectServiceType": "Hizmet türü seçin...",
+      "selectMonth": "Ay seçin...",
       "notes": "Abonelik hakkında notlar...",
       "setupNotes": "Kurulum detayları, ekipman notları...",
       "subscriberTitle": "Örn: Alarm + Kamera Abonesi"
@@ -161,17 +171,28 @@
     "internet_only": "Sadece İnternet"
   },
   "serviceTypes": {
-    "alarm_only": "Alarm",
-    "camera_only": "Kamera",
-    "internet_only": "İnternet",
-    "alarm_camera": "Alarm ve Kamera",
-    "alarm_camera_internet": "Alarm, Kamera, İnternet",
-    "camera_internet": "Kamera ve İnternet"
+    "A.KIRA.KK": "Alarm Kira (Kredi Kartı)",
+    "A.KIRA.ELDEN": "Alarm Kira (Elden)",
+    "A.KIRA.ELDEN.MET": "Alarm Kira Met(Elden)",
+    "A.KIRA.BANKA": "Alarm Kira (Banka)",
+    "A.S.ALMA": "Alarm Satın Alma",
+    "A.S.ALMA.YILLIK": "Alarm Satın Alma (Yıllık)",
+    "A.S.ALMA.BANKA": "Alarm Satın Alma (Banka)",
+    "INT.AYLIK.KK": "İnternet Aylık (Kredi Kartı)",
+    "INT.AYLIK.BANKA": "İnternet Aylık (Banka)",
+    "INT.YILLIK": "İnternet Yıllık",
+    "K.KIRA.KK": "Kamera Kira (Kredi Kartı)",
+    "K.KIRA.BANKA": "Kamera Kira (Banka)"
   },
   "statuses": {
     "active": "Aktif",
     "paused": "Duraklatıldı",
     "cancelled": "İptal Edildi"
+  },
+  "paymentGrid": {
+    "prevYear": "Önceki yıl",
+    "nextYear": "Sonraki yıl",
+    "generating": "Ödemeler yükleniyor..."
   },
   "payment": {
     "title": "Ödeme Takvimi",
@@ -278,13 +299,29 @@
     "preview": "Önizleme",
     "previewRows": "İlk {{count}} satır",
     "totalRows": "Toplam {{count}} satır",
-    "errors": "Hatalar",
+    "validationErrors": "Doğrulama Hataları",
+    "importErrors": "İçe Aktarım Hataları",
     "importButton": "İçe Aktar",
-    "success": "{{created}} abonelik oluşturuldu.",
-    "partialSuccess": "{{created}} abonelik oluşturuldu, {{failed}} hata.",
+    "success": "{{created}} abonelik başarıyla oluşturuldu.",
+    "partialSuccess": "{{created}} abonelik oluşturuldu, {{failed}} satır hatalı.",
     "failed": "İçe aktarım başarısız.",
     "limitError": "En fazla 500 satır yükleyebilirsiniz.",
-    "rowError": "Satır {{row}}: {{message}}"
+    "rowError": "Satır {{row}}: {{message}}",
+    "summaryTitle": "İçe Aktarım Sonucu",
+    "errorCodes": {
+      "required": "Zorunlu alan boş",
+      "invalid_date": "Geçersiz tarih formatı",
+      "invalid_number": "Geçersiz sayı",
+      "min_zero": "Değer 0'dan küçük olamaz",
+      "invalid_type": "Geçersiz abonelik tipi",
+      "invalid_service_type": "Geçersiz hizmet türü",
+      "MAX_ROWS": "Satır limiti aşıldı (max 500)"
+    },
+    "errorTableHeaders": {
+      "row": "Satır",
+      "field": "Alan",
+      "error": "Hata"
+    }
   },
   "priceRevision": {
     "title": "Fiyat Revizyonu",
@@ -352,12 +389,18 @@
       "closing": "Mevcut fiyatlar {{month}} ayı itibariyle yansıyacaktır. Bilgilerinize sunar, iyi çalışmalar dilerim."
     },
     "serviceLabelsForMessage": {
-      "alarm_only": "Alarm Sistemi",
-      "camera_only": "Kamera Sistemi",
-      "internet_only": "İnternet Paketi",
-      "alarm_camera": "Alarm ve Kamera Sistemi",
-      "alarm_camera_internet": "Alarm, Kamera ve İnternet Sistemi",
-      "camera_internet": "Kamera ve İnternet Sistemi"
+      "A.KIRA.KK": "Alarm Kira (Kredi Kartı)",
+      "A.KIRA.ELDEN": "Alarm Kira (Elden)",
+      "A.KIRA.ELDEN.MET": "Alarm Kira Met(Elden)",
+      "A.KIRA.BANKA": "Alarm Kira (Banka)",
+      "A.S.ALMA": "Alarm Satın Alma",
+      "A.S.ALMA.YILLIK": "Alarm Satın Alma (Yıllık)",
+      "A.S.ALMA.BANKA": "Alarm Satın Alma (Banka)",
+      "INT.AYLIK.KK": "İnternet Aylık (Kredi Kartı)",
+      "INT.AYLIK.BANKA": "İnternet Aylık (Banka)",
+      "INT.YILLIK": "İnternet Yıllık",
+      "K.KIRA.KK": "Kamera Kira (Kredi Kartı)",
+      "K.KIRA.BANKA": "Kamera Kira (Banka)"
     },
     "frequencyLabelsForMessage": {
       "monthly": "aylık",
@@ -390,6 +433,7 @@
   "priceUpdatePartialError": "Abonelik fiyatı güncellendi ancak ödeme tutarları güncellenemedi. Lütfen ödemeleri manuel olarak kontrol edin.",
   "validation": {
     "paymentMethodRequired": "Kart aboneliği için ödeme yöntemi zorunludur",
-    "cardPaymentsMustBeInvoiced": "Kart ödemeleri faturalanmalıdır"
+    "cardPaymentsMustBeInvoiced": "Kart ödemeleri faturalanmalıdır",
+    "paymentStartMonthRequired": "Aylık dışı aboneliklerde ödeme başlangıç ayı zorunludur"
   }
 }

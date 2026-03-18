@@ -576,7 +576,10 @@ export function QuickEntryModal({ open, onClose, direction, transaction }) {
           <CustomerSiteSelector
             selectedCustomerId={selectedCustomerId}
             selectedSiteId={selectedSiteId}
-            onCustomerChange={(id) => setValue('customer_id', id || '')}
+            onCustomerChange={(id) => {
+              setValue('customer_id', id || '');
+              setValue('site_id', '');
+            }}
             onSiteChange={(id) => setValue('site_id', id || '')}
             onAddNewSite={() => {}}
             onAddNewCustomer={() => {}}

@@ -1,7 +1,7 @@
 # CLAUDE.md - Ornet ERP Project Context
 
 > This file helps Claude understand the project context, architecture, and coding conventions.
-> Last updated: 2026-03-13
+> Last updated: 2026-03-16
 
 ---
 
@@ -50,11 +50,13 @@
 | Routing | React Router DOM | 7.x |
 | State Management | TanStack React Query | 5.x |
 | Forms | react-hook-form + zod | 7.x / 4.x |
+| Form Resolvers | @hookform/resolvers | 5.x |
 | Backend | Supabase (PostgreSQL) | 2.x |
 | Styling | Tailwind CSS | 4.x |
 | CSS Utilities | clsx + tailwind-merge | 2.x / 3.x |
 | Icons | lucide-react | 0.563.x |
-| i18n | i18next + react-i18next | 25.x |
+| i18n | i18next | 25.x |
+| i18n (React bindings) | react-i18next | 16.x |
 | Notifications | sonner | 2.x |
 | Date Utils | date-fns | 4.x |
 | Charts | recharts | 3.x |
@@ -111,12 +113,15 @@ src/
 │
 ├── lib/                    # Utilities
 │   ├── breadcrumbConfig.js # Breadcrumb route definitions
+│   ├── chartTheme.js       # Recharts color constants (CHART_COLORS, SPARKLINE_COLORS)
 │   ├── csvExport.js        # CSV export utility
 │   ├── errorHandler.js     # Error localization
 │   ├── i18n.js             # i18next config (21 namespaces)
 │   ├── normalizeForSearch.js # Turkish character normalization for search
+│   ├── roles.js            # Role constants & useRole() hook
 │   ├── supabase.js         # Supabase client
-│   └── utils.js            # Helper functions
+│   ├── utils.js            # Helper functions
+│   └── zodHelpers.js       # Reusable Zod schema helpers
 │
 ├── locales/tr/             # Turkish translations (21 files)
 │   ├── actionBoard.json
@@ -177,7 +182,7 @@ All routes are defined in `src/App.jsx`. Key route groups:
 |-------|--------|
 | Auth (public) | `/login`, `/register`, `/forgot-password`, `/auth/update-password`, `/auth/verify-email` |
 | Dashboard | `/`, `/profile`, `/notifications`, `/action-board` |
-| Customers | `/customers`, `/customers/new`, `/customers/:id`, `/customers/:id/edit` |
+| Customers | `/customers`, `/customers/new`, `/customers/import`, `/customers/:id`, `/customers/:id/edit` |
 | Work Orders | `/work-orders`, `/work-orders/new`, `/work-orders/:id`, `/work-orders/:id/edit` |
 | Planning | `/daily-work`, `/work-history`, `/tasks`, `/calendar` |
 | Materials | `/materials`, `/materials/import` |
@@ -323,6 +328,7 @@ function MyPage() {
 | `MaterialCombobox` | Searchable material selector |
 | `SimCardCombobox` | Searchable SIM card selector |
 | `UnsavedChangesModal` | Warn user before leaving with unsaved changes |
+| `ChartTooltip` | Shared tooltip component for Recharts charts |
 
 ### Layout Components (src/components/layout/)
 
@@ -500,6 +506,9 @@ const { data } = await supabase
 | `useDebouncedValue` | `src/hooks/useDebouncedValue.js` | Debounce rapidly changing values |
 | `useSearchInput` | `src/hooks/useSearchInput.js` | Search input state with debounce |
 | `useUnsavedChanges` | `src/hooks/useUnsavedChanges.js` | Warn before navigating away |
+| `useRole` | `src/lib/roles.js` | Role-based rendering & access control (`isAdmin`, `isAccountant`, `isFieldWorker`, `canWrite`) |
+
+> **Note:** `useRole` lives in `src/lib/roles.js`, not in `src/hooks/`. Import it from there for role-based rendering and access control throughout the app.
 
 ---
 
@@ -512,6 +521,9 @@ const { data } = await supabase
 | `src/lib/normalizeForSearch.js` | Normalize Turkish characters for search (ş→s, ı→i, etc.) |
 | `src/lib/breadcrumbConfig.js` | Route-to-breadcrumb mapping |
 | `src/lib/errorHandler.js` | Localize Supabase/API errors |
+| `src/lib/chartTheme.js` | Single source of truth for Recharts colors (`CHART_COLORS`, `SPARKLINE_COLORS`). Never hardcode hex values in chart components — import from here. |
+| `src/lib/roles.js` | Role constants (`ADMIN`, `accountant`, `field_worker`) and `useRole()` hook returning `{ role, isAdmin, isAccountant, isFieldWorker, canWrite }`. Import from here for role-based access control. |
+| `src/lib/zodHelpers.js` | Reusable Zod schema helpers, e.g. `isoDateString()` for validated date fields. |
 
 ---
 

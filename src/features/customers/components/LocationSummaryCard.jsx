@@ -3,12 +3,12 @@ import { cn } from '../../../lib/utils';
 export function LocationSummaryCard({ site, subscription, onClick }) {
   const isActive = site.is_active !== false;
 
-  const priceStr = subscription?.base_price
+  const priceStr = subscription?.subtotal != null && Number(subscription.subtotal) > 0
     ? new Intl.NumberFormat('tr-TR', {
         style: 'currency',
         currency: 'TRY',
         minimumFractionDigits: 0,
-      }).format(Number(subscription.base_price)) + '/ay'
+      }).format(Number(subscription.subtotal)) + '/ay'
     : null;
 
   return (

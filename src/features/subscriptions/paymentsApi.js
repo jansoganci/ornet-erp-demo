@@ -103,3 +103,17 @@ export async function fetchSubscriptionStats() {
   if (error) throw error;
   return data;
 }
+
+/**
+ * Ensure payment rows exist for a given year (on-demand generation).
+ * Called when user navigates to a year with no payments in the grid.
+ * Returns the count of rows inserted.
+ */
+export async function ensurePaymentsForYear(subscriptionId, year) {
+  const { data, error } = await supabase.rpc('ensure_payments_for_year', {
+    p_subscription_id: subscriptionId,
+    p_year: year,
+  });
+  if (error) throw error;
+  return data ?? 0;
+}

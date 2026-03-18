@@ -26,7 +26,7 @@ import {
   Legend,
 } from 'recharts';
 import { PageContainer, PageHeader } from '../../components/layout';
-import { Card, Select, Spinner, ErrorState, Button } from '../../components/ui';
+import { Card, Select, Spinner, ErrorState, Button, KpiCard } from '../../components/ui';
 import { useTheme } from '../../hooks/themeContext';
 import {
   useFinanceDashboardKpis,
@@ -35,7 +35,6 @@ import {
   useRecentTransactions,
 } from './hooks';
 import { getLastNMonths } from './api';
-import { KpiCard } from './components/KpiCard';
 import { ViewModeToggle } from './components/ViewModeToggle';
 import { formatDate, formatCurrency } from '../../lib/utils';
 
@@ -93,7 +92,7 @@ export function FinanceDashboardPage() {
 
   if (kpisError) {
     return (
-      <PageContainer maxWidth="xl" padding="default">
+      <PageContainer maxWidth="full" padding="default">
         <PageHeader
           title={t('finance:dashboard.title')}
           breadcrumbs={[
@@ -107,7 +106,7 @@ export function FinanceDashboardPage() {
   }
 
   return (
-    <PageContainer maxWidth="xl" padding="default" className="space-y-6">
+    <PageContainer maxWidth="full" padding="default" className="space-y-6">
       <PageHeader
         title={t('finance:dashboard.title')}
         breadcrumbs={[

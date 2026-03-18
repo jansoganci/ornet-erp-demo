@@ -21,6 +21,21 @@ function trim(val) {
   return String(val).trim();
 }
 
+/**
+ * Sanitize a cell value: coerce to string, strip newlines (take first line),
+ * handle scientific notation from Excel (e.g. 5.398620178e+09 → "5398620178").
+ */
+function sanitizeCell(val) {
+  if (val == null) return '';
+  // Excel may produce numbers in scientific notation — coerce to full integer string
+  if (typeof val === 'number') {
+    if (!Number.isFinite(val)) return '';
+    return Number.isInteger(val) ? String(val) : String(Math.round(val));
+  }
+  // Take only the first line if cell contains newlines
+  return String(val).split(/[\r\n]/)[0].trim();
+}
+
 function excelSerialToDate(serial) {
   const utcMs = (serial - 25569) * 86400 * 1000;
   const date = new Date(utcMs);
@@ -75,14 +90,14 @@ export function parseXlsxFile(arrayBuffer) {
 
 /**
  * Validate and map Excel rows to internal payload objects.
- * Returns { rows, errors } where errors are { rowIndex, field, message, rowNum }.
+ * Returns { rows, errors } where errors are { rowNum, field, message } (rowIndex kept for internal use).
  */
 export function validateAndMapRows(excelRows) {
   const errors = [];
   const rows = [];
 
   if (excelRows.length > MAX_ROWS) {
-    errors.push({ rowIndex: -1, field: '_limit', message: 'MAX_ROWS', rowNum: 0 });
+    errors.push({ rowNum: 0, field: '_limit', message: 'MAX_ROWS', rowIndex: -1 });
     return { rows: [], errors };
   }
 
@@ -95,20 +110,25 @@ export function validateAndMapRows(excelRows) {
     const company_name = get('MÜŞTERİ');
     const subscriber_title = get('ABONE ÜNVANI');
     const alarm_center = get('MERKEZ');
-    const account_no = get('ACC.');
+    const account_no = sanitizeCell(raw['ACC.']);
     const site_name = get('LOKASYON');
     const city = get('İL');
     const district = get('İLÇE');
     const connection_date_raw = get('BAĞLANTI TARİHİ');
 
-    // Required field validation (MERKEZ, ACC., İL, İLÇE, BAĞLANTI TARİHİ are optional)
-    if (!company_name) errors.push({ rowIndex, field: 'MÜŞTERİ', message: 'required', rowNum });
-    if (!subscriber_title) errors.push({ rowIndex, field: 'ABONE ÜNVANI', message: 'required', rowNum });
-    if (!site_name) errors.push({ rowIndex, field: 'LOKASYON', message: 'required', rowNum });
+    // Tüm alanlar zorunlu — her hata { rowNum, field, message }
+    if (!company_name) errors.push({ rowNum, field: 'MÜŞTERİ', message: 'required', rowIndex });
+    if (!subscriber_title) errors.push({ rowNum, field: 'ABONE ÜNVANI', message: 'required', rowIndex });
+    if (!alarm_center) errors.push({ rowNum, field: 'MERKEZ', message: 'required', rowIndex });
+    if (!account_no) errors.push({ rowNum, field: 'ACC.', message: 'required', rowIndex });
+    if (!site_name) errors.push({ rowNum, field: 'LOKASYON', message: 'required', rowIndex });
+    if (!city) errors.push({ rowNum, field: 'İL', message: 'required', rowIndex });
+    if (!district) errors.push({ rowNum, field: 'İLÇE', message: 'required', rowIndex });
+    if (!connection_date_raw) errors.push({ rowNum, field: 'BAĞLANTI TARİHİ', message: 'required', rowIndex });
 
     const connection_date = parseConnectionDate(connection_date_raw);
     if (connection_date_raw && !connection_date) {
-      errors.push({ rowIndex, field: 'BAĞLANTI TARİHİ', message: 'invalid_date', rowNum });
+      errors.push({ rowNum, field: 'BAĞLANTI TARİHİ', message: 'invalid_date', rowIndex });
     }
 
     rows.push({

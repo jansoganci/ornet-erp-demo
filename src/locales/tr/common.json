@@ -212,6 +212,11 @@
     "noNotes": "Not yok",
     "notes": "Not yok"
   },
+  "combobox": {
+    "searchCustomer": "Müşteri ara...",
+    "noCustomerFound": "Müşteri bulunamadı",
+    "clearSelection": "Seçimi kaldır"
+  },
   "labels": {
     "admin": "Yönetici",
     "unknown": "Bilinmiyor",

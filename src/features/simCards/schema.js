@@ -15,7 +15,7 @@ export const simCardSchema = z.object({
   provider_company_id: z.string().uuid().nullable().optional(),
   customer_id: z.string().uuid().nullable().optional(),
   site_id: z.string().uuid().nullable().optional(),
-  imsi: z.string().regex(/^\d{15}$/, 'IMSI 15 haneli olmalıdır').optional().or(z.literal('')),
+  imsi: z.string().regex(/^[A-Za-z0-9]{5}$/, 'IMSI 5 karakterli olmalıdır').optional().or(z.literal('')),
   gprs_serial_no: z.string().optional().or(z.literal('')),
   account_no: z.string().optional().or(z.literal('')),
   cost_price: z.number().min(0).default(0),

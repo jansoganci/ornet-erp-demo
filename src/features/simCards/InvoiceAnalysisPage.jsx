@@ -1,12 +1,12 @@
 import { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FileSearch, UploadCloud, RefreshCw, AlertTriangle } from 'lucide-react';
+import { FileSearch, UploadCloud, RefreshCw, AlertTriangle, FileText, DollarSign, CheckCircle2, AlertCircle, TrendingUp, Activity } from 'lucide-react';
 import { PageContainer, PageHeader } from '../../components/layout';
-import { Button, Card, Spinner, ErrorState } from '../../components/ui';
+import { Button, Card, Spinner, ErrorState, KpiCard } from '../../components/ui';
 import { parseTurkcellPdf } from './utils/parseTurkcellPdf';
 import { compareInvoiceToInventory } from './utils/compareInvoiceToInventory';
 import { fetchAllTurkcellSimCards } from './api';
-import { InvoiceSummaryCards } from './components/InvoiceSummaryCards';
+import { formatCurrency } from '../../lib/utils';
 import { InvoiceAlertsPanel } from './components/InvoiceAlertsPanel';
 import { InvoiceTariffChart } from './components/InvoiceTariffChart';
 import { InvoiceResultTabs } from './components/InvoiceResultTabs';
@@ -85,7 +85,7 @@ export function InvoiceAnalysisPage() {
     : '';
 
   return (
-    <PageContainer>
+    <PageContainer maxWidth="full">
       {/* Loading overlays */}
       {(state === STATES.PARSING || state === STATES.LOADING_INVENTORY) && (
         <div className="fixed inset-0 bg-white/80 dark:bg-black/80 flex items-center justify-center z-50">
@@ -224,12 +224,44 @@ export function InvoiceAnalysisPage() {
               </div>
             )}
 
-            <InvoiceSummaryCards
-              summary={{
-                ...comparison.summary,
-                totalInvoiceAmount: parseResult.totalInvoiceAmount,
-              }}
-            />
+            <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 mb-6">
+              <KpiCard
+                title={t('summary.totalLines')}
+                value={(comparison.summary?.totalLines ?? 0).toLocaleString('tr-TR')}
+                icon={FileText}
+                variant="default"
+              />
+              <KpiCard
+                title={t('summary.totalAmount')}
+                value={formatCurrency(parseResult.totalInvoiceAmount ?? comparison.summary?.totalInvoiceAmount ?? 0)}
+                icon={DollarSign}
+                variant="info"
+              />
+              <KpiCard
+                title={t('summary.matched')}
+                value={(comparison.summary?.matchedCount ?? 0).toLocaleString('tr-TR')}
+                icon={CheckCircle2}
+                variant="success"
+              />
+              <KpiCard
+                title={t('summary.invoiceOnly')}
+                value={(comparison.summary?.invoiceOnlyCount ?? 0).toLocaleString('tr-TR')}
+                icon={AlertCircle}
+                variant="error"
+              />
+              <KpiCard
+                title={t('summary.overageCount')}
+                value={(comparison.summary?.overageCount ?? 0).toLocaleString('tr-TR')}
+                icon={Activity}
+                variant="warning"
+              />
+              <KpiCard
+                title={t('summary.estimatedProfitLoss')}
+                value={formatCurrency(comparison.summary?.totalProfit ?? 0)}
+                icon={TrendingUp}
+                variant={(comparison.summary?.totalProfit ?? 0) >= 0 ? 'success' : 'error'}
+              />
+            </div>
 
             <InvoiceAlertsPanel
               invoiceOnly={comparison.invoiceOnly}

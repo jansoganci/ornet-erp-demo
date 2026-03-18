@@ -104,7 +104,7 @@ export function DailyWorkListPage() {
 
   if (isLoading) {
     return (
-      <PageContainer maxWidth="xl" padding="default">
+      <PageContainer maxWidth="full" padding="default">
         <div className="mt-12">
           <CardSkeleton count={4} />
         </div>
@@ -113,7 +113,7 @@ export function DailyWorkListPage() {
   }
 
   return (
-    <PageContainer maxWidth="xl" padding="default" className="space-y-5">
+    <PageContainer maxWidth="full" padding="default" className="space-y-5">
       {/* Week bar */}
       <div className="flex items-center gap-2">
         <button

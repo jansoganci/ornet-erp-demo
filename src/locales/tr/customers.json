@@ -3,6 +3,7 @@
     "title": "Müşteriler",
     "searchPlaceholder": "Müşteri ara...",
     "addButton": "Müşteri Ekle",
+    "exportButton": "Excel İndir",
     "importButton": "İçe Aktar",
     "columns": {
       "name": "Müşteri Adı",
@@ -19,16 +20,14 @@
     },
     "count": "{{count}} müşteri",
     "siteCount": "{{count}} lokasyon",
-    "views": {
-      "customers": "Müşteriler",
-      "sites": "Lokasyonlar"
-    },
     "siteColumns": {
-      "customer": "Müşteri",
-      "siteName": "Lokasyon Adı",
-      "alarmCenter": "Alarm Merkezi",
-      "accountNo": "Hesap No",
-      "city": "Şehir / İlçe",
+      "company": "Müşteri",
+      "subscriberTitle": "Abone Ünvanı",
+      "alarmCenter": "Merkez",
+      "accountNo": "ACC.",
+      "siteName": "Lokasyon",
+      "city": "İl",
+      "district": "İlçe",
       "connectionDate": "Bağlantı Tarihi"
     },
     "noResults": {
@@ -105,10 +104,17 @@
     "title": "Lokasyonlar",
     "addButton": "Yeni Lokasyon Ekle",
     "editButton": "Lokasyonu Düzenle",
+    "deactivate": "Devre dışı bırak",
+    "activate": "Aktif et",
+    "delete": "Sil",
+    "deleteTitle": "Lokasyonu Sil",
+    "deleteMessage": "\"{{name}}\" lokasyonunu silmek istediğinizden emin misiniz?",
+    "deleteBlocked": "Bu lokasyonda abonelik olduğu için silinemez. Devre dışı bırakabilirsiniz.",
     "noSites": "Bu müşteri için henüz lokasyon eklenmemiş.",
     "siteCount": "{{count}} Lokasyon",
     "fields": {
       "accountNo": "Hesap No",
+      "alarmCenter": "Alarm Merkezi",
       "siteName": "Lokasyon Adı",
       "address": "Adres",
       "city": "Şehir",
@@ -123,6 +129,8 @@
       "accountNo": "Örn: 123456",
       "siteName": "Örn: Merkez Şube",
       "address": "Tam adres (isteğe bağlı - sonra eklenebilir)",
+      "contactName": "Yetkili kişi adı",
+      "contactPhone": "0555 123 4567",
       "panelInfo": "Örn: DSC 1616",
       "notes": "Lokasyona özel notlar"
     }
@@ -130,6 +138,13 @@
   "form": {
     "addTitle": "Yeni Müşteri",
     "editTitle": "Müşteri Düzenle",
+    "firstSite": {
+      "title": "Lokasyon Bilgisi",
+      "description": "İsteğe bağlı — ilk lokasyonu buradan ekleyebilirsiniz. Sonradan detay sayfasından da ekleyebilirsiniz.",
+      "editDescription": "İlk lokasyonu buradan düzenleyebilirsiniz.",
+      "moreLocations": "{{count}} lokasyon daha var. Hepsi için",
+      "moreLocationsLink": "detay sayfasına gidin"
+    },
     "fields": {
       "name": "Müşteri Adı",
       "companyName": "Müşteri Adı",
@@ -170,6 +185,8 @@
     "selectFile": "Dosya Seç",
     "downloadTemplate": "Şablon İndir",
     "validRows": "{{count}} geçerli satır",
+    "willImport": "({{count}} satır içe aktarılacak)",
+    "willSkip": "(atlanacak)",
     "invalidRows": "{{count}} hatalı satır",
     "errors": "Doğrulama Hataları",
     "rowError": "Satır {{row}}: {{field}} — {{message}}",
@@ -181,9 +198,11 @@
     "success": "{{created}} lokasyon oluşturuldu, {{skipped}} atlandı",
     "partialSuccess": "İçe aktarma tamamlandı: {{created}} oluşturuldu, {{skipped}} atlandı, {{failed}} hata",
     "resultSummary": "{{created}} oluşturuldu, {{skipped}} atlandı, {{failed}} hata",
+    "validationSkippedCount": "{{count}} satır doğrulama hatası nedeniyle içe aktarılmadı (Excel'de düzeltip tekrar deneyin)",
     "status": {
       "created": "Oluşturuldu",
       "skipped": "Atlandı",
+      "validationSkipped": "Atlandı (hatalı)",
       "failed": "Hata"
     },
     "andMoreRows": "{{count}} satır daha...",

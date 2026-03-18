@@ -244,7 +244,10 @@ export function WorkOrderFormPage() {
           <CustomerSiteSelector
             selectedCustomerId={selectedCustomerId}
             selectedSiteId={selectedSiteId}
-            onCustomerChange={(cid) => setSelectedCustomerId(cid)}
+            onCustomerChange={(cid) => {
+              setSelectedCustomerId(cid || '');
+              setValue('site_id', '', { shouldValidate: true });
+            }}
             onSiteChange={(sid) => setValue('site_id', sid, { shouldValidate: true })}
             onAddNewCustomer={() => navigate('/customers/new')}
             onAddNewSite={() => setShowSiteModal(true)}

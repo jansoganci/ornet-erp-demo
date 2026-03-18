@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { MapPin, Phone, User, Edit2, ClipboardList, Info, ChevronRight, CreditCard, Plus, Building2, Calendar } from 'lucide-react';
+import { MapPin, Phone, User, Edit2, ClipboardList, Info, ChevronRight, CreditCard, Plus, Building2, Calendar, Pause, Play, Trash2 } from 'lucide-react';
 import { 
   Card, 
   Button, 
@@ -18,6 +18,8 @@ export function SiteCard({
   onCreateWorkOrder,
   onViewHistory,
   onAddSubscription,
+  onToggleActive,
+  onDelete,
   className 
 }) {
   const { t } = useTranslation(['customers', 'common', 'workOrders', 'subscriptions']);
@@ -50,16 +52,36 @@ export function SiteCard({
               </div>
             </div>
           </div>
-          {onEdit && (
-            <IconButton
-              icon={Edit2}
-              size="sm"
-              variant="ghost"
-              onClick={() => onEdit(site)}
-              aria-label={t('common:actions.edit')}
-              className="opacity-0 group-hover:opacity-100 transition-opacity"
-            />
-          )}
+          <div className="flex items-center gap-0.5">
+            {onEdit && (
+              <IconButton
+                icon={Edit2}
+                size="sm"
+                variant="ghost"
+                onClick={() => onEdit(site)}
+                aria-label={t('common:actions.edit')}
+              />
+            )}
+            {onToggleActive && (
+              <IconButton
+                icon={site.is_active !== false ? Pause : Play}
+                size="sm"
+                variant="ghost"
+                onClick={() => onToggleActive(site)}
+                aria-label={site.is_active !== false ? t('customers:sites.deactivate') : t('customers:sites.activate')}
+              />
+            )}
+            {onDelete && (
+              <IconButton
+                icon={Trash2}
+                size="sm"
+                variant="ghost"
+                className="text-error-500 hover:text-error-600"
+                onClick={() => onDelete(site)}
+                aria-label={t('common:actions.delete')}
+              />
+            )}
+          </div>
         </div>
 
         {/* Content */}
@@ -145,7 +167,7 @@ export function SiteCard({
                         {t(`subscriptions:statuses.${sub.status}`)}
                       </Badge>
                       <span className="text-xs text-neutral-600 dark:text-neutral-400 truncate">
-                        {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', minimumFractionDigits: 0 }).format(Number(sub.base_price) || 0)}
+                        {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', minimumFractionDigits: 0 }).format(Number(sub.subtotal) || 0)}
                         {sub.billing_frequency && sub.billing_frequency !== 'monthly' && ` / ${t(`subscriptions:form.fields.${sub.billing_frequency}`)}`}
                       </span>
                     </div>

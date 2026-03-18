@@ -90,11 +90,12 @@ export function Table({
                     className={cn(
                       'px-6 py-3.5 text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider',
                       alignClasses[column.align || 'left'],
+                      column.headerClassName,
                       column.stickyRight && 'sticky right-0 bg-neutral-50 dark:bg-[#1a1a1a] shadow-[-4px_0_8px_-2px_rgba(0,0,0,0.05)] dark:shadow-[-4px_0_8px_-2px_rgba(0,0,0,0.3)] z-10'
                     )}
                     style={
-                      column.width || column.maxWidth
-                        ? { width: column.width, maxWidth: column.maxWidth }
+                      column.width || column.maxWidth || column.minWidth
+                        ? { width: column.width, minWidth: column.minWidth, maxWidth: column.maxWidth }
                         : undefined
                     }
                   >
@@ -146,7 +147,9 @@ export function Table({
                           column.stickyRight && 'sticky right-0 bg-white dark:bg-[#171717] shadow-[-4px_0_8px_-2px_rgba(0,0,0,0.05)] dark:shadow-[-4px_0_8px_-2px_rgba(0,0,0,0.3)] z-10'
                         )}
                         style={
-                          column.maxWidth ? { maxWidth: column.maxWidth } : undefined
+                          column.minWidth || column.maxWidth
+                            ? { minWidth: column.minWidth, maxWidth: column.maxWidth }
+                            : undefined
                         }
                       >
                         {column.render

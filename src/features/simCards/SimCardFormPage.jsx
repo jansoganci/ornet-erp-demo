@@ -2,14 +2,14 @@ import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useEffect, useMemo } from 'react';
+import { useEffect } from 'react';
 import { Smartphone, Signal, User, MapPin, DollarSign, FileText, StickyNote } from 'lucide-react';
 import { useSimCard, useCreateSimCard, useUpdateSimCard, useProviderCompanies } from './hooks';
 import { simCardSchema, simCardDefaultValues } from './schema';
-import { useCustomers } from '../customers/hooks';
+import { useCustomer } from '../customers/hooks';
 import { useSitesByCustomer } from '../customerSites/hooks';
 import { PageContainer } from '../../components/layout';
-import { Button, Card, Input, Spinner, Textarea, Select, FormSkeleton } from '../../components/ui';
+import { Button, Card, Input, Spinner, Textarea, Select, FormSkeleton, CustomerCombobox } from '../../components/ui';
 import { SimCardFormHero } from './components/SimCardFormHero';
 import { getCurrencySymbol } from '../../lib/utils';
 
@@ -28,7 +28,6 @@ export function SimCardFormPage() {
   const createSimCard = useCreateSimCard();
   const updateSimCard = useUpdateSimCard();
 
-  const { data: customers } = useCustomers();
   const { data: providerCompanies } = useProviderCompanies();
 
   const {
@@ -50,11 +49,7 @@ export function SimCardFormPage() {
   const selectedCustomerId = watch('customer_id');
   const selectedCurrency = watch('currency') || 'TRY';
   const { data: sites } = useSitesByCustomer(selectedCustomerId);
-
-  const selectedCustomer = useMemo(() => 
-    customers?.find(c => c.id === selectedCustomerId),
-    [customers, selectedCustomerId]
-  );
+  const { data: selectedCustomer } = useCustomer(selectedCustomerId);
 
   useEffect(() => {
     if (isEdit && simCard) {
@@ -95,7 +90,6 @@ export function SimCardFormPage() {
     return <FormSkeleton />;
   }
 
-  const customerOptions = customers?.map(c => ({ value: c.id, label: c.company_name })) || [];
   const siteOptions = sites?.map(s => {
     const loc = [s.site_name, s.address, s.district, s.city].filter(Boolean).join(', ');
     return {
@@ -249,17 +243,16 @@ export function SimCardFormPage() {
                 name="customer_id"
                 control={control}
                 render={({ field }) => (
-                  <Select
+                  <CustomerCombobox
                     label={t('simCards:list.columns.customer')}
-                    options={customerOptions}
-                    placeholder={t('simCards:form.placeholders.selectCustomer')}
-                    error={errors.customer_id?.message}
                     value={field.value || ''}
-                    onChange={(e) => {
-                      field.onChange(e.target.value || null);
+                    selectedCustomer={selectedCustomer}
+                    onChange={(id) => {
+                      field.onChange(id || null);
                       setValue('site_id', null);
                     }}
-                    className="rounded-xl"
+                    placeholder={t('simCards:form.placeholders.selectCustomer')}
+                    error={errors.customer_id?.message}
                   />
                 )}
               />

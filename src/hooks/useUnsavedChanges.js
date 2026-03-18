@@ -8,26 +8,33 @@ import { useBlocker } from 'react-router-dom';
  * sidebar NavLinks, browser back/forward, programmatic navigate().
  * beforeunload handles tab close and page refresh separately.
  *
+ * @param {Object} options
+ * @param {boolean} options.isDirty - Whether the form has unsaved changes
+ * @param {React.RefObject<boolean>} [options.skipBlockingRef] - When .current is true, do not block (e.g. after successful save)
+ *
  * Returns the native blocker object: { state, proceed, reset }
  */
-export function useUnsavedChanges({ isDirty }) {
-  // Block all internal navigation while form is dirty
+export function useUnsavedChanges({ isDirty, skipBlockingRef }) {
+  // Block all internal navigation while form is dirty (read ref inside predicate so it's evaluated at block-time)
   const blocker = useBlocker(
     ({ currentLocation, nextLocation }) =>
-      isDirty && currentLocation.pathname !== nextLocation.pathname
+      !(skipBlockingRef?.current) &&
+      isDirty &&
+      currentLocation.pathname !== nextLocation.pathname
   );
 
-  // Block tab close / page refresh (native browser dialog)
+  // Block tab close / page refresh (native browser dialog) — read ref at event time
   useEffect(() => {
     const handleBeforeUnload = (e) => {
-      if (isDirty) {
+      const skip = skipBlockingRef?.current;
+      if (!skip && isDirty) {
         e.preventDefault();
         e.returnValue = '';
       }
     };
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [isDirty]);
+  }, [isDirty, skipBlockingRef]);
 
   return blocker;
 }

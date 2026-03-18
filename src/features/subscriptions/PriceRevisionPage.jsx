@@ -195,7 +195,6 @@ export function PriceRevisionPage() {
         [t('subscriptions:priceRevision.columns.site')]: row.site_name || '',
         [t('subscriptions:priceRevision.columns.accountNo')]: row.account_no || '',
         [t('subscriptions:priceRevision.columns.startDate')]: formatDate(row.start_date),
-        [t('subscriptions:priceRevision.columns.type')]: row.subscription_type ? t(`subscriptions:types.${row.subscription_type}`) : '',
         [t('subscriptions:priceRevision.columns.serviceType')]: row.service_type ? t(`subscriptions:serviceTypes.${row.service_type}`) : '',
         [t('subscriptions:priceRevision.columns.billingFrequency')]: t(`subscriptions:priceRevision.filters.${row.billing_frequency || 'monthly'}`),
         [t('subscriptions:priceRevision.zamPercent')]: row.zam_percent != null && row.zam_percent !== '' ? Number(row.zam_percent) : '',
@@ -218,7 +217,7 @@ export function PriceRevisionPage() {
 
   if (isLoading) {
     return (
-      <PageContainer maxWidth="xl" padding="default">
+      <PageContainer maxWidth="full" padding="default">
         <PageHeader title={t('subscriptions:priceRevision.title')} />
         <div className="mt-6">
           <TableSkeleton cols={8} />
@@ -229,7 +228,7 @@ export function PriceRevisionPage() {
 
   if (error) {
     return (
-      <PageContainer maxWidth="xl" padding="default">
+      <PageContainer maxWidth="full" padding="default">
         <PageHeader title={t('subscriptions:priceRevision.title')} />
         <ErrorState message={error.message} onRetry={refetch} />
       </PageContainer>
@@ -238,7 +237,7 @@ export function PriceRevisionPage() {
 
   if (!isAdmin) {
     return (
-      <PageContainer>
+      <PageContainer maxWidth="full">
         <PageHeader title={t('subscriptions:priceRevision.title')} />
         <Card className="p-8 text-center space-y-4">
           <p className="text-neutral-600 dark:text-neutral-400">
@@ -263,6 +262,7 @@ export function PriceRevisionPage() {
   const billingFrequencyOptions = [
     { value: 'all', label: t('subscriptions:priceRevision.filters.all') },
     { value: 'monthly', label: t('subscriptions:priceRevision.filters.monthly') },
+    { value: '3_month', label: t('subscriptions:priceRevision.filters.3_month') },
     { value: '6_month', label: t('subscriptions:priceRevision.filters.6_month') },
     { value: 'yearly', label: t('subscriptions:priceRevision.filters.yearly') },
   ];
@@ -290,15 +290,6 @@ export function PriceRevisionPage() {
       header: t('subscriptions:priceRevision.columns.startDate'),
       accessor: 'start_date',
       render: (value) => <span className="text-sm whitespace-nowrap">{formatDate(value)}</span>,
-    },
-    {
-      header: t('subscriptions:priceRevision.columns.type'),
-      accessor: 'subscription_type',
-      render: (value) => (
-        <Badge variant="outline" size="sm">
-          {t(`subscriptions:types.${value}`)}
-        </Badge>
-      ),
     },
     {
       header: t('subscriptions:priceRevision.columns.serviceType'),
@@ -544,7 +535,7 @@ export function PriceRevisionPage() {
   ];
 
   return (
-    <PageContainer maxWidth="xl" padding="default" className="space-y-6">
+    <PageContainer maxWidth="full" padding="default" className="space-y-6">
       <PageHeader
         title={t('subscriptions:priceRevision.title')}
         actions={

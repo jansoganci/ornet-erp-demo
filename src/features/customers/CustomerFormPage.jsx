@@ -1,14 +1,52 @@
-import { useParams, useNavigate, Navigate } from 'react-router-dom';
+import { useParams, useNavigate, Navigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useCustomer, useCreateCustomer, useUpdateCustomer } from './hooks';
-import { customerSchema, customerDefaultValues } from './schema';
+import { useSitesByCustomer, useCreateSite, useUpdateSite } from '../customerSites/hooks';
+import {
+  customerDefaultValues,
+  customerCreateSchema,
+  customerCreateDefaultValues,
+} from './schema';
 import { PageContainer, PageHeader } from '../../components/layout';
-import { Button, Card, Input, Spinner, Textarea, FormSkeleton } from '../../components/ui';
+import { Button, Card, Input, Textarea, FormSkeleton } from '../../components/ui';
 import { useEffect } from 'react';
 import { maskPhone } from '../../lib/utils';
 import { useRole } from '../../lib/roles';
+
+const FIRST_SITE_KEYS = [
+  'first_site_site_name',
+  'first_site_account_no',
+  'first_site_address',
+  'first_site_city',
+  'first_site_district',
+  'first_site_contact_name',
+  'first_site_contact_phone',
+  'first_site_panel_info',
+  'first_site_notes',
+];
+
+function hasFirstSiteData(data) {
+  return FIRST_SITE_KEYS.some((key) => {
+    const v = data[key];
+    return typeof v === 'string' && v.trim() !== '';
+  });
+}
+
+function buildSitePayload(data) {
+  return {
+    site_name: data.first_site_site_name?.trim() || null,
+    account_no: data.first_site_account_no?.trim() || null,
+    address: data.first_site_address?.trim() || null,
+    city: data.first_site_city?.trim() || null,
+    district: data.first_site_district?.trim() || null,
+    contact_name: data.first_site_contact_name?.trim() || null,
+    contact_phone: data.first_site_contact_phone?.trim() || null,
+    panel_info: data.first_site_panel_info?.trim() || null,
+    notes: data.first_site_notes?.trim() || null,
+  };
+}
 
 export function CustomerFormPage() {
   const { id } = useParams();
@@ -21,8 +59,13 @@ export function CustomerFormPage() {
 
   if (isFieldWorker) return <Navigate to="/customers" replace />;
   const { data: customer, isLoading: customerLoading } = useCustomer(id);
+  const { data: sites = [], isLoading: sitesLoading } = useSitesByCustomer(id);
   const createCustomer = useCreateCustomer();
   const updateCustomer = useUpdateCustomer();
+  const createSite = useCreateSite();
+  const updateSite = useUpdateSite();
+
+  const firstSite = sites.length > 0 ? sites[0] : null;
 
   const {
     register,
@@ -30,14 +73,14 @@ export function CustomerFormPage() {
     reset,
     formState: { errors, isSubmitting },
   } = useForm({
-    resolver: zodResolver(customerSchema),
-    defaultValues: customerDefaultValues,
+    resolver: zodResolver(customerCreateSchema),
+    defaultValues: customerCreateDefaultValues,
   });
 
-  // Populate form when editing
+  // Populate form when editing (customer + first site if any)
   useEffect(() => {
     if (isEdit && customer) {
-      reset({
+      const base = {
         company_name: customer.company_name || '',
         subscriber_title: customer.subscriber_title || '',
         phone: customer.phone || '',
@@ -45,9 +88,33 @@ export function CustomerFormPage() {
         email: customer.email || '',
         tax_number: customer.tax_number || '',
         notes: customer.notes || '',
-      });
+      };
+      const siteFields = firstSite
+        ? {
+            first_site_site_name: firstSite.site_name || '',
+            first_site_account_no: firstSite.account_no || '',
+            first_site_address: firstSite.address || '',
+            first_site_city: firstSite.city || '',
+            first_site_district: firstSite.district || '',
+            first_site_contact_name: firstSite.contact_name || '',
+            first_site_contact_phone: firstSite.contact_phone || '',
+            first_site_panel_info: firstSite.panel_info || '',
+            first_site_notes: firstSite.notes || '',
+          }
+        : {
+            first_site_site_name: '',
+            first_site_account_no: '',
+            first_site_address: '',
+            first_site_city: '',
+            first_site_district: '',
+            first_site_contact_name: '',
+            first_site_contact_phone: '',
+            first_site_panel_info: '',
+            first_site_notes: '',
+          };
+      reset({ ...base, ...siteFields });
     }
-  }, [isEdit, customer, reset]);
+  }, [isEdit, customer, firstSite, reset]);
 
   const handleBack = () => {
     if (isEdit) {
@@ -59,19 +126,38 @@ export function CustomerFormPage() {
 
   const onSubmit = async (data) => {
     try {
-      // Clean empty strings to null
-      const cleanedData = Object.fromEntries(
-        Object.entries(data).map(([key, value]) => [
-          key,
-          value === '' ? null : value,
-        ])
-      );
-
       if (isEdit) {
-        await updateCustomer.mutateAsync({ id, ...cleanedData });
+        const customerData = Object.fromEntries(
+          Object.entries(data)
+            .filter(([k]) => !FIRST_SITE_KEYS.includes(k))
+            .map(([key, value]) => [key, value === '' ? null : value])
+        );
+        await updateCustomer.mutateAsync({ id, ...customerData });
+        if (sites.length === 0 && hasFirstSiteData(data)) {
+          const sitePayload = {
+            customer_id: id,
+            ...buildSitePayload(data),
+          };
+          await createSite.mutateAsync(sitePayload);
+        } else if (sites.length >= 1) {
+          const sitePayload = buildSitePayload(data);
+          await updateSite.mutateAsync({ id: firstSite.id, data: sitePayload });
+        }
         navigate(`/customers/${id}`);
       } else {
-        const newCustomer = await createCustomer.mutateAsync(cleanedData);
+        const customerData = Object.fromEntries(
+          Object.entries(data)
+            .filter(([k]) => !FIRST_SITE_KEYS.includes(k))
+            .map(([key, value]) => [key, value === '' ? null : value])
+        );
+        const newCustomer = await createCustomer.mutateAsync(customerData);
+        if (hasFirstSiteData(data)) {
+          const sitePayload = {
+            customer_id: newCustomer.id,
+            ...buildSitePayload(data),
+          };
+          await createSite.mutateAsync(sitePayload);
+        }
         navigate(`/customers/${newCustomer.id}`);
       }
     } catch {
@@ -79,12 +165,12 @@ export function CustomerFormPage() {
     }
   };
 
-  if (isEdit && customerLoading) {
+  if (isEdit && (customerLoading || sitesLoading)) {
     return <FormSkeleton />;
   }
 
   return (
-    <PageContainer maxWidth="full" padding="default">
+    <PageContainer maxWidth="4xl" padding="default">
       <PageHeader
         title={isEdit ? t('customers:form.editTitle') : t('customers:form.addTitle')}
         breadcrumbs={[
@@ -162,6 +248,90 @@ export function CustomerFormPage() {
             </div>
           </div>
 
+          <div className="mt-8 pt-6 border-t border-neutral-200 dark:border-[#262626]">
+            <h3 className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
+              {t('customers:form.firstSite.title')}
+            </h3>
+            <p className={`text-xs text-neutral-500 dark:text-neutral-400 ${isEdit && sites.length > 1 ? 'mb-2' : 'mb-6'}`}>
+              {!isEdit
+                ? t('customers:form.firstSite.description')
+                : t('customers:form.firstSite.editDescription')}
+            </p>
+            {isEdit && sites.length > 1 && (
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-6">
+                {t('customers:form.firstSite.moreLocations', { count: sites.length - 1 })}{' '}
+                <Link
+                  to={`/customers/${id}?tab=locations`}
+                  className="text-primary-600 dark:text-primary-400 hover:underline font-medium"
+                >
+                  {t('customers:form.firstSite.moreLocationsLink')}
+                </Link>
+              </p>
+            )}
+            <div className="grid grid-cols-1 gap-y-6 lg:grid-cols-2 lg:gap-6">
+                <Input
+                  label={t('customers:sites.fields.siteName')}
+                  placeholder={t('customers:sites.placeholders.siteName')}
+                  error={errors.first_site_site_name?.message}
+                  {...register('first_site_site_name')}
+                />
+                <Input
+                  label={t('customers:sites.fields.accountNo')}
+                  placeholder={t('customers:sites.placeholders.accountNo')}
+                  error={errors.first_site_account_no?.message}
+                  {...register('first_site_account_no')}
+                />
+                <div className="lg:col-span-2">
+                  <Textarea
+                    label={t('customers:sites.fields.address')}
+                    placeholder={t('customers:sites.placeholders.address')}
+                    error={errors.first_site_address?.message}
+                    {...register('first_site_address')}
+                  />
+                </div>
+                <Input
+                  label={t('customers:sites.fields.city')}
+                  error={errors.first_site_city?.message}
+                  {...register('first_site_city')}
+                />
+                <Input
+                  label={t('customers:sites.fields.district')}
+                  error={errors.first_site_district?.message}
+                  {...register('first_site_district')}
+                />
+                <Input
+                  label={t('customers:sites.fields.contactName')}
+                  placeholder={t('customers:sites.placeholders.contactName')}
+                  error={errors.first_site_contact_name?.message}
+                  {...register('first_site_contact_name')}
+                />
+                <Input
+                  label={t('customers:sites.fields.contactPhone')}
+                  placeholder={t('customers:sites.placeholders.contactPhone')}
+                  error={errors.first_site_contact_phone?.message}
+                  {...register('first_site_contact_phone', {
+                    onChange: (e) => {
+                      e.target.value = maskPhone(e.target.value);
+                    },
+                  })}
+                />
+                <div className="lg:col-span-2">
+                  <Input
+                    label={t('customers:sites.fields.panelInfo')}
+                    error={errors.first_site_panel_info?.message}
+                    {...register('first_site_panel_info')}
+                  />
+                </div>
+                <div className="lg:col-span-2">
+                  <Textarea
+                    label={t('common:fields.notes')}
+                    error={errors.first_site_notes?.message}
+                    {...register('first_site_notes')}
+                  />
+                </div>
+            </div>
+          </div>
+
           <div className="mt-8 pt-6 border-t border-neutral-200 dark:border-[#262626] flex justify-end gap-2">
             <Button variant="outline" type="button" onClick={handleBack}>
               {tCommon('actions.cancel')}
@@ -169,7 +339,13 @@ export function CustomerFormPage() {
             <Button
               variant="primary"
               type="submit"
-              loading={isSubmitting || createCustomer.isPending || updateCustomer.isPending}
+              loading={
+                isSubmitting ||
+                createCustomer.isPending ||
+                updateCustomer.isPending ||
+                createSite.isPending ||
+                updateSite.isPending
+              }
             >
               {isEdit ? tCommon('actions.update') : tCommon('actions.create')}
             </Button>

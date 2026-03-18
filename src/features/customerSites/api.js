@@ -81,22 +81,21 @@ export async function deleteSite(id) {
 }
 
 export async function fetchAllSites({ search = '' } = {}) {
-  let query = supabase
+  if (search && search.trim()) {
+    const { data, error } = await supabase.rpc('search_customer_sites', {
+      search_query: search.trim(),
+    });
+    if (error) throw error;
+    return data ?? [];
+  }
+
+  const { data, error } = await supabase
     .from('customer_sites')
     .select('*, customers(company_name, subscriber_title)')
     .is('deleted_at', null)
     .order('created_at', { ascending: false });
-
-  if (search) {
-    const normalized = normalizeForSearch(search);
-    query = query.or(
-      `account_no_search.ilike.%${normalized}%,site_name_search.ilike.%${normalized}%`
-    );
-  }
-
-  const { data, error } = await query;
   if (error) throw error;
-  return data;
+  return data ?? [];
 }
 
 export async function searchSites(query) {

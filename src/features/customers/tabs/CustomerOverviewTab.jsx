@@ -1,9 +1,8 @@
 import { useTranslation } from 'react-i18next';
 import { CheckCircle2, Clock, Wifi, AlertTriangle, Phone, Mail, MapPin, FileText } from 'lucide-react';
-import { Card, Button } from '../../../components/ui';
+import { Card, Button, KpiCard } from '../../../components/ui';
 import { formatPhone } from '../../../lib/utils';
 import { useCustomerDetail } from '../CustomerDetailContext';
-import { CustomerMetricCard } from '../components/CustomerMetricCard';
 import { CustomerAlertItem } from '../components/CustomerAlertItem';
 import { RecentWorkOrderRow } from '../components/RecentWorkOrderRow';
 import { LocationSummaryCard } from '../components/LocationSummaryCard';
@@ -61,31 +60,31 @@ export function CustomerOverviewTab() {
       {/* ── 1. Metrik Kartlar ── */}
       <div className={`grid gap-3 ${isFieldWorker ? 'grid-cols-2' : 'grid-cols-2 lg:grid-cols-4'}`}>
         {!isFieldWorker && (
-          <CustomerMetricCard
-            icon={CheckCircle2}
-            label={t('detail.overview.metrics.activeSubscriptions')}
+          <KpiCard
+            title={t('detail.overview.metrics.activeSubscriptions')}
             value={counts.activeSubscriptions ?? 0}
+            icon={CheckCircle2}
             variant="success"
           />
         )}
-        <CustomerMetricCard
-          icon={Clock}
-          label={t('detail.overview.metrics.openWorkOrders')}
+        <KpiCard
+          title={t('detail.overview.metrics.openWorkOrders')}
           value={counts.openWorkOrders ?? 0}
+          icon={Clock}
           variant="info"
         />
         {!isFieldWorker && (
-          <CustomerMetricCard
-            icon={Wifi}
-            label={t('detail.overview.metrics.activeSimCards')}
+          <KpiCard
+            title={t('detail.overview.metrics.activeSimCards')}
             value={counts.activeSimCards ?? 0}
+            icon={Wifi}
             variant="default"
           />
         )}
-        <CustomerMetricCard
-          icon={AlertTriangle}
-          label={t('detail.overview.metrics.faultyEquipment')}
+        <KpiCard
+          title={t('detail.overview.metrics.faultyEquipment')}
           value={counts.faultyEquipment ?? 0}
+          icon={AlertTriangle}
           variant={counts.faultyEquipment > 0 ? 'error' : 'default'}
         />
       </div>

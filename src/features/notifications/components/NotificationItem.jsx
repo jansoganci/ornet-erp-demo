@@ -18,6 +18,7 @@ import {
   BellRing,
   Check,
   Smartphone,
+  Banknote,
 } from 'lucide-react';
 import { cn } from '../../../lib/utils';
 import { Badge } from '../../../components/ui/Badge';
@@ -46,9 +47,13 @@ const ICON_MAP = {
   task_due_soon: { Icon: CheckSquare, bg: 'bg-warning-100 dark:bg-warning-900/40', text: 'text-warning-600 dark:text-warning-400' },
   user_reminder: { Icon: BellRing, bg: 'bg-primary-100 dark:bg-primary-900/40', text: 'text-primary-600 dark:text-primary-400' },
   sim_card_cancelled: { Icon: Smartphone, bg: 'bg-error-100 dark:bg-error-900/40', text: 'text-error-600 dark:text-error-400' },
+  pending_payments_summary: { Icon: Banknote, bg: 'bg-warning-100 dark:bg-warning-900/40', text: 'text-warning-600 dark:text-warning-400' },
 };
 
-function getRoute(entityType, entityId) {
+function getRoute(entityType, entityId, notificationType) {
+  // pending_payments_summary or subscription with null entity_id → subscriptions list
+  if (notificationType === 'pending_payments_summary') return '/subscriptions';
+  if (entityType === 'subscription' && !entityId) return '/subscriptions';
   if (!entityId && entityType !== 'task') return null;
   
   switch (entityType) {
@@ -57,7 +62,7 @@ function getRoute(entityType, entityId) {
     case 'proposal':
       return `/proposals/${entityId}`;
     case 'subscription':
-      return `/subscriptions/${entityId}`;
+      return entityId ? `/subscriptions/${entityId}` : '/subscriptions';
     case 'task':
       return '/tasks';
     case 'sim_card':
@@ -95,7 +100,7 @@ export function NotificationItem({
     : '';
 
   const handleClick = () => {
-    const route = getRoute(entity_type, entity_id);
+    const route = getRoute(entity_type, entity_id, notification_type);
     if (route) navigate(route);
     onNavigate?.();
   };

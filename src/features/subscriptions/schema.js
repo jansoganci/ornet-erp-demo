@@ -8,8 +8,12 @@ const isoDateSchema = z.string().regex(
 );
 
 // Constants
-export const SUBSCRIPTION_TYPES = ['recurring_card', 'manual_cash', 'manual_bank'];
-export const SERVICE_TYPES = ['alarm_only', 'camera_only', 'internet_only', 'alarm_camera', 'alarm_camera_internet', 'camera_internet'];
+export const SERVICE_TYPES = [
+  'A.KIRA.KK', 'A.KIRA.ELDEN', 'A.KIRA.ELDEN.MET', 'A.KIRA.BANKA',
+  'A.S.ALMA', 'A.S.ALMA.YILLIK', 'A.S.ALMA.BANKA',
+  'INT.AYLIK.KK', 'INT.AYLIK.BANKA', 'INT.YILLIK',
+  'K.KIRA.KK', 'K.KIRA.BANKA',
+];
 export const BILLING_FREQUENCIES = ['monthly', '3_month', '6_month', 'yearly'];
 export const SUBSCRIPTION_STATUSES = ['active', 'paused', 'cancelled'];
 export const PAYMENT_STATUSES = ['pending', 'paid', 'failed', 'skipped', 'write_off'];
@@ -28,8 +32,10 @@ const optionalEnum = (enumValues) => z.union([z.enum(enumValues), z.literal('')]
 // Subscription form schema
 export const subscriptionSchema = z.object({
   site_id: z.string().min(1, i18n.t('errors:validation.required')).uuid(),
-  subscription_type: z.enum(SUBSCRIPTION_TYPES),
-
+  start_date: z.string().min(1, i18n.t('errors:validation.required')).regex(
+    /^\d{4}-\d{2}-\d{2}$/,
+    'Geçerli bir tarih giriniz (YYYY-AA-GG)'
+  ),
   billing_day: z.preprocess(toNumber, z.number().int().min(1).max(28).default(1)),
   base_price: z.preprocess(toNumber, z.number({ invalid_type_error: i18n.t('errors:validation.invalidNumber') }).min(0)),
   sms_fee: z.preprocess(toNumber, z.number().min(0).default(0)),
@@ -48,29 +54,22 @@ export const subscriptionSchema = z.object({
   alarm_center: optionalString,
   alarm_center_account: optionalString,
   subscriber_title: optionalString,
-}).refine((data) => {
-  if (data.subscription_type === 'recurring_card') {
-    const hasPaymentMethod = data.payment_method_id && String(data.payment_method_id).trim();
-    const hasInlineCard = data.card_bank_name && data.card_last4 && String(data.card_last4).length === 4;
-    return !!hasPaymentMethod || !!hasInlineCard;
-  }
-  return true;
-}, {
-  message: i18n.t('subscriptions:validation.paymentMethodRequired'),
-  path: ['payment_method_id'],
-}).refine((data) => {
-  if (data.subscription_type === 'manual_cash') {
-    return !!(data.cash_collector_id && String(data.cash_collector_id).trim());
-  }
-  return true;
-}, {
-  message: i18n.t('errors:validation.required'),
-  path: ['cash_collector_id'],
-});
+  payment_start_month: z.preprocess(toNumber, z.number().int().min(1).max(12).nullable().optional()),
+}).refine(
+  (data) => {
+    if (['3_month', '6_month', 'yearly'].includes(data.billing_frequency)) {
+      return data.payment_start_month != null;
+    }
+    return true;
+  },
+  {
+    message: i18n.t('subscriptions:validation.paymentStartMonthRequired'),
+    path: ['payment_start_month'],
+  },
+);
 
 export const subscriptionDefaultValues = {
   site_id: '',
-  subscription_type: 'recurring_card',
   start_date: '',
   billing_day: 1,
   base_price: '',
@@ -96,6 +95,7 @@ export const subscriptionDefaultValues = {
   alarm_center: '',
   alarm_center_account: '',
   subscriber_title: '',
+  payment_start_month: null,
 };
 
 // Payment record schema

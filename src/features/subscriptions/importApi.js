@@ -1,127 +1,142 @@
 import { supabase } from '../../lib/supabase';
-import { createSubscription } from './api';
 
 /**
- * Look up customer by exact company_name (case-insensitive trim).
- * Returns id or null — NEVER creates.
+ * Bulk-fetch all customers (id + company_name) in one query.
+ * Returns a Map: lowercased company_name → customer id.
  */
-async function findCustomer(companyName) {
-  const name = String(companyName).trim();
-  if (!name) return null;
+async function fetchAllCustomers() {
   const { data, error } = await supabase
     .from('customers')
-    .select('id')
-    .ilike('company_name', name)
-    .is('deleted_at', null)
-    .limit(1)
-    .maybeSingle();
+    .select('id, company_name')
+    .is('deleted_at', null);
   if (error) throw error;
-  return data?.id ?? null;
+  const map = new Map();
+  for (const row of data || []) {
+    if (row.company_name) {
+      map.set(row.company_name.trim().toLowerCase(), row.id);
+    }
+  }
+  return map;
 }
 
 /**
- * Look up site by customer_id + site_name (case-insensitive trim).
- * Returns id or null — NEVER creates.
+ * Bulk-fetch all sites (id + customer_id + site_name) in one query.
+ * Returns a Map: "customerId|lowercased site_name" → site id.
  */
-async function findSite(customerId, siteName) {
-  const name = String(siteName).trim();
-  if (!customerId || !name) return null;
+async function fetchAllSites() {
   const { data, error } = await supabase
     .from('customer_sites')
-    .select('id')
-    .eq('customer_id', customerId)
-    .ilike('site_name', name)
-    .is('deleted_at', null)
-    .limit(1)
-    .maybeSingle();
+    .select('id, customer_id, site_name')
+    .is('deleted_at', null);
   if (error) throw error;
-  return data?.id ?? null;
+  const map = new Map();
+  for (const row of data || []) {
+    if (row.site_name && row.customer_id) {
+      const key = `${row.customer_id}|${row.site_name.trim().toLowerCase()}`;
+      map.set(key, row.id);
+    }
+  }
+  return map;
 }
 
 /**
  * Import subscriptions from validated rows.
  *
- * STRICT MODE — no auto-creation of customers or sites.
- * If a customer or site is not found in the DB, the row is flagged as an error
- * and skipped. All other valid rows continue to be processed.
+ * Strategy (3 HTTP calls total):
+ *   1. Bulk-fetch all customers  (1 call)
+ *   2. Bulk-fetch all sites      (1 call)
+ *   3. Call bulk_import_subscriptions RPC (1 call — all inserts + payment generation server-side)
  *
  * @param {Array} rows — validated rows from validateAndMapRows()
- * @returns {{ created: number, failed: number, errors: Array<{row, message}> }}
+ * @returns {{ created: number, failed: number, errors: Array<{row: number, message: string}> }}
  */
 export async function importSubscriptionsFromRows(rows) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error('User not authenticated');
 
-  // Cache lookups to avoid redundant DB round-trips within the same import
-  const customerCache = {};
-  const siteCache = {};
+  // --- Phase 1: Bulk-fetch existing data (2 queries) ---
+  const customerMap = await fetchAllCustomers();
+  const siteMap = await fetchAllSites();
 
-  let created = 0;
-  const errors = [];
+  // --- Phase 2: Resolve site_id for each row client-side ---
+  const rpcItems = [];
+  const clientErrors = [];
 
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
-    const rowNum = i + 2; // matches Excel row number (1-based + header)
+    const rowNum = i + 2; // Excel row number (1-based + header)
 
-    try {
-      // --- Customer lookup (strict) ---
-      if (!(row.company_name in customerCache)) {
-        customerCache[row.company_name] = await findCustomer(row.company_name);
-      }
-      const customerId = customerCache[row.company_name];
+    // Customer lookup
+    const customerKey = row.company_name?.trim().toLowerCase();
+    const customerId = customerKey ? customerMap.get(customerKey) : null;
 
-      if (!customerId) {
-        errors.push({
-          row: rowNum,
-          message: 'Müşteri veya Lokasyon bulunamadı. Lütfen önce Müşteri kaydını oluşturun.',
-        });
-        continue;
-      }
-
-      // --- Site lookup (strict) ---
-      const siteCacheKey = `${customerId}|${row.site_name}`;
-      if (!(siteCacheKey in siteCache)) {
-        siteCache[siteCacheKey] = await findSite(customerId, row.site_name);
-      }
-      const siteId = siteCache[siteCacheKey];
-
-      if (!siteId) {
-        errors.push({
-          row: rowNum,
-          message: 'Müşteri veya Lokasyon bulunamadı. Lütfen önce Müşteri kaydını oluşturun.',
-        });
-        continue;
-      }
-
-      // --- Build subscription payload ---
-      const payload = {
-        site_id:               siteId,
-        subscription_type:     row.subscription_type,
-        start_date:            row.start_date,
-        billing_day:           1,
-        base_price:            row.base_price,
-        sms_fee:               row.sms_fee ?? 0,
-        line_fee:              row.line_fee ?? 0,
-        cost:                  row.cost ?? 0,
-        vat_rate:              20,
-        currency:              'TRY',
-        billing_frequency:     row.billing_frequency ?? 'monthly',
-        service_type:          row.service_type ?? null,
-        official_invoice:      row.official_invoice !== false,
-        notes:                 row.notes ?? null,
-        // New fields
-        subscriber_title:      row.subscriber_title ?? null,
-        alarm_center:          row.alarm_center ?? null,
-        alarm_center_account:  row.alarm_center_account ?? null,
-        // account_no is on the site — pass through if the create logic ever supports it
-      };
-
-      await createSubscription(payload);
-      created++;
-    } catch (err) {
-      errors.push({ row: rowNum, message: err?.message || String(err) });
+    if (!customerId) {
+      clientErrors.push({
+        row: rowNum,
+        message: `Müşteri bulunamadı: "${row.company_name}"`,
+      });
+      continue;
     }
+
+    // Site lookup
+    const siteKey = `${customerId}|${row.site_name?.trim().toLowerCase()}`;
+    const siteId = siteMap.get(siteKey);
+
+    if (!siteId) {
+      clientErrors.push({
+        row: rowNum,
+        message: `Lokasyon bulunamadı: "${row.site_name}" (Müşteri: ${row.company_name})`,
+      });
+      continue;
+    }
+
+    // Build payload for RPC (raw values — no summing; view calculates subtotal/total)
+    rpcItems.push({
+      row_num:              rowNum,
+      site_id:              siteId,
+      start_date:           row.start_date,
+      billing_day:          1,
+      base_price:           row.base_price ?? 0,
+      sim_amount:           row.sim_amount ?? 0,
+      sms_fee:              row.sms_fee ?? 0,
+      line_fee:             row.line_fee ?? 0,
+      cost:                 row.cost ?? 0,
+      vat_rate:             20,
+      currency:             'TRY',
+      billing_frequency:    row.billing_frequency || 'monthly',
+      payment_start_month:  row.payment_start_month ?? null,
+      service_type:         row.service_type || null,
+      official_invoice:     row.official_invoice !== false,
+      notes:                row.notes || null,
+      setup_notes:          row.setup_notes || null,
+      subscriber_title:     row.subscriber_title || null,
+      alarm_center:         row.alarm_center || null,
+      alarm_center_account: row.alarm_center_account || null,
+    });
   }
 
-  return { created, failed: errors.length, errors };
+  // --- Phase 3: Single RPC call for all valid rows ---
+  let rpcCreated = 0;
+  let rpcErrors = [];
+
+  if (rpcItems.length > 0) {
+    const { data, error } = await supabase.rpc('bulk_import_subscriptions', {
+      items: rpcItems,
+      p_user_id: user.id,
+    });
+
+    if (error) throw error;
+
+    rpcCreated = data?.created ?? 0;
+    rpcErrors = data?.errors ?? [];
+  }
+
+  // Merge client-side errors + server-side errors
+  const allErrors = [...clientErrors, ...rpcErrors];
+
+  return {
+    created: rpcCreated,
+    failed: allErrors.length,
+    errors: allErrors,
+  };
 }

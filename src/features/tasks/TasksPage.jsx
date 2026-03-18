@@ -156,7 +156,7 @@ export function TasksPage() {
   }, []);
 
   return (
-    <PageContainer maxWidth="xl" padding="default" className="space-y-6">
+    <PageContainer maxWidth="full" padding="default" className="space-y-6">
       <PageHeader
         title={t('list.title')}
         actions={

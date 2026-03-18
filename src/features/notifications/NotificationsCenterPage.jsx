@@ -168,7 +168,7 @@ export function NotificationsCenterPage() {
   ];
 
   return (
-    <PageContainer>
+    <PageContainer maxWidth="full">
       <PageHeader title={t('notifications:page.title')} />
 
       <Card className="p-3 mb-6 border-neutral-200/60 dark:border-neutral-800/60">

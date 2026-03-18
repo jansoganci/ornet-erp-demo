@@ -42,6 +42,7 @@ export const proposalSchema = z.object({
   terms_warranty: optionalStr(),
   terms_other: optionalStr(),
   terms_attachments: optionalStr(),
+  items: z.array(proposalItemSchema).min(1, i18n.t('errors:validation.required')),
 });
 
 const defaultItem = {

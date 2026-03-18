@@ -140,7 +140,7 @@ export function ExchangeRatePage() {
 
   if (isLoading) {
     return (
-      <PageContainer maxWidth="xl" padding="default">
+      <PageContainer maxWidth="full" padding="default">
         <PageHeader title={t('finance:exchangeRates.title')} />
         <div className="mt-6">
           <TableSkeleton cols={6} />
@@ -151,7 +151,7 @@ export function ExchangeRatePage() {
 
   if (error) {
     return (
-      <PageContainer maxWidth="xl" padding="default">
+      <PageContainer maxWidth="full" padding="default">
         <PageHeader title={t('finance:exchangeRates.title')} breadcrumbs={breadcrumbs} />
         <ErrorState message={getErrorMessage(error)} onRetry={refetch} />
       </PageContainer>
@@ -159,7 +159,7 @@ export function ExchangeRatePage() {
   }
 
   return (
-    <PageContainer maxWidth="xl" padding="default" className="space-y-6">
+    <PageContainer maxWidth="full" padding="default" className="space-y-6">
       <PageHeader
         title={t('finance:exchangeRates.title')}
         breadcrumbs={breadcrumbs}

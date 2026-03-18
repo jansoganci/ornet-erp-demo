@@ -67,7 +67,7 @@ function DetailSkeleton() {
 export function SubscriptionDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { t } = useTranslation(['subscriptions', 'common', 'customers']);
+  const { t } = useTranslation(['subscriptions', 'common', 'customers', 'notifications']);
   const { t: tCommon } = useTranslation('common');
 
   const [showPauseModal, setShowPauseModal] = useState(false);
@@ -110,7 +110,11 @@ export function SubscriptionDetailPage() {
       <PageHeader
         title={
           <div className="flex items-center gap-3">
-            <span>{t(`subscriptions:types.${subscription.subscription_type}`)}</span>
+            <span>
+              {subscription.service_type
+                ? t(`subscriptions:serviceTypes.${subscription.service_type}`)
+                : t('subscriptions:detail.title')}
+            </span>
           </div>
         }
         description={
@@ -261,6 +265,7 @@ export function SubscriptionDetailPage() {
 
           {/* Payment Grid */}
           <MonthlyPaymentGrid
+            subscriptionId={id}
             payments={payments}
             subscriptionStatus={subscription.status}
           />
@@ -299,6 +304,14 @@ export function SubscriptionDetailPage() {
                   {t(`subscriptions:form.fields.${subscription.billing_frequency || 'monthly'}`)}
                 </span>
               </div>
+              {subscription.billing_frequency !== 'monthly' && subscription.payment_start_month && (
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-neutral-500">{t('subscriptions:detail.fields.paymentStartMonth')}</span>
+                  <span className="font-medium text-neutral-900 dark:text-neutral-100">
+                    {t(`notifications:months.${subscription.payment_start_month}`)}
+                  </span>
+                </div>
+              )}
               <div className="flex items-center justify-between">
                 <span className="text-xs text-neutral-500">{t('subscriptions:detail.fields.officialInvoice')}</span>
                 <Badge variant={subscription.official_invoice !== false ? 'info' : 'outline'} size="sm">
@@ -307,13 +320,7 @@ export function SubscriptionDetailPage() {
                     : t('subscriptions:detail.officialInvoiceGayri')}
                 </Badge>
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-neutral-500">{t('subscriptions:form.fields.subscriptionType')}</span>
-                <span className="font-medium text-neutral-900 dark:text-neutral-100">
-                  {t(`subscriptions:types.${subscription.subscription_type}`)}
-                </span>
-              </div>
-              {subscription.subscription_type === 'recurring_card' && (subscription.card_bank_name || subscription.card_last4 || subscription.pm_bank_name || subscription.pm_card_last4) && (
+              {(subscription.card_bank_name || subscription.card_last4 || subscription.pm_bank_name || subscription.pm_card_last4) && (
                 <div className="pt-1">
                   <p className="font-bold text-neutral-900 dark:text-neutral-100">
                     {(subscription.card_bank_name || subscription.pm_bank_name) && (
@@ -331,7 +338,7 @@ export function SubscriptionDetailPage() {
                   )}
                 </div>
               )}
-              {subscription.subscription_type === 'manual_cash' && subscription.cash_collector_name && (
+              {subscription.cash_collector_name && (
                 <div className="flex items-center justify-between pt-1">
                   <span className="text-xs text-neutral-500">{t('subscriptions:detail.fields.cashCollector')}</span>
                   <span className="font-medium text-neutral-900 dark:text-neutral-100">

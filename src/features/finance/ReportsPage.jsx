@@ -101,7 +101,7 @@ export function ReportsPage() {
 
   if (isLoading) {
     return (
-      <PageContainer maxWidth="xl" padding="default">
+      <PageContainer maxWidth="full" padding="default">
         <PageHeader title={t('finance:reports.title')} />
         <div className="mt-6">
           <TableSkeleton cols={2} rows={5} />
@@ -112,7 +112,7 @@ export function ReportsPage() {
 
   if (error) {
     return (
-      <PageContainer maxWidth="xl" padding="default">
+      <PageContainer maxWidth="full" padding="default">
         <PageHeader title={t('finance:reports.title')} breadcrumbs={breadcrumbs} />
         <ErrorState message={getErrorMessage(error)} onRetry={refetch} />
       </PageContainer>
@@ -120,7 +120,7 @@ export function ReportsPage() {
   }
 
   return (
-    <PageContainer maxWidth="xl" padding="default" className="space-y-6">
+    <PageContainer maxWidth="full" padding="default" className="space-y-6">
       <PageHeader title={t('finance:reports.title')} breadcrumbs={breadcrumbs} />
 
       <Card className="p-4 border-neutral-200/60 dark:border-neutral-800/60">

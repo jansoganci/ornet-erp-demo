@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useForm, Controller } from 'react-hook-form';
@@ -60,7 +60,11 @@ export function ProposalFormPage() {
     defaultValues: proposalDefaultValues,
   });
 
-  const blocker = useUnsavedChanges({ isDirty: hasInitialized && isDirty });
+  const justSavedRef = useRef(false);
+  const blocker = useUnsavedChanges({
+    isDirty: hasInitialized && isDirty,
+    skipBlockingRef: justSavedRef,
+  });
 
   const selectedCurrency = watch('currency') ?? 'USD';
 
@@ -122,12 +126,18 @@ export function ProposalFormPage() {
       if (isEdit) {
         await updateMutation.mutateAsync({ id, ...proposalData });
         await updateItemsMutation.mutateAsync({ proposalId: id, items });
-        reset(data); // mark form clean before navigation so blocker doesn't fire
-        if (!skipNavigate) navigate(`/proposals/${id}`);
+        reset(data);
+        if (!skipNavigate) {
+          justSavedRef.current = true;
+          navigate(`/proposals/${id}`);
+        }
       } else {
         const newProposal = await createMutation.mutateAsync({ ...proposalData, items });
-        reset(data); // mark form clean before navigation so blocker doesn't fire
-        if (!skipNavigate) navigate(`/proposals/${newProposal.id}`);
+        reset(data);
+        if (!skipNavigate) {
+          justSavedRef.current = true;
+          navigate(`/proposals/${newProposal.id}`);
+        }
       }
     } catch (err) {
       toast.error(t('common:errors.saveFailed'));
@@ -160,7 +170,7 @@ export function ProposalFormPage() {
   }
 
   return (
-    <PageContainer maxWidth="xl" padding="default" className="space-y-6 pb-24">
+    <PageContainer maxWidth="4xl" padding="default" className="space-y-6 pb-24">
       <PageHeader
         title={isEdit ? t('proposals:form.editTitle') : t('proposals:form.addTitle')}
         breadcrumbs={[
@@ -183,7 +193,10 @@ export function ProposalFormPage() {
               <CustomerSiteSelector
                 selectedCustomerId={selectedCustomerId}
                 selectedSiteId={field.value || ''}
-                onCustomerChange={(cid) => setSelectedCustomerId(cid)}
+                onCustomerChange={(cid) => {
+                setSelectedCustomerId(cid || '');
+                field.onChange('');
+              }}
                 onSiteChange={(sid) => field.onChange(sid || '')}
                 onAddNewCustomer={() => navigate('/customers/new')}
                 onAddNewSite={() => setShowSiteModal(true)}

@@ -13,13 +13,13 @@ import {
   IconButton,
   Modal,
   TableSkeleton,
+  KpiCard,
 } from '../../components/ui';
 import { useTransactions, useDeleteTransaction } from './hooks';
 import { getLastNMonths } from './api';
 import { useCustomers } from '../customers/hooks';
 import { QuickEntryModal } from './components/QuickEntryModal';
 import { ViewModeToggle } from './components/ViewModeToggle';
-import { KpiCard } from './components/KpiCard';
 import { formatDate, formatCurrency } from '../../lib/utils';
 import { getErrorMessage } from '../../lib/errorHandler';
 import { PAYMENT_METHODS, INCOME_TYPES } from './schema';
@@ -196,7 +196,7 @@ export function IncomePage() {
 
   if (isLoading) {
     return (
-      <PageContainer maxWidth="xl" padding="default" className="space-y-6">
+      <PageContainer maxWidth="full" padding="default" className="space-y-6">
         <PageHeader title={t('finance:list.titleIncome')} />
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
           <KpiCard title={t('finance:income.kpi.total')} value="0" icon={TrendingUp} loading />
@@ -213,7 +213,7 @@ export function IncomePage() {
 
   if (error) {
     return (
-      <PageContainer maxWidth="xl" padding="default">
+      <PageContainer maxWidth="full" padding="default">
         <PageHeader
           title={t('finance:list.titleIncome')}
           breadcrumbs={[
@@ -228,7 +228,7 @@ export function IncomePage() {
   }
 
   return (
-    <PageContainer maxWidth="xl" padding="default" className="space-y-6">
+    <PageContainer maxWidth="full" padding="default" className="space-y-6">
       <PageHeader
         title={t('finance:list.titleIncome')}
         breadcrumbs={[

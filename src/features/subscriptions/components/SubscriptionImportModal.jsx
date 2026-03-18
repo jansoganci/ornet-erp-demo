@@ -1,11 +1,114 @@
 import { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Download, Upload, FileSpreadsheet } from 'lucide-react';
+import { Download, Upload, FileSpreadsheet, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
 import { Modal, Button, Spinner } from '../../../components/ui';
 import { parseXlsxFile, validateAndMapRows, buildTemplateBlob } from '../importUtils';
 import { useImportSubscriptions } from '../hooks';
 
 const PREVIEW_ROWS = 20;
+const MAX_VISIBLE_ERRORS = 50;
+
+function translateErrorCode(t, code) {
+  const key = `import.errorCodes.${code}`;
+  const translated = t(key, { defaultValue: '' });
+  return translated || code;
+}
+
+function ValidationErrorTable({ errors, t }) {
+  const fieldErrors = errors.filter((e) => e.rowIndex >= 0);
+  if (fieldErrors.length === 0) return null;
+
+  const visibleErrors = fieldErrors.slice(0, MAX_VISIBLE_ERRORS);
+
+  return (
+    <div className="border border-amber-200 dark:border-amber-900/50 rounded-lg bg-amber-50/50 dark:bg-amber-950/20">
+      <div className="flex items-center gap-2 px-3 py-2 border-b border-amber-200 dark:border-amber-900/50">
+        <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
+        <h4 className="text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">
+          {t('import.validationErrors')} ({fieldErrors.length})
+        </h4>
+      </div>
+      <div className="overflow-x-auto max-h-[200px] overflow-y-auto">
+        <table className="w-full text-sm">
+          <thead className="bg-amber-100/50 dark:bg-amber-950/30 sticky top-0">
+            <tr>
+              <th className="text-left px-3 py-1.5 font-semibold text-amber-800 dark:text-amber-300 w-16">
+                {t('import.errorTableHeaders.row')}
+              </th>
+              <th className="text-left px-3 py-1.5 font-semibold text-amber-800 dark:text-amber-300 w-32">
+                {t('import.errorTableHeaders.field')}
+              </th>
+              <th className="text-left px-3 py-1.5 font-semibold text-amber-800 dark:text-amber-300">
+                {t('import.errorTableHeaders.error')}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {visibleErrors.map((err, i) => (
+              <tr key={i} className="border-t border-amber-200/50 dark:border-amber-900/30">
+                <td className="px-3 py-1.5 text-amber-700 dark:text-amber-400 font-mono text-xs">
+                  {err.rowNum}
+                </td>
+                <td className="px-3 py-1.5 text-amber-800 dark:text-amber-300 font-medium text-xs">
+                  {err.field}
+                </td>
+                <td className="px-3 py-1.5 text-amber-700 dark:text-amber-400 text-xs">
+                  {translateErrorCode(t, err.message)}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {fieldErrors.length > MAX_VISIBLE_ERRORS && (
+        <p className="text-xs text-amber-600 dark:text-amber-500 px-3 py-1.5 border-t border-amber-200 dark:border-amber-900/50">
+          +{fieldErrors.length - MAX_VISIBLE_ERRORS} ...
+        </p>
+      )}
+    </div>
+  );
+}
+
+function ImportErrorTable({ errors, t }) {
+  if (!errors?.length) return null;
+
+  return (
+    <div className="border border-red-200 dark:border-red-900/50 rounded-lg bg-red-50/50 dark:bg-red-950/20">
+      <div className="flex items-center gap-2 px-3 py-2 border-b border-red-200 dark:border-red-900/50">
+        <XCircle className="w-4 h-4 text-red-600 dark:text-red-400 shrink-0" />
+        <h4 className="text-xs font-bold uppercase tracking-wider text-red-700 dark:text-red-400">
+          {t('import.importErrors')} ({errors.length})
+        </h4>
+      </div>
+      <div className="overflow-x-auto max-h-[200px] overflow-y-auto">
+        <table className="w-full text-sm">
+          <thead className="bg-red-100/50 dark:bg-red-950/30 sticky top-0">
+            <tr>
+              <th className="text-left px-3 py-1.5 font-semibold text-red-800 dark:text-red-300 w-16">
+                {t('import.errorTableHeaders.row')}
+              </th>
+              <th className="text-left px-3 py-1.5 font-semibold text-red-800 dark:text-red-300">
+                {t('import.errorTableHeaders.error')}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {errors.map((err, i) => (
+              <tr key={i} className="border-t border-red-200/50 dark:border-red-900/30">
+                <td className="px-3 py-1.5 text-red-700 dark:text-red-400 font-mono text-xs">
+                  {err.row}
+                </td>
+                <td className="px-3 py-1.5 text-red-700 dark:text-red-400 text-xs">
+                  {err.message}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
 
 export function SubscriptionImportModal({ open, onClose }) {
   const { t } = useTranslation('subscriptions');
@@ -120,7 +223,8 @@ export function SubscriptionImportModal({ open, onClose }) {
                       <th className="text-left p-2 font-semibold text-neutral-700 dark:text-neutral-300">Abone Ünvanı</th>
                       <th className="text-left p-2 font-semibold text-neutral-700 dark:text-neutral-300">TÜR</th>
                       <th className="text-left p-2 font-semibold text-neutral-700 dark:text-neutral-300">Başlangıç</th>
-                      <th className="text-right p-2 font-semibold text-neutral-700 dark:text-neutral-300">TL</th>
+                      <th className="text-right p-2 font-semibold text-neutral-700 dark:text-neutral-300">Kiralama</th>
+                      <th className="text-right p-2 font-semibold text-neutral-700 dark:text-neutral-300">SIM</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -133,6 +237,7 @@ export function SubscriptionImportModal({ open, onClose }) {
                         <td className="p-2">{row.service_type || '—'}</td>
                         <td className="p-2">{row.start_date}</td>
                         <td className="p-2 text-right">{row.base_price}</td>
+                        <td className="p-2 text-right">{row.sim_amount ?? 0}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -145,41 +250,41 @@ export function SubscriptionImportModal({ open, onClose }) {
               )}
             </div>
 
-            {validationErrors.length > 0 && (
-              <div>
-                <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 mb-2">
-                  {t('import.errors')}
-                </h4>
-                <ul className="text-sm text-amber-700 dark:text-amber-400 space-y-1 max-h-32 overflow-y-auto">
-                  {validationErrors.filter((e) => e.rowIndex >= 0).map((err, i) => (
-                    <li key={i}>
-                      {err.rowNum ? t('import.rowError', { row: err.rowNum, message: err.message }) : err.message}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
+            <ValidationErrorTable errors={validationErrors} t={t} />
           </>
         )}
 
         {importResult && (
-          <div className="p-4 rounded-lg bg-neutral-50 dark:bg-neutral-900/50 border border-neutral-200 dark:border-neutral-700">
-            {importResult.failed === 0 ? (
-              <p className="text-success-600 dark:text-success-400 font-medium">
-                {t('import.success', { created: importResult.created })}
-              </p>
-            ) : (
-              <>
-                <p className="text-neutral-700 dark:text-neutral-300 font-medium">
-                  {t('import.partialSuccess', { created: importResult.created, failed: importResult.failed })}
-                </p>
-                <ul className="mt-2 text-sm text-amber-700 dark:text-amber-400 space-y-1">
-                  {importResult.errors.map((e, i) => (
-                    <li key={i}>{t('import.rowError', { row: e.row, message: e.message })}</li>
-                  ))}
-                </ul>
-              </>
-            )}
+          <div className="space-y-4">
+            <div className={`p-4 rounded-lg border ${
+              importResult.failed === 0
+                ? 'bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-900/50'
+                : 'bg-neutral-50 dark:bg-neutral-900/50 border-neutral-200 dark:border-neutral-700'
+            }`}>
+              <div className="flex items-center gap-2">
+                {importResult.failed === 0 ? (
+                  <CheckCircle className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                ) : (
+                  <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0" />
+                )}
+                <div>
+                  <h4 className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">
+                    {t('import.summaryTitle')}
+                  </h4>
+                  {importResult.failed === 0 ? (
+                    <p className="text-sm text-emerald-700 dark:text-emerald-400">
+                      {t('import.success', { created: importResult.created })}
+                    </p>
+                  ) : (
+                    <p className="text-sm text-neutral-700 dark:text-neutral-300">
+                      {t('import.partialSuccess', { created: importResult.created, failed: importResult.failed })}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <ImportErrorTable errors={importResult.errors} t={t} />
           </div>
         )}
 

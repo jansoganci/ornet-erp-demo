@@ -198,7 +198,7 @@ export function MaterialsListPage() {
   ];
 
   return (
-    <PageContainer maxWidth="xl" padding="default" className="space-y-6">
+    <PageContainer maxWidth="full" padding="default" className="space-y-6">
       <PageHeader
         title={t('materials:title')}
         breadcrumbs={[

@@ -21,8 +21,7 @@ import { useSubscriptionStats, useCurrentProfile } from '../features/subscriptio
 import { useActionBoardCounts } from '../features/actionBoard/hooks';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
-import { KPIStatCard } from '../features/dashboard/components/KPIStatCard';
-import { SparklineStatCard } from '../features/dashboard/components/SparklineStatCard';
+import { KpiCard } from '../components/ui';
 import { QuickActionsBar } from '../features/dashboard/components/QuickActionsBar';
 import { TodayScheduleFeed } from '../features/dashboard/components/TodayScheduleFeed';
 import { WorkOrderStatusDonut } from '../features/dashboard/components/WorkOrderStatusDonut';
@@ -208,19 +207,19 @@ export function DashboardPage() {
 
       {/* ── ZONE A — KPI Strip ────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4">
-        <KPIStatCard
+        <KpiCard
           title={t('kpi.overdueWorkOrders')}
           value={stats?.pending_work_orders ?? 0}
           icon={AlertTriangle}
           trendType="up"
-          trendChange={stats?.pending_work_orders > 0
+          trend={stats?.pending_work_orders > 0
             ? `${stats.pending_work_orders} ${t('kpi.waitingLabel')}`
             : undefined}
           variant={stats?.pending_work_orders > 0 ? 'alert' : 'default'}
           href="/work-orders?status=pending"
           loading={isStatsLoading}
         />
-        <KPIStatCard
+        <KpiCard
           title={t('kpi.todayPlanned')}
           value={stats?.today_work_orders ?? 0}
           icon={CalendarCheck}
@@ -228,7 +227,7 @@ export function DashboardPage() {
           href="/daily-work"
           loading={isStatsLoading}
         />
-        <KPIStatCard
+        <KpiCard
           title={t('kpi.activeSubscriptions')}
           value={subStats?.active_count ?? 0}
           icon={CreditCard}
@@ -236,7 +235,7 @@ export function DashboardPage() {
           href="/subscriptions"
           loading={isSubStatsLoading}
         />
-        <KPIStatCard
+        <KpiCard
           title={t('kpi.mrr')}
           value={new Intl.NumberFormat('tr-TR', {
             style: 'currency',
@@ -248,7 +247,7 @@ export function DashboardPage() {
           href="/subscriptions"
           loading={isSubStatsLoading}
         />
-        <KPIStatCard
+        <KpiCard
           title={t('kpi.uncollectedPayments')}
           value={new Intl.NumberFormat('tr-TR', {
             style: 'currency',
@@ -261,7 +260,7 @@ export function DashboardPage() {
           href="/subscriptions"
           loading={isSubStatsLoading}
         />
-        <KPIStatCard
+        <KpiCard
           title={t('kpi.netProfit')}
           value={formatTL(simStats?.total_monthly_profit ?? 0)}
           icon={DollarSign}
@@ -273,17 +272,17 @@ export function DashboardPage() {
 
       {/* ── ZONE C — Sparkline Financial Cards ───────────────────────────── */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
-        <SparklineStatCard
+        <KpiCard
           title={t('sparkline.monthlyRevenue')}
           value={new Intl.NumberFormat('tr-TR', {
             style: 'currency',
             currency: 'TRY',
             maximumFractionDigits: 0,
           }).format(simStats?.total_monthly_profit ?? 0)}
-          change="+12.4%"
-          changeType="positive"
+          trend="+12.4%"
+          chartType="positive"
           icon={DollarSign}
-          formatter={formatTL}
+          chartFormatter={formatTL}
           loading={isSimStatsLoading || isRevenueLoading}
           chartData={revenueChartData.length > 0 ? revenueChartData : [
             { name: 'Eyl', value: 62000 },
@@ -295,11 +294,11 @@ export function DashboardPage() {
             { name: 'Mar', value: simStats?.total_monthly_profit ?? 84200 },
           ]}
         />
-        <SparklineStatCard
+        <KpiCard
           title={t('sparkline.subscriptions')}
           value={subStats?.active_count ?? 0}
-          change="+5"
-          changeType="positive"
+          trend="+5"
+          chartType="positive"
           icon={CreditCard}
           loading={isSubStatsLoading}
           chartData={[
@@ -312,17 +311,17 @@ export function DashboardPage() {
             { name: 'Mar', value: subStats?.active_count ?? 231 },
           ]}
         />
-        <SparklineStatCard
+        <KpiCard
           title={t('sparkline.mrrTrend')}
           value={new Intl.NumberFormat('tr-TR', {
             style: 'currency',
             currency: 'TRY',
             maximumFractionDigits: 0,
           }).format(subStats?.mrr ?? 0)}
-          change="+8.2%"
-          changeType="positive"
+          trend="+8.2%"
+          chartType="positive"
           icon={TrendingUp}
-          formatter={formatTL}
+          chartFormatter={formatTL}
           loading={isSubStatsLoading}
           chartData={[
             { name: 'Eyl', value: 45000 },

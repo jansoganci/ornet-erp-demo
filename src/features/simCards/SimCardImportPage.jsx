@@ -248,7 +248,7 @@ export function SimCardImportPage() {
 
   if (bulkCreateMutation.isError) {
     return (
-      <PageContainer maxWidth="xl">
+      <PageContainer maxWidth="full">
         <ErrorState
           message={getErrorMessage(bulkCreateMutation.error, 'simCards.createFailed')}
           onRetry={() => bulkCreateMutation.reset()}
@@ -290,7 +290,7 @@ export function SimCardImportPage() {
   };
 
   return (
-    <PageContainer maxWidth="xl">
+    <PageContainer maxWidth="full">
       <PageHeader
         title={t('simCards:actions.import')}
         breadcrumbs={[

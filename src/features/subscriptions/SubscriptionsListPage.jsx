@@ -19,8 +19,7 @@ import {
 import { useDebouncedValue } from '../../hooks/useDebouncedValue';
 import { formatCurrency, formatDate } from '../../lib/utils';
 import { useSubscriptionsPaginated, useSubscriptionStats, useCurrentProfile } from './hooks';
-import { SUBSCRIPTION_TYPES } from './schema';
-import { StatCard } from './components/StatCard';
+import { KpiCard } from '../../components/ui';
 import { SubscriptionStatusBadge } from './components/SubscriptionStatusBadge';
 import { ComplianceAlert } from './components/ComplianceAlert';
 import { SubscriptionImportModal } from './components/SubscriptionImportModal';
@@ -35,7 +34,6 @@ export function SubscriptionsListPage() {
   const [localSearch, setLocalSearch] = useState(searchFromUrl);
   const debouncedSearch = useDebouncedValue(localSearch, 300);
   const status = searchParams.get('status') || 'all';
-  const type = searchParams.get('type') || 'all';
   const billingFrequency = searchParams.get('billing_frequency') || 'all';
   const yearParam = searchParams.get('year') || '';
   const monthParam = searchParams.get('month') || '';
@@ -62,7 +60,6 @@ export function SubscriptionsListPage() {
   const filters = {
     search: debouncedSearch,
     status,
-    type,
     billing_frequency: billingFrequency === 'all' ? undefined : billingFrequency,
     year: yearParam || undefined,
     month: monthParam || undefined,
@@ -86,11 +83,16 @@ export function SubscriptionsListPage() {
     if (!previous || previous === 0) return null;
     const diff = current - previous;
     const percent = (diff / previous) * 100;
+    const value = Math.abs(Math.round(percent));
+    if (value === 0) return null;
     return {
-      value: Math.abs(Math.round(percent)),
+      value,
       isPositive: diff > 0,
     };
   };
+
+  const mrrTrend = getTrend(Number(stats?.mrr) || 0, Number(stats?.mrr_previous_month) || 0);
+  const activeTrend = getTrend(stats?.active_count ?? 0, stats?.active_count_previous_month ?? 0);
 
   const handleSearch = (value) => setLocalSearch(value);
 
@@ -138,14 +140,6 @@ export function SubscriptionsListPage() {
     { value: 'cancelled', label: t('subscriptions:statuses.cancelled') },
   ];
 
-  const typeOptions = [
-    { value: 'all', label: t('subscriptions:list.filters.allTypes') },
-    ...SUBSCRIPTION_TYPES.map((tp) => ({
-      value: tp,
-      label: t(`subscriptions:types.${tp}`),
-    })),
-  ];
-
   const billingFrequencyOptions = [
     { value: 'all', label: t('subscriptions:list.filters.allFrequencies') },
     { value: 'monthly', label: t('subscriptions:form.fields.monthly') },
@@ -172,10 +166,14 @@ export function SubscriptionsListPage() {
     {
       header: t('subscriptions:list.columns.customer'),
       accessor: 'company_name',
+      minWidth: 160,
+      maxWidth: 220,
+      headerClassName: 'whitespace-normal',
+      cellClassName: 'whitespace-normal align-top',
       render: (value, row) => (
-        <div className="min-w-[150px]">
-          <p className="font-bold text-neutral-900 dark:text-neutral-100 truncate">{value}</p>
-          <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate">{row.site_name}</p>
+        <div className="min-w-0 break-words">
+          <p className="font-bold text-neutral-900 dark:text-neutral-100">{value}</p>
+          <p className="text-xs text-neutral-500 dark:text-neutral-400">{row.site_name}</p>
           {row.account_no && (
             <p className="text-[10px] font-mono text-neutral-400 mt-0.5">{row.account_no}</p>
           )}
@@ -192,15 +190,6 @@ export function SubscriptionsListPage() {
             {value || '-'}
           </span>
         </div>
-      ),
-    },
-    {
-      header: t('subscriptions:list.columns.type'),
-      accessor: 'subscription_type',
-      render: (value) => (
-        <Badge variant="default" size="sm">
-          {t(`subscriptions:types.${value}`)}
-        </Badge>
       ),
     },
     {
@@ -237,10 +226,76 @@ export function SubscriptionsListPage() {
     },
     {
       header: t('subscriptions:list.columns.monthly'),
-      accessor: 'total_amount',
+      accessor: 'base_price',
+      align: 'right',
+      minWidth: 100,
+      maxWidth: 100,
       render: (value) => (
         <span className="font-bold text-neutral-900 dark:text-neutral-100">
-          {formatCurrency(value)}
+          {formatCurrency(value ?? 0)}
+        </span>
+      ),
+    },
+    {
+      header: t('subscriptions:list.columns.simTl'),
+      accessor: 'sim_amount',
+      align: 'right',
+      minWidth: 100,
+      maxWidth: 100,
+      render: (value) => (
+        <span className="text-neutral-900 dark:text-neutral-50">
+          {formatCurrency(value ?? 0)}
+        </span>
+      ),
+    },
+    {
+      key: 'totalAmountCalc',
+      header: t('subscriptions:list.columns.totalAmountCalc'),
+      align: 'right',
+      minWidth: 100,
+      maxWidth: 100,
+      render: (_, row) => {
+        const toplamTutar =
+          (row.base_price ?? 0) +
+          (row.sim_amount ?? 0) +
+          (row.sms_fee ?? 0) +
+          (row.static_ip_fee ?? 0);
+        return (
+          <span className="text-neutral-900 dark:text-neutral-50">
+            {formatCurrency(toplamTutar)}
+          </span>
+        );
+      },
+    },
+    {
+      key: 'totalWithVatCalc',
+      header: t('subscriptions:list.columns.totalWithVatCalc'),
+      align: 'right',
+      minWidth: 100,
+      maxWidth: 100,
+      render: (_, row) => {
+        const toplamTutar =
+          (row.base_price ?? 0) +
+          (row.sim_amount ?? 0) +
+          (row.sms_fee ?? 0) +
+          (row.static_ip_fee ?? 0);
+        const kdvDahilToplam = toplamTutar * 1.2;
+        return (
+          <span className="font-bold text-neutral-900 dark:text-neutral-100">
+            {formatCurrency(kdvDahilToplam)}
+          </span>
+        );
+      },
+    },
+    {
+      header: t('subscriptions:list.columns.cost'),
+      accessor: 'cost',
+      align: 'right',
+      minWidth: 100,
+      maxWidth: 100,
+      render: (value) => (
+        <span className="text-neutral-600 dark:text-neutral-400">
+          {formatCurrency(value ?? 0)}
         </span>
       ),
     },
@@ -252,7 +307,7 @@ export function SubscriptionsListPage() {
   ];
 
   return (
-    <PageContainer maxWidth="xl" padding="default" className="space-y-6">
+    <PageContainer maxWidth="full" padding="default" className="space-y-6">
       <PageHeader
         title={t('subscriptions:list.title')}
         actions={
@@ -286,61 +341,54 @@ export function SubscriptionsListPage() {
 
       <ComplianceAlert />
 
-      {/* KPI Cards */}
+      {/* KPI Cards — same pattern as dashboard */}
       {stats && (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-          <StatCard
-            icon={TrendingUp}
-            label={t('subscriptions:stats.mrr')}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+          <KpiCard
+            title={t('subscriptions:stats.mrr')}
             value={formatCurrency(stats.mrr || 0)}
-            color="text-primary-700 dark:text-primary-300"
+            icon={TrendingUp}
             subtitle={t('subscriptions:stats.fromCustomers', {
               count: stats.distinct_customer_count ?? 0,
             })}
-            trend={getTrend(
-              Number(stats.mrr) || 0,
-              Number(stats.mrr_previous_month) || 0
-            )}
-            hint={t('subscriptions:stats.mrrHint')}
+            trend={mrrTrend ? `${mrrTrend.isPositive ? '+' : '-'}${mrrTrend.value}%` : undefined}
+            trendType={mrrTrend?.isPositive ? 'up' : mrrTrend ? 'down' : 'neutral'}
+            href="/subscriptions"
           />
-          <StatCard
+          <KpiCard
+            title={t('subscriptions:stats.activeCount')}
+            value={stats.active_count ?? 0}
             icon={Users}
-            label={t('subscriptions:stats.activeCount')}
-            value={stats.active_count || 0}
-            color="text-success-600 dark:text-success-400"
             subtitle={t('subscriptions:stats.customers', {
               count: stats.distinct_customer_count ?? 0,
             })}
-            trend={getTrend(
-              stats.active_count ?? 0,
-              stats.active_count_previous_month ?? 0
-            )}
-            onClick={() => navigate('/subscriptions?status=active')}
+            trend={activeTrend ? `${activeTrend.isPositive ? '+' : '-'}${activeTrend.value}%` : undefined}
+            trendType={activeTrend?.isPositive ? 'up' : activeTrend ? 'down' : 'neutral'}
+            href="/subscriptions?status=active"
           />
-          <StatCard
+          <KpiCard
+            title={t('subscriptions:stats.pausedCount')}
+            value={stats.paused_count ?? 0}
             icon={Pause}
-            label={t('subscriptions:stats.pausedCount')}
-            value={stats.paused_count || 0}
-            color="text-warning-600 dark:text-warning-400"
-            onClick={() => navigate('/subscriptions?status=paused')}
+            href="/subscriptions?status=paused"
           />
-          <StatCard
-            icon={AlertTriangle}
-            label={t('subscriptions:stats.overdueCount')}
+          <KpiCard
+            title={t('subscriptions:stats.overdueCount')}
             value={stats.overdue_invoice_count ?? 0}
-            color="text-error-600 dark:text-error-400"
+            icon={AlertTriangle}
             subtitle={t('subscriptions:stats.overdueHint')}
+            variant={(stats.overdue_invoice_count ?? 0) > 0 ? 'alert' : 'default'}
             onClick={() =>
               document.getElementById('compliance-alert')?.scrollIntoView?.({ behavior: 'smooth' })
             }
           />
-          <StatCard
-            icon={Wallet}
-            label={t('subscriptions:stats.unpaidCount')}
+          <KpiCard
+            title={t('subscriptions:stats.unpaidCount')}
             value={stats.unpaid_count ?? 0}
-            color="text-error-600 dark:text-error-400"
+            icon={Wallet}
             subtitle={t('subscriptions:stats.unpaidHint')}
-            onClick={() => navigate('/subscriptions?overdue=true')}
+            variant={(stats.unpaid_count ?? 0) > 0 ? 'alert' : 'default'}
+            href="/subscriptions?overdue=true"
           />
         </div>
       )}
@@ -377,16 +425,6 @@ export function SubscriptionsListPage() {
                 value={status}
                 onChange={(e) => handleFilterChange('status', e.target.value)}
                 leftIcon={<Filter className="w-4 h-4" />}
-                size="sm"
-              />
-            </div>
-            <div className="w-full sm:flex-1 md:w-40">
-              <Select
-                label={t('subscriptions:list.filters.type')}
-                options={typeOptions}
-                value={type}
-                onChange={(e) => handleFilterChange('type', e.target.value)}
-                leftIcon={<Tag className="w-4 h-4" />}
                 size="sm"
               />
             </div>

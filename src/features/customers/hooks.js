@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { getErrorMessage } from '../../lib/errorHandler';
 import { siteKeys } from '../customerSites/api';
+import { subscriptionKeys } from '../subscriptions/hooks';
 import {
   fetchCustomers,
   fetchCustomer,
@@ -114,6 +115,7 @@ export function useDeleteCustomer() {
       queryClient.invalidateQueries({ queryKey: customerKeys.lists() });
       queryClient.removeQueries({ queryKey: customerKeys.detail(id) });
       queryClient.invalidateQueries({ queryKey: siteKeys.listByCustomer(id) });
+      queryClient.invalidateQueries({ queryKey: subscriptionKeys.all });
       toast.success(t('success.deleted'));
     },
     onError: (error) => {

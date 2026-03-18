@@ -180,8 +180,9 @@ export function BulkAssetRegisterModal({
             selectedCustomerId={selectedCustomerId}
             selectedSiteId={selectedSiteId}
             onCustomerChange={(cid) => {
-              setSelectedCustomerId(cid);
-              setValue('customer_id', cid, { shouldValidate: true });
+              setSelectedCustomerId(cid || '');
+              setValue('customer_id', cid || '', { shouldValidate: true });
+              setValue('site_id', '', { shouldValidate: true });
             }}
             onSiteChange={(sid) => setValue('site_id', sid, { shouldValidate: true })}
             onAddNewCustomer={() => {}}

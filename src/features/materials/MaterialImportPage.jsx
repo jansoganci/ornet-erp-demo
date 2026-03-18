@@ -115,7 +115,7 @@ export function MaterialImportPage() {
 
   if (bulkUpsertMutation.isError) {
     return (
-      <PageContainer maxWidth="xl">
+      <PageContainer maxWidth="full">
         <ErrorState 
           message={getErrorMessage(bulkUpsertMutation.error)} 
           onRetry={() => bulkUpsertMutation.reset()} 
@@ -131,7 +131,7 @@ export function MaterialImportPage() {
   };
 
   return (
-    <PageContainer maxWidth="xl">
+    <PageContainer maxWidth="full">
       <PageHeader
         title={t('materials:import.title')}
         breadcrumbs={[

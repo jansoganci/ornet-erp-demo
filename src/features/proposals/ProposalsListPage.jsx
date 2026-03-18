@@ -194,7 +194,7 @@ export function ProposalsListPage() {
   ];
 
   return (
-    <PageContainer maxWidth="xl" padding="default">
+    <PageContainer maxWidth="full" padding="default">
       <PageHeader
         title={t('list.title')}
         actions={

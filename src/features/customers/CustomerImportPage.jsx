@@ -42,13 +42,21 @@ export function CustomerImportPage() {
         setData(rows);
         setErrors(validationErrors);
 
+        const rowLevelErrors = validationErrors.filter((e) => e.rowIndex >= 0);
+        const rowsWithErrorsSet = new Set(rowLevelErrors.map((e) => e.rowIndex));
+        const validCount = rows.filter((_, i) => !rowsWithErrorsSet.has(i)).length;
+        const invalidCount = rowsWithErrorsSet.size;
+        const invalidRowsList = rowLevelErrors.map((e) => ({ rowNum: e.rowNum, field: e.field, message: e.message }));
+        console.log('[Import] Geçerli satır:', validCount, '| Hatalı satır:', invalidCount);
+        console.log('[Import] Hatalı satırlar:', invalidRowsList);
+
         // Check parsed company names against DB — runs while spinner is still showing
         const existingNames = await fetchExistingCustomerNames();
         const normalizedSet = new Set(existingNames.map((n) => normalizeForSearch(n)));
         setDuplicateNames(normalizedSet);
       } catch {
         setData([]);
-        setErrors([{ rowIndex: -1, field: '_parse', message: 'Parse error', rowNum: 0 }]);
+        setErrors([{ rowNum: 0, field: '_parse', message: 'Parse error', rowIndex: -1 }]);
         setDuplicateNames(new Set());
       } finally {
         setIsParsing(false);
@@ -60,12 +68,12 @@ export function CustomerImportPage() {
   };
 
   const handleImport = async () => {
-    if (data.length === 0 || errors.length > 0) return;
+    if (validRows.length === 0) return;
 
     setImportResult(null);
-    setImportProgress({ current: 0, total: data.length });
+    setImportProgress({ current: 0, total: validRows.length });
     try {
-      const result = await importMutation.mutateAsync(data);
+      const result = await importMutation.mutateAsync(validRows);
       setImportResult(result);
       setImportProgress(null);
       if (result.failed === 0) {
@@ -96,9 +104,18 @@ export function CustomerImportPage() {
     URL.revokeObjectURL(url);
   };
 
-  const hasCriticalErrors = errors.length > 0;
   const hasLimitError = errors.some((e) => e.field === '_limit');
-  const canImport = data.length > 0 && !hasCriticalErrors;
+  const rowsWithErrors = new Set(errors.filter((e) => e.rowIndex >= 0).map((e) => e.rowIndex));
+  const validRows = data.filter((_, i) => !rowsWithErrors.has(i));
+  const validRowIndices = data.map((_, i) => i).filter((i) => !rowsWithErrors.has(i));
+  const canImport = validRows.length > 0 && !hasLimitError;
+
+  const getResultForRow = (dataIndex) => {
+    if (!importResult?.results) return null;
+    if (rowsWithErrors.has(dataIndex)) return { status: 'validation_skipped' };
+    const resultIdx = validRowIndices.indexOf(dataIndex);
+    return resultIdx >= 0 ? importResult.results[resultIdx] : null;
+  };
 
   const isDuplicateRow = (row) =>
     !!row.company_name && duplicateNames.has(normalizeForSearch(row.company_name));
@@ -109,7 +126,7 @@ export function CustomerImportPage() {
 
   if (importMutation.isError) {
     return (
-      <PageContainer maxWidth="xl">
+      <PageContainer maxWidth="full">
         <ErrorState
           message={getErrorMessage(importMutation.error, 'common.importFailed')}
           onRetry={() => importMutation.reset()}
@@ -119,7 +136,7 @@ export function CustomerImportPage() {
   }
 
   return (
-    <PageContainer maxWidth="xl">
+    <PageContainer maxWidth="full">
       <PageHeader
         title={t('customers:import.title')}
         breadcrumbs={[
@@ -162,13 +179,19 @@ export function CustomerImportPage() {
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-5 h-5 text-green-500" />
-                  <span className="font-medium">{t('customers:import.validRows', { count: data.length })}</span>
+                  <span className="font-medium">{t('customers:import.validRows', { count: validRows.length })}</span>
+                  <span className="text-neutral-500 text-sm">
+                    {t('customers:import.willImport', { count: validRows.length })}
+                  </span>
                 </div>
-                {errors.length > 0 && (
+                {rowsWithErrors.size > 0 && (
                   <div className="flex items-center gap-2">
                     <AlertCircle className="w-5 h-5 text-red-500" />
                     <span className="font-medium text-red-600">
-                      {t('customers:import.invalidRows', { count: errors.length })}
+                      {t('customers:import.invalidRows', { count: rowsWithErrors.size })}
+                    </span>
+                    <span className="text-neutral-500 text-sm">
+                      {t('customers:import.willSkip')}
                     </span>
                   </div>
                 )}
@@ -302,23 +325,25 @@ export function CustomerImportPage() {
                             )}
                           </td>
                         )}
-                        {importResult?.results[i] && (
+                        {getResultForRow(i) && (
                           <td className="px-4 py-3">
                             <Badge
                               variant={
-                                importResult.results[i].status === 'created'
+                                getResultForRow(i).status === 'created'
                                   ? 'success'
-                                  : importResult.results[i].status === 'skipped'
+                                  : getResultForRow(i).status === 'skipped' || getResultForRow(i).status === 'validation_skipped'
                                     ? 'warning'
                                     : 'error'
                               }
                               size="sm"
                             >
-                              {importResult.results[i].status === 'created'
+                              {getResultForRow(i).status === 'created'
                                 ? t('customers:import.status.created')
-                                : importResult.results[i].status === 'skipped'
-                                  ? t('customers:import.status.skipped')
-                                  : t('customers:import.status.failed')}
+                                : getResultForRow(i).status === 'validation_skipped'
+                                  ? t('customers:import.status.validationSkipped')
+                                  : getResultForRow(i).status === 'skipped'
+                                    ? t('customers:import.status.skipped')
+                                    : t('customers:import.status.failed')}
                             </Badge>
                           </td>
                         )}
@@ -343,6 +368,11 @@ export function CustomerImportPage() {
                     failed: importResult.failed,
                   })}
                 </p>
+                {rowsWithErrors.size > 0 && (
+                  <p className="mt-1 text-sm text-amber-700 dark:text-amber-400">
+                    {t('customers:import.validationSkippedCount', { count: rowsWithErrors.size })}
+                  </p>
+                )}
                 {importResult.errors?.length > 0 && (
                   <ul className="mt-2 text-sm text-amber-700 dark:text-amber-400 space-y-1">
                     {importResult.errors.map((e, i) => (

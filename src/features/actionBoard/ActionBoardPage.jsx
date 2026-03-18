@@ -178,7 +178,7 @@ export function ActionBoardPage() {
   // Admin-only gate — fail-safe: only render for confirmed admin
   if (!profile || profile.role !== 'admin') {
     return (
-      <PageContainer maxWidth="lg" padding="default">
+      <PageContainer maxWidth="full" padding="default">
         {!profile && isProfileLoading ? (
           <div className="flex justify-center py-24">
             <Spinner size="lg" />
@@ -197,7 +197,7 @@ export function ActionBoardPage() {
 
   if (hasAllErrors) {
     return (
-      <PageContainer maxWidth="lg" padding="default">
+      <PageContainer maxWidth="full" padding="default">
         <ErrorState onRetry={refetch} />
       </PageContainer>
     );
@@ -205,7 +205,7 @@ export function ActionBoardPage() {
 
   if (allLoading) {
     return (
-      <PageContainer maxWidth="lg" padding="default">
+      <PageContainer maxWidth="full" padding="default">
         <div className="flex justify-center py-24">
           <Spinner size="lg" />
         </div>
@@ -214,7 +214,7 @@ export function ActionBoardPage() {
   }
 
   return (
-    <PageContainer maxWidth="lg" padding="default" className="space-y-8 pb-12">
+    <PageContainer maxWidth="full" padding="default" className="space-y-8 pb-12">
       <PageHeader title={t('title')} />
 
       {hasAnyError && (

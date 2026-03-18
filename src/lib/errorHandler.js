@@ -42,9 +42,34 @@ export function getErrorMessage(error, fallbackKey = 'common.unexpected') {
     return i18n.t('errors:db.duplicate');
   }
 
+  // 23502 = NOT NULL violation — try to extract column name for clearer message
+  // PostgREST puts column name in message: "null value in column \"x\" of relation..."
+  if (String(code) === '23502') {
+    const textToSearch = msg || error?.details || error?.error?.details || '';
+    const columnMatch = typeof textToSearch === 'string' && /column\s+["']([^"']+)["']/i.exec(textToSearch);
+    const column = columnMatch ? columnMatch[1] : null;
+    const columnLabels = {
+      company_name: 'Müşteri Adı',
+      subscriber_title: 'Abone Ünvanı',
+      customer_id: 'Müşteri',
+      site_id: 'Lokasyon',
+      site_name: 'Lokasyon Adı',
+      account_no: 'Hesap No',
+      address: 'Adres',
+      name: 'Ad',
+      title: 'Başlık',
+      phone: 'Telefon',
+      email: 'E-posta',
+    };
+    const fieldLabel = column ? (columnLabels[column] || column) : null;
+    if (fieldLabel) {
+      return i18n.t('errors:db.notNullWithField', { field: fieldLabel });
+    }
+    return i18n.t('errors:db.notNull');
+  }
+
   const pgCodes = {
     '23503': 'errors:db.foreignKey',
-    '23502': 'errors:db.notNull',
     '23514': 'errors:db.checkViolation',
     '22P02': 'errors:db.invalidFormat',
   };

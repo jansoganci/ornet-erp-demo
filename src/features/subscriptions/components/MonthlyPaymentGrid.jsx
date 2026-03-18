@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Check, X, Minus, Circle } from 'lucide-react';
-import { Card } from '../../../components/ui';
+import { Check, X, Minus, Circle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Card, Spinner } from '../../../components/ui';
 import { formatCurrency, cn } from '../../../lib/utils';
 import { PaymentRecordModal } from './PaymentRecordModal';
+import { useEnsurePaymentsForYear } from '../hooks';
 
 const statusConfig = {
   paid: {
@@ -48,9 +49,36 @@ function getMonthIndex(paymentMonth) {
   return new Date(paymentMonth).getMonth();
 }
 
-export function MonthlyPaymentGrid({ payments = [] }) {
+function getPaymentYear(paymentMonth) {
+  if (!paymentMonth) return 0;
+  return new Date(paymentMonth).getFullYear();
+}
+
+export function MonthlyPaymentGrid({ subscriptionId, payments = [], subscriptionStatus }) {
   const { t } = useTranslation(['subscriptions', 'common']);
   const [selectedPayment, setSelectedPayment] = useState(null);
+  const [selectedYear, setSelectedYear] = useState(() => new Date().getFullYear());
+
+  const ensurePaymentsMutation = useEnsurePaymentsForYear();
+  const lastAttemptedYearRef = useRef(null);
+
+  const filteredPayments = payments.filter(
+    (p) => p.payment_month && getPaymentYear(p.payment_month) === selectedYear
+  );
+
+  useEffect(() => {
+    if (
+      !subscriptionId ||
+      subscriptionStatus === 'cancelled' ||
+      filteredPayments.length > 0 ||
+      ensurePaymentsMutation.isPending ||
+      lastAttemptedYearRef.current === selectedYear
+    ) {
+      return;
+    }
+    lastAttemptedYearRef.current = selectedYear;
+    ensurePaymentsMutation.mutate({ subscriptionId, year: selectedYear });
+  }, [selectedYear, filteredPayments.length, subscriptionId, subscriptionStatus]);
 
   const handleCellClick = (payment) => {
     if (['pending', 'failed', 'write_off'].includes(payment.status)) {
@@ -58,21 +86,48 @@ export function MonthlyPaymentGrid({ payments = [] }) {
     }
   };
 
-  const paidPayments = payments.filter((p) => p.status === 'paid');
-  const pendingPayments = payments.filter((p) => p.status === 'pending');
+  const paidPayments = filteredPayments.filter((p) => p.status === 'paid');
+  const pendingPayments = filteredPayments.filter((p) => p.status === 'pending');
   const paidTotal = paidPayments.reduce((sum, p) => sum + Number(p.total_amount || 0), 0);
   const pendingTotal = pendingPayments.reduce((sum, p) => sum + Number(p.total_amount || 0), 0);
 
   return (
     <Card className="overflow-hidden">
-      <div className="bg-primary-50/50 dark:bg-primary-950/10 px-5 py-3 border-b border-primary-100 dark:border-primary-900/20 flex items-center space-x-2">
+      <div className="bg-primary-50/50 dark:bg-primary-950/10 px-5 py-3 border-b border-primary-100 dark:border-primary-900/20 flex items-center justify-between gap-2">
         <h3 className="font-bold text-primary-900 dark:text-primary-100 uppercase tracking-wider text-xs">
           {t('payment.title')}
         </h3>
+        <div className="flex items-center gap-1 sm:gap-2">
+          <button
+            type="button"
+            onClick={() => setSelectedYear((y) => y - 1)}
+            aria-label={t('subscriptions:paymentGrid.prevYear')}
+            className="p-1.5 sm:p-2 rounded-lg text-primary-700 dark:text-primary-300 hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors touch-manipulation"
+          >
+            <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+          </button>
+          <span className="min-w-[3rem] sm:min-w-[4rem] text-center text-sm font-bold text-primary-900 dark:text-primary-100">
+            {selectedYear}
+          </span>
+          <button
+            type="button"
+            onClick={() => setSelectedYear((y) => y + 1)}
+            aria-label={t('subscriptions:paymentGrid.nextYear')}
+            className="p-1.5 sm:p-2 rounded-lg text-primary-700 dark:text-primary-300 hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors touch-manipulation"
+          >
+            <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
+          </button>
+        </div>
       </div>
       <div className="p-4">
+        {ensurePaymentsMutation.isPending && filteredPayments.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 gap-3 text-neutral-500 dark:text-neutral-400">
+            <Spinner size="lg" />
+            <p className="text-sm">{t('subscriptions:paymentGrid.generating')}</p>
+          </div>
+        ) : (
         <div className="grid grid-cols-3 md:grid-cols-4 gap-2">
-          {payments.map((payment) => {
+          {filteredPayments.map((payment) => {
             const monthIdx = getMonthIndex(payment.payment_month);
             const config = statusConfig[payment.status] || statusConfig.pending;
             const Icon = config.icon;
@@ -104,6 +159,7 @@ export function MonthlyPaymentGrid({ payments = [] }) {
             );
           })}
         </div>
+        )}
 
         {/* Summary row */}
         <div className="mt-4 pt-3 border-t border-neutral-100 dark:border-neutral-800 grid grid-cols-2 gap-4">

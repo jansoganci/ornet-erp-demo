@@ -36,7 +36,8 @@
   },
   "subscriptions": {
     "importFailed": "İçe aktarım başarısız oldu",
-    "duplicateActive": "Bu lokasyon için bu hizmet tipinde zaten aktif bir abonelik var. Farklı bir hizmet tipi seçin veya mevcut aboneliği iptal edin."
+    "duplicateActive": "Bu lokasyon için bu hizmet tipinde zaten aktif bir abonelik var. Farklı bir hizmet tipi seçin veya mevcut aboneliği iptal edin.",
+    "required_for_non_monthly": "Aylık dışı aboneliklerde ODEME NOTU zorunludur (örn: OCAK, TEMMUZ)"
   },
   "simCards": {
     "loadFailed": "SIM kartlar yüklenemedi",
@@ -50,6 +51,7 @@
     "duplicate": "Bu kayıt zaten mevcut.",
     "foreignKey": "İlişkili kayıt nedeniyle işlem yapılamıyor.",
     "notNull": "Zorunlu alan eksik.",
+    "notNullWithField": "Zorunlu alan eksik: {{field}}",
     "checkViolation": "Geçersiz değer girildi.",
     "invalidFormat": "Geçersiz veri formatı."
   }

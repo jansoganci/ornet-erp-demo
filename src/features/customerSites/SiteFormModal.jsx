@@ -26,19 +26,35 @@ export function SiteFormModal({
     register,
     handleSubmit,
     reset,
-    setValue,
     formState: { errors, isSubmitting }
   } = useForm({
     resolver: zodResolver(siteSchema),
     defaultValues: site ? { ...siteDefaultValues, ...site, customer_id: site.customer_id } : { ...siteDefaultValues, customer_id: customerId || '' },
   });
 
-  // When modal opens for "add site", sync form with current customerId so validation passes
+  // Reset form when modal opens — defaultValues only apply on mount, so we must reset when site/customerId changes
   useEffect(() => {
-    if (open && !isEditing) {
-      setValue('customer_id', customerId || '');
+    if (open) {
+      if (site) {
+        reset({
+          ...siteDefaultValues,
+          customer_id: site.customer_id || '',
+          site_name: site.site_name || '',
+          account_no: site.account_no || '',
+          alarm_center: site.alarm_center || '',
+          address: site.address || '',
+          city: site.city || '',
+          district: site.district || '',
+          contact_name: site.contact_name || '',
+          contact_phone: site.contact_phone || '',
+          panel_info: site.panel_info || '',
+          notes: site.notes || '',
+        });
+      } else {
+        reset({ ...siteDefaultValues, customer_id: customerId || '' });
+      }
     }
-  }, [open, isEditing, customerId, setValue]);
+  }, [open, site, customerId, reset]);
 
   const createMutation = useCreateSite();
   const updateMutation = useUpdateSite();
@@ -105,6 +121,12 @@ export function SiteFormModal({
             {...register('account_no')}
           />
         </div>
+
+        <Input
+          label={t('customers:sites.fields.alarmCenter')}
+          error={errors.alarm_center?.message}
+          {...register('alarm_center')}
+        />
 
         <Textarea
           label={t('customers:sites.fields.address')}

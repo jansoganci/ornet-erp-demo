@@ -1,6 +1,7 @@
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useState, useMemo } from 'react';
+import { SearchX } from 'lucide-react';
 import { useCustomer, useDeleteCustomer } from './hooks';
 import { useWorkOrdersByCustomer } from '../workOrders/hooks';
 import { useSitesByCustomer } from '../customerSites/hooks';
@@ -8,7 +9,7 @@ import { useSimCardsByCustomer } from '../simCards/hooks';
 import { useCustomerSubscriptions } from '../subscriptions/hooks';
 import { useAssetsByCustomer } from '../siteAssets/hooks';
 import { PageContainer } from '../../components/layout';
-import { Button, Modal, Skeleton, ErrorState } from '../../components/ui';
+import { Button, Modal, Skeleton, ErrorState, EmptyState } from '../../components/ui';
 import { CustomerDetailProvider } from './CustomerDetailContext';
 import { CustomerHero } from './components/CustomerHero';
 import { CustomerTabBar } from './components/CustomerTabBar';
@@ -95,11 +96,11 @@ export function CustomerDetailPage() {
     faultyEquipment: (assets || []).filter((a) => a.status === 'faulty').length,
   }), [customerSubscriptions, workOrders, simCards, assets]);
 
-  // Monthly revenue — sum of active subscription base prices (memoized)
+  // Monthly revenue — sum of active subscription subtotals (base + sms + line + static_ip)
   const monthlyRevenue = useMemo(
     () => (customerSubscriptions || [])
       .filter((s) => s.status === 'active')
-      .reduce((sum, s) => sum + (Number(s.base_price) || 0), 0),
+      .reduce((sum, s) => sum + (Number(s.subtotal) || 0), 0),
     [customerSubscriptions]
   );
 
@@ -121,27 +122,7 @@ export function CustomerDetailPage() {
     navigate(`/work-orders/new?customerId=${id}${siteId ? `&siteId=${siteId}` : ''}`);
   };
 
-  // ── Loading ──
-  if (isLoading) return <CustomerDetailSkeleton />;
-
-  // ── Error ──
-  if (error || !customer) {
-    return (
-      <PageContainer maxWidth="full" padding="default">
-        <ErrorState
-          message={error?.message || t('detail.notFound')}
-          onRetry={() => refetch()}
-          className="mb-4"
-        />
-        <div className="flex justify-center">
-          <Button variant="outline" onClick={() => navigate('/customers')}>
-            {tCommon('actions.back')}
-          </Button>
-        </div>
-      </PageContainer>
-    );
-  }
-
+  // Must be before any early return (Rules of Hooks)
   const detailContextValue = useMemo(
     () => ({
       customerId: id,
@@ -176,6 +157,46 @@ export function CustomerDetailPage() {
       simCardsLoading,
     ]
   );
+
+  // ── Loading ──
+  if (isLoading) return <CustomerDetailSkeleton />;
+
+  // ── Error ──
+  if (error) {
+    return (
+      <PageContainer maxWidth="full" padding="default">
+        <ErrorState
+          message={error.message}
+          onRetry={() => refetch()}
+          className="mb-4"
+        />
+        <div className="flex justify-center">
+          <Button variant="outline" onClick={() => navigate('/customers')}>
+            {tCommon('actions.back')}
+          </Button>
+        </div>
+      </PageContainer>
+    );
+  }
+
+  if (!customer) {
+    return (
+      <PageContainer maxWidth="full" padding="default">
+        <div className="space-y-4">
+          <EmptyState
+            icon={SearchX}
+            title={t('detail.notFound')}
+            description={tCommon('noData')}
+          />
+          <div className="flex justify-center">
+            <Button variant="outline" onClick={() => navigate('/customers')}>
+              {tCommon('actions.back')}
+            </Button>
+          </div>
+        </div>
+      </PageContainer>
+    );
+  }
 
   return (
     <PageContainer maxWidth="full" padding="default" className="space-y-5">

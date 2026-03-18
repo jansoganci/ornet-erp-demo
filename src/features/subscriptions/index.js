@@ -30,7 +30,6 @@ export {
 
 // Schemas & Constants
 export {
-  SUBSCRIPTION_TYPES,
   SUBSCRIPTION_STATUSES,
   PAYMENT_STATUSES,
   PAYMENT_METHODS,
