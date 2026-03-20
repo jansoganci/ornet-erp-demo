@@ -1,7 +1,7 @@
 # CLAUDE.md - Ornet ERP Project Context
 
 > This file helps Claude understand the project context, architecture, and coding conventions.
-> Last updated: 2026-03-19
+> Last updated: 2026-03-20
 
 ---
 
@@ -26,7 +26,8 @@
 - Dashboard with metrics and currency widget
 - Authentication (login, register, password reset, email verification)
 - **Action Board** - Admin-only operational command center
-- **Subscription Management** - Alarm and camera rental contracts with monthly/3-month/6-month/yearly billing, payment grid, pause/cancel, price revisions, dynamic VAT per subscription, SIM card linking, and auto finance transaction generation on payment
+- **Operations Board** - Operational request pool with calendar view, inline scheduling, contact status tracking, and insights tab (`/operations`, `canWrite` guard)
+- **Subscription Management** - Alarm and camera rental contracts with monthly/3-month/6-month/yearly billing, payment grid, pause/cancel, price revisions, dynamic VAT per subscription, SIM card linking, auto finance transaction generation on payment, and **Collection Desk** (`/subscriptions/collection`) for overdue payment follow-up
 - **SIM Card Management** - 2500+ phone numbers in security devices (location, owner, revenue, status) with import, invoice analysis (Turkcell PDF parsing), static IP tracking, and automated status sync (SIM status auto-updates when linked subscription is cancelled/paused)
 - **Proposals/Quotes** - Offer generator with PDF export (@react-pdf/renderer), work order bridge, and auto finance transaction on completion
 - **Finance Module** - Income, expenses, VAT tracking (dynamic `vat_rate`), exchange rates (TCMB), recurring expenses, P&L reports, CSV export. `financial_transactions` is the **single source of truth** for all financial reporting — subscription payments, proposal completions, and work order completions auto-create rows via DB triggers
@@ -85,9 +86,10 @@ src/
 │   ├── customers/          # Customer management
 │   ├── customerSites/      # Customer locations
 │   ├── dashboard/          # Dashboard & metrics
-│   ├── finance/            # Income, expenses, VAT, exchange rates, reports
+│   ├── finance/            # Income, expenses, VAT, exchange rates, reports, collection desk
 │   ├── materials/          # Materials/inventory
 │   ├── notifications/      # In-app notification center
+│   ├── operations/         # Operations board (request pool, scheduling, insights)
 │   ├── profile/            # User profile management
 │   ├── proposals/          # Quotes/offers with PDF export
 │   ├── service/            # (reserved, empty)
@@ -99,6 +101,7 @@ src/
 │   └── workOrders/         # Work orders
 │
 ├── components/
+│   ├── import/             # Shared import UI (ImportInstructionCard, ImportResultSummary)
 │   ├── layout/             # Layout components
 │   ├── ui/                 # Reusable UI components
 │   └── ErrorBoundary.jsx   # Top-level error boundary
@@ -116,17 +119,18 @@ src/
 │   ├── chartTheme.js       # Recharts color constants (CHART_COLORS, SPARKLINE_COLORS)
 │   ├── csvExport.js        # CSV export utility
 │   ├── errorHandler.js     # Error localization
-│   ├── i18n.js             # i18next config (21 namespaces)
+│   ├── i18n.js             # i18next config (23 namespaces)
 │   ├── normalizeForSearch.js # Turkish character normalization for search
 │   ├── roles.js            # Role constants & useRole() hook
 │   ├── supabase.js         # Supabase client
 │   ├── utils.js            # Helper functions
 │   └── zodHelpers.js       # Reusable Zod schema helpers
 │
-├── locales/tr/             # Turkish translations (21 files)
+├── locales/tr/             # Turkish translations (23 files)
 │   ├── actionBoard.json
 │   ├── auth.json
 │   ├── calendar.json
+│   ├── collection.json
 │   ├── common.json
 │   ├── customers.json
 │   ├── dailyWork.json
@@ -136,6 +140,7 @@ src/
 │   ├── invoiceAnalysis.json
 │   ├── materials.json
 │   ├── notifications.json
+│   ├── operations.json
 │   ├── profile.json
 │   ├── proposals.json
 │   ├── recurring.json
@@ -170,7 +175,7 @@ features/customers/
 └── components/             # Feature-specific components
 ```
 
-Some features split API concerns into multiple files (e.g., `subscriptions` has `api.js`, `importApi.js`, `paymentsApi.js`, `paymentMethodsApi.js`; `finance` has `recurringApi.js`).
+Some features split API concerns into multiple files (e.g., `subscriptions` has `api.js`, `importApi.js`, `paymentsApi.js`, `paymentMethodsApi.js`; `finance` has `recurringApi.js`, `collectionApi.js`, `collectionHooks.js`, `recurringHooks.js`).
 
 ---
 
@@ -182,15 +187,16 @@ All routes are defined in `src/App.jsx`. Key route groups:
 |-------|--------|
 | Auth (public) | `/login`, `/register`, `/forgot-password`, `/auth/update-password`, `/auth/verify-email` |
 | Dashboard | `/`, `/profile`, `/notifications`, `/action-board` |
+| Operations | `/operations` (`canWrite`) |
 | Customers | `/customers`, `/customers/new`, `/customers/import`, `/customers/:id`, `/customers/:id/edit` |
 | Work Orders | `/work-orders`, `/work-orders/new`, `/work-orders/:id`, `/work-orders/:id/edit` |
 | Planning | `/daily-work`, `/work-history`, `/tasks`, `/calendar` |
 | Materials | `/materials`, `/materials/import` |
-| Subscriptions | `/subscriptions`, `/subscriptions/price-revision`, `/subscriptions/new`, `/subscriptions/:id`, `/subscriptions/:id/edit` |
-| Proposals | `/proposals`, `/proposals/new`, `/proposals/:id`, `/proposals/:id/edit` |
-| Finance | `/finance`, `/finance/expenses`, `/finance/income`, `/finance/vat`, `/finance/exchange`, `/finance/recurring`, `/finance/reports` |
-| Equipment | `/equipment` |
-| SIM Cards | `/sim-cards`, `/sim-cards/new`, `/sim-cards/import`, `/sim-cards/invoice-analysis`, `/sim-cards/:id/edit` |
+| Subscriptions | `/subscriptions`, `/subscriptions/collection`, `/subscriptions/price-revision`, `/subscriptions/import`, `/subscriptions/new`, `/subscriptions/:id`, `/subscriptions/:id/edit` (`canWrite`) |
+| Proposals | `/proposals`, `/proposals/new`, `/proposals/:id`, `/proposals/:id/edit` (`canWrite`) |
+| Finance | `/finance`, `/finance/expenses`, `/finance/income`, `/finance/vat`, `/finance/exchange`, `/finance/recurring`, `/finance/reports` (`canWrite`) |
+| Equipment | `/equipment`, `/equipment/import` |
+| SIM Cards | `/sim-cards`, `/sim-cards/new`, `/sim-cards/import`, `/sim-cards/invoice-analysis`, `/sim-cards/:id/edit` (`canWrite`) |
 
 ---
 
@@ -198,11 +204,11 @@ All routes are defined in `src/App.jsx`. Key route groups:
 
 Navigation is configured in `src/components/layout/navItems.js` with these groups:
 
-1. **Top-level** (5 items, also in mobile bottom bar): Dashboard, Daily Work, Customers, Work Orders, Proposals
+1. **Top-level** (5 items, also in mobile bottom bar): Dashboard, Operations (`canWrite`), Customers, Work Orders, Proposals (`canWrite`)
 2. **Operasyon**: Notifications, Action Board (admin only)
-3. **Planlama**: Calendar, Tasks, Work History
-4. **Gelir ve Altyapı**: Subscriptions, SIM Cards, Invoice Analysis, Equipment
-5. **Finans**: Finance Dashboard, Income, Expenses, VAT, Exchange Rates, Recurring Expenses, Reports
+3. **Planlama**: Work History
+4. **Gelir ve Altyapı**: Subscriptions (`canWrite`), SIM Cards (`canWrite`), Invoice Analysis (`canWrite`), Equipment
+5. **Finans** (`canWrite`): Finance Dashboard, Income, Expenses, VAT, Exchange Rates, Recurring Expenses, Reports
 6. **Ayarlar** (collapsed by default): Materials
 
 ---
@@ -325,10 +331,19 @@ function MyPage() {
 | `SearchInput` | Search field |
 | `IconButton` | Icon-only button |
 | `DateRangeFilter` | Date range picker for filters |
+| `CustomerCombobox` | Searchable customer selector |
 | `MaterialCombobox` | Searchable material selector |
 | `SimCardCombobox` | Searchable SIM card selector |
+| `KpiCard` | KPI metric card with value, label, and trend |
 | `UnsavedChangesModal` | Warn user before leaving with unsaved changes |
 | `ChartTooltip` | Shared tooltip component for Recharts charts |
+
+### Import Components (src/components/import/)
+
+| Component | Usage |
+|-----------|-------|
+| `ImportInstructionCard` | Shared import page instructions card |
+| `ImportResultSummary` | Shared import result summary (success/error counts) |
 
 ### Layout Components (src/components/layout/)
 
@@ -415,10 +430,11 @@ Text:        dark:text-neutral-50  (primary)
 
 ### Translation Files Location
 ```
-src/locales/tr/          (21 namespaces)
+src/locales/tr/          (23 namespaces)
 ├── actionBoard.json     # Action board
 ├── auth.json            # Authentication
 ├── calendar.json        # Calendar view
+├── collection.json      # Collection desk (overdue payment follow-up)
 ├── common.json          # General UI, actions, time
 ├── customers.json       # Customer module
 ├── dailyWork.json       # Daily work tracking
@@ -428,6 +444,7 @@ src/locales/tr/          (21 namespaces)
 ├── invoiceAnalysis.json # SIM card invoice analysis
 ├── materials.json       # Materials
 ├── notifications.json   # Notifications
+├── operations.json      # Operations board
 ├── profile.json         # User profile
 ├── proposals.json       # Proposals/quotes
 ├── recurring.json       # Recurring expenses
