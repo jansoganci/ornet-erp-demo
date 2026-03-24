@@ -54,7 +54,7 @@ function getPaymentYear(paymentMonth) {
   return new Date(paymentMonth).getFullYear();
 }
 
-export function MonthlyPaymentGrid({ subscriptionId, payments = [], subscriptionStatus }) {
+export function MonthlyPaymentGrid({ subscriptionId, payments = [], subscriptionStatus, className }) {
   const { t } = useTranslation(['subscriptions', 'common']);
   const [selectedPayment, setSelectedPayment] = useState(null);
   const [selectedYear, setSelectedYear] = useState(() => new Date().getFullYear());
@@ -92,9 +92,9 @@ export function MonthlyPaymentGrid({ subscriptionId, payments = [], subscription
   const pendingTotal = pendingPayments.reduce((sum, p) => sum + Number(p.total_amount || 0), 0);
 
   return (
-    <Card className="overflow-hidden">
-      <div className="bg-primary-50/50 dark:bg-primary-950/10 px-5 py-3 border-b border-primary-100 dark:border-primary-900/20 flex items-center justify-between gap-2">
-        <h3 className="font-bold text-primary-900 dark:text-primary-100 uppercase tracking-wider text-xs">
+    <Card className={cn('overflow-hidden', className)}>
+      <div className="flex items-center justify-between gap-2 border-b border-neutral-200/90 bg-neutral-50/90 px-5 py-3 dark:border-[#262626] dark:bg-[#141414]/80">
+        <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-800 dark:text-neutral-200">
           {t('payment.title')}
         </h3>
         <div className="flex items-center gap-1 sm:gap-2">
@@ -102,18 +102,18 @@ export function MonthlyPaymentGrid({ subscriptionId, payments = [], subscription
             type="button"
             onClick={() => setSelectedYear((y) => y - 1)}
             aria-label={t('subscriptions:paymentGrid.prevYear')}
-            className="p-1.5 sm:p-2 rounded-lg text-primary-700 dark:text-primary-300 hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors touch-manipulation"
+            className="touch-manipulation rounded-lg p-1.5 text-neutral-600 transition-colors hover:bg-neutral-200/80 dark:text-neutral-300 dark:hover:bg-neutral-800 sm:p-2"
           >
             <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
-          <span className="min-w-[3rem] sm:min-w-[4rem] text-center text-sm font-bold text-primary-900 dark:text-primary-100">
+          <span className="min-w-[3rem] text-center text-sm font-bold text-neutral-900 dark:text-neutral-100 sm:min-w-[4rem]">
             {selectedYear}
           </span>
           <button
             type="button"
             onClick={() => setSelectedYear((y) => y + 1)}
             aria-label={t('subscriptions:paymentGrid.nextYear')}
-            className="p-1.5 sm:p-2 rounded-lg text-primary-700 dark:text-primary-300 hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors touch-manipulation"
+            className="touch-manipulation rounded-lg p-1.5 text-neutral-600 transition-colors hover:bg-neutral-200/80 dark:text-neutral-300 dark:hover:bg-neutral-800 sm:p-2"
           >
             <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
@@ -140,7 +140,7 @@ export function MonthlyPaymentGrid({ subscriptionId, payments = [], subscription
                 onClick={() => handleCellClick(payment)}
                 disabled={!isClickable}
                 className={cn(
-                  'relative flex flex-col items-center rounded-xl border p-3 transition-all',
+                  'relative flex flex-col items-center rounded-xl border p-3 min-h-[56px] transition-all',
                   config.bg,
                   config.border,
                   isClickable

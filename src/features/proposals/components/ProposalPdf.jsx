@@ -8,6 +8,7 @@ import {
   Font,
 } from '@react-pdf/renderer';
 import { getCurrencySymbol } from '../../../lib/utils';
+import { calcProposalTotals } from '../../../lib/proposalCalc';
 import i18n from '../../../lib/i18n';
 
 Font.register({
@@ -289,15 +290,9 @@ export function ProposalPdf({ proposal, items }) {
   const currency = prop.currency ?? 'USD';
   const symbol = getCurrencySymbol(currency);
   const itemList = Array.isArray(items) ? items : [];
-  const subtotal = itemList.reduce(
-    (sum, item) =>
-      sum + safeNum(item.line_total ?? item.total_usd ?? (safeNum(item.quantity) * safeNum(item.unit_price ?? item.unit_price_usd))),
-    0
-  );
+  const { subtotal, discountAmount, grandTotal } = calcProposalTotals(itemList, prop.discount_percent);
   const discountPercent = safeNum(prop.discount_percent, 0);
-  const discountAmount = subtotal * (discountPercent / 100);
-  const grandTotal = subtotal - discountAmount;
-  const proposalDate = formatTurkishDate(prop.created_at);
+  const proposalDate = formatTurkishDate(prop.proposal_date || prop.created_at);
 
   return (
     <Document>
@@ -315,7 +310,10 @@ export function ProposalPdf({ proposal, items }) {
         {/* Header grid: 8 fields (centered) */}
         <View style={styles.headerGridWrap}>
           <View style={styles.headerGrid}>
-            <HeaderField label={i18n.t('proposals:pdf.headerLabels.companyName')} value={prop.company_name} />
+            <HeaderField
+              label={i18n.t('proposals:pdf.headerLabels.companyName')}
+              value={safeStr(prop.customer_company_name) || safeStr(prop.company_name)}
+            />
             <HeaderField label={i18n.t('proposals:pdf.headerLabels.surveyDate')} value={prop.survey_date ? formatTurkishDate(prop.survey_date) : ''} />
             <HeaderField label={i18n.t('proposals:pdf.headerLabels.authorizedPerson')} value={prop.authorized_person} />
             <HeaderField label={i18n.t('proposals:pdf.headerLabels.proposalDate')} value={proposalDate} />

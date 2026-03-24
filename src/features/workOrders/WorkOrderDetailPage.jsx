@@ -24,6 +24,7 @@ import { WorkOrderHero } from './components/WorkOrderHero';
 import { WorkOrderStatusActions } from './components/WorkOrderStatusActions';
 import { WorkOrderSiteCard } from './components/WorkOrderSiteCard';
 import { WorkOrderProposalCard } from './components/WorkOrderProposalCard';
+import { WorkOrderActivityTimeline } from './components/WorkOrderActivityTimeline';
 
 function WorkOrderDetailSkeleton() {
   return (
@@ -36,12 +37,19 @@ function WorkOrderDetailSkeleton() {
             <Skeleton className="h-8 w-12" />
           </div>
         </div>
-        <Skeleton className="h-36 w-full rounded-xl" />
+        <Skeleton className="h-28 w-full rounded-xl" />
       </div>
       <Skeleton className="h-16 w-full rounded-xl" />
-      <div className="space-y-6">
-        <Skeleton className="h-48 w-full rounded-xl" />
-        <Skeleton className="h-32 w-full rounded-xl" />
+      <div className="grid grid-cols-12 gap-6">
+        <div className="col-span-12 lg:col-span-8 order-2 lg:order-1 space-y-6">
+          <Skeleton className="h-32 w-full rounded-xl" />
+          <Skeleton className="h-56 w-full rounded-xl" />
+        </div>
+        <div className="col-span-12 lg:col-span-4 order-1 lg:order-2 space-y-6">
+          <Skeleton className="h-44 w-full rounded-xl" />
+          <Skeleton className="h-40 w-full rounded-xl" />
+          <Skeleton className="h-36 w-full rounded-xl" />
+        </div>
       </div>
     </PageContainer>
   );
@@ -188,84 +196,9 @@ export function WorkOrderDetailPage() {
         setStatusToUpdate={setStatusToUpdate}
       />
 
-      {/* Content sections — single column */}
-      <div className="space-y-6">
-        {/* Lokasyon + Planlama kartları — desktop: 1x2 */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <WorkOrderSiteCard workOrder={workOrder} />
-          {/* Planlama & Atama */}
-          <Card className="p-6 space-y-6">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center text-neutral-500 dark:text-neutral-400">
-                  <Calendar className="w-4 h-4 mr-2" />
-                  <span className="text-xs uppercase font-bold tracking-wider">
-                    {t('workOrders:form.fields.scheduledDate')}
-                  </span>
-                </div>
-                <span className="font-bold text-neutral-900 dark:text-neutral-100">
-                  {workOrder.scheduled_date ? formatDate(workOrder.scheduled_date) : '—'}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center text-neutral-500 dark:text-neutral-400">
-                  <Clock className="w-4 h-4 mr-2" />
-                  <span className="text-xs uppercase font-bold tracking-wider">
-                    {t('workOrders:form.fields.scheduledTime')}
-                  </span>
-                </div>
-                <span className="font-bold text-neutral-900 dark:text-neutral-100">
-                  {workOrder.scheduled_time || '—'}
-                </span>
-              </div>
-            </div>
-
-            <div className="pt-6 border-t border-neutral-100 dark:border-neutral-800">
-              <p className="text-[10px] uppercase font-bold text-neutral-400 tracking-widest mb-4">
-                {t('workOrders:form.fields.assignedTo')}
-              </p>
-              <div className="space-y-3">
-                {workOrder.assigned_workers && workOrder.assigned_workers.length > 0 ? (
-                  workOrder.assigned_workers.map((worker) => (
-                    <div
-                      key={worker.id}
-                      className="flex items-center gap-3 bg-neutral-50 dark:bg-neutral-900/50 p-2 rounded-xl border border-neutral-100 dark:border-neutral-800"
-                    >
-                      <div className="h-8 w-8 rounded-full bg-primary-100 dark:bg-primary-900/40 flex items-center justify-center">
-                        <span className="text-xs font-bold text-primary-700 dark:text-primary-300 uppercase">
-                          {worker.name?.charAt(0) || '?'}
-                        </span>
-                      </div>
-                      <span className="text-sm font-bold text-neutral-700 dark:text-neutral-200">
-                        {worker.name || tCommon('labels.unknown')}
-                      </span>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-sm text-neutral-500 italic">{t('workOrders:detail.notAssignedYet')}</p>
-                )}
-              </div>
-            </div>
-
-            <div className="pt-6 border-t border-neutral-100 dark:border-neutral-800">
-              <div className="flex items-center justify-between">
-                <span className="text-xs uppercase font-bold text-neutral-400 tracking-widest">
-                  {t('common:fields.amount')}
-                </span>
-                {workOrder.amount && workOrder.amount > 0 ? (
-                  <span className="text-xl font-black text-primary-600">
-                    {formatCurrency(workOrder.amount, currency)}
-                  </span>
-                ) : (
-                  <span className="text-sm text-neutral-500 italic">
-                    {t('workOrders:detail.amountNotEntered')}
-                  </span>
-                )}
-              </div>
-            </div>
-          </Card>
-        </div>
-
+      <div className="grid grid-cols-12 gap-6">
+        {/* Zone 1 — actionable (left desktop) */}
+        <div className="col-span-12 lg:col-span-8 order-2 lg:order-1 space-y-6">
         {/* Description */}
         <Card
           header={
@@ -373,10 +306,87 @@ export function WorkOrderDetailPage() {
             </p>
           </Card>
         )}
+        </div>
+
+        {/* Zone 2 — context (right desktop); first on mobile */}
+        <div className="col-span-12 lg:col-span-4 order-1 lg:order-2 space-y-6">
+          <WorkOrderSiteCard workOrder={workOrder} />
+          <Card className="p-6 space-y-6">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center text-neutral-500 dark:text-neutral-400">
+                  <Calendar className="w-4 h-4 mr-2" />
+                  <span className="text-xs uppercase font-bold tracking-wider">
+                    {t('workOrders:form.fields.scheduledDate')}
+                  </span>
+                </div>
+                <span className="font-bold text-neutral-900 dark:text-neutral-100">
+                  {workOrder.scheduled_date ? formatDate(workOrder.scheduled_date) : '—'}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center text-neutral-500 dark:text-neutral-400">
+                  <Clock className="w-4 h-4 mr-2" />
+                  <span className="text-xs uppercase font-bold tracking-wider">
+                    {t('workOrders:form.fields.scheduledTime')}
+                  </span>
+                </div>
+                <span className="font-bold text-neutral-900 dark:text-neutral-100">
+                  {workOrder.scheduled_time || '—'}
+                </span>
+              </div>
+            </div>
+
+            <div className="pt-6 border-t border-neutral-100 dark:border-neutral-800">
+              <p className="text-[10px] uppercase font-bold text-neutral-400 tracking-widest mb-4">
+                {t('workOrders:form.fields.assignedTo')}
+              </p>
+              <div className="space-y-3">
+                {workOrder.assigned_workers && workOrder.assigned_workers.length > 0 ? (
+                  workOrder.assigned_workers.map((worker) => (
+                    <div
+                      key={worker.id}
+                      className="flex items-center gap-3 bg-neutral-50 dark:bg-neutral-900/50 p-2 rounded-xl border border-neutral-100 dark:border-neutral-800"
+                    >
+                      <div className="h-8 w-8 rounded-full bg-primary-100 dark:bg-primary-900/40 flex items-center justify-center">
+                        <span className="text-xs font-bold text-primary-700 dark:text-primary-300 uppercase">
+                          {worker.name?.charAt(0) || '?'}
+                        </span>
+                      </div>
+                      <span className="text-sm font-bold text-neutral-700 dark:text-neutral-200">
+                        {worker.name || tCommon('labels.unknown')}
+                      </span>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-neutral-500 italic">{t('workOrders:detail.notAssignedYet')}</p>
+                )}
+              </div>
+            </div>
+
+            <div className="pt-6 border-t border-neutral-100 dark:border-neutral-800">
+              <div className="flex items-center justify-between">
+                <span className="text-xs uppercase font-bold text-neutral-400 tracking-widest">
+                  {t('common:fields.amount')}
+                </span>
+                {workOrder.amount && workOrder.amount > 0 ? (
+                  <span className="text-xl font-black text-primary-600 dark:text-primary-400">
+                    {formatCurrency(workOrder.amount, currency)}
+                  </span>
+                ) : (
+                  <span className="text-sm text-neutral-500 italic">
+                    {t('workOrders:detail.amountNotEntered')}
+                  </span>
+                )}
+              </div>
+            </div>
+          </Card>
+          <WorkOrderActivityTimeline workOrderId={workOrder.id} />
+        </div>
       </div>
 
       {/* Mobile FAB */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/80 dark:bg-[#171717]/80 backdrop-blur-md border-t border-neutral-200 dark:border-[#262626] z-50 flex gap-3 lg:hidden">
+      <div className="fixed bottom-0 left-0 right-0 px-4 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] bg-white/80 dark:bg-[#171717]/80 backdrop-blur-md border-t border-neutral-200 dark:border-[#262626] z-50 flex gap-3 lg:hidden">
         {workOrder.status === 'pending' && (
           <Button className="flex-1" onClick={() => setStatusToUpdate('in_progress')}>
             {t('workOrders:actions.start')}

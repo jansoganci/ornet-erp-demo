@@ -1,250 +1,291 @@
-import { useSearchParams } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import { useMemo } from 'react';
-import { startOfMonth, endOfMonth, format, parseISO } from 'date-fns';
-import { PageContainer, PageHeader } from '../../components/layout';
-import { Select, EmptyState, ErrorState, Button, Table, Badge, DateRangeFilter, Card } from '../../components/ui';
-import { useNotificationsList, useResolveNotification } from './hooks';
-import { Check, ExternalLink } from 'lucide-react';
+import { useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { tr } from 'date-fns/locale';
+import { useTranslation } from 'react-i18next';
+import { isToday, isYesterday, parseISO } from 'date-fns';
+import { CheckCheck, Plus, ChevronDown } from 'lucide-react';
+import { toast } from 'sonner';
+import { PageContainer, PageHeader } from '../../components/layout';
+import { Button, Spinner, ErrorState, EmptyState } from '../../components/ui';
+import { cn } from '../../lib/utils';
+import { useActiveNotifications, useResolveNotification, useMarkAllAsResolved } from './hooks';
+import { NotificationFeedCard } from './components/NotificationFeedCard';
+import { NotificationSidebar } from './components/NotificationSidebar';
+
+// ─── Category mapping ───────────────────────────────────────
+
+const ALERT_TYPES = new Set([
+  'overdue_work_order',
+  'subscription_cancelled',
+  'subscription_paused',
+  'sim_card_cancelled',
+  'payment_due_soon',
+  'pending_payments_summary',
+]);
+
+const SYSTEM_TYPES = new Set([
+  'open_work_order',
+  'today_not_started',
+  'renewal_due_soon',
+  'user_reminder',
+]);
+
+const ACTIVITY_TYPES = new Set([
+  'work_order_assigned',
+  'proposal_awaiting_response',
+  'proposal_no_response_2d',
+  'proposal_approved_no_wo',
+  'task_due_soon',
+]);
+
+function getCategory(type) {
+  if (ALERT_TYPES.has(type)) return 'alerts';
+  if (SYSTEM_TYPES.has(type)) return 'system';
+  if (ACTIVITY_TYPES.has(type)) return 'activity';
+  return 'system';
+}
+
+// ─── Group notifications by date ────────────────────────────
+
+function groupByDate(items, t) {
+  const groups = [];
+  let currentLabel = null;
+  let currentItems = [];
+
+  for (const item of items) {
+    const date = item.created_at ? parseISO(item.created_at) : null;
+    let label;
+
+    if (!date) {
+      label = t('dateHeaders.older');
+    } else if (isToday(date)) {
+      label = t('dateHeaders.today');
+    } else if (isYesterday(date)) {
+      label = t('dateHeaders.yesterday');
+    } else {
+      label = t('dateHeaders.older');
+    }
+
+    if (label !== currentLabel) {
+      if (currentItems.length > 0) {
+        groups.push({ label: currentLabel, items: currentItems });
+      }
+      currentLabel = label;
+      currentItems = [item];
+    } else {
+      currentItems.push(item);
+    }
+  }
+
+  if (currentItems.length > 0) {
+    groups.push({ label: currentLabel, items: currentItems });
+  }
+
+  return groups;
+}
+
+// ─── Tab Button ─────────────────────────────────────────────
+
+function TabButton({ active, onClick, children, count }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        'px-5 py-2 rounded-lg text-sm font-semibold transition-all',
+        active
+          ? 'bg-blue-600 text-white shadow-sm'
+          : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+      )}
+    >
+      {children}
+      {count > 0 && (
+        <span className={cn(
+          'ml-1.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full',
+          active ? 'bg-white/20 text-white' : 'bg-neutral-200 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300'
+        )}>
+          {count}
+        </span>
+      )}
+    </button>
+  );
+}
+
+// ─── Page Component ─────────────────────────────────────────
 
 export function NotificationsCenterPage() {
   const { t } = useTranslation(['notifications', 'common']);
-  const [searchParams, setSearchParams] = useSearchParams();
-  const { mutate: resolve } = useResolveNotification();
   const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState('all');
+  const [page, setPage] = useState(1);
 
-  const resolvedParam = searchParams.get('resolved') || 'undone';
-  const pageParam = Number(searchParams.get('page')) || 1;
-  const yearParam = searchParams.get('year') || '';
-  const monthParam = searchParams.get('month') || '';
-  const dateFromParam = searchParams.get('dateFrom') || '';
-  const dateToParam = searchParams.get('dateTo') || '';
+  const { data: allNotifications, isLoading, error, refetch } = useActiveNotifications(page);
+  const { mutate: resolve } = useResolveNotification();
+  const markAllMutation = useMarkAllAsResolved();
 
-  const isResolved = resolvedParam === 'done';
+  // Filter by tab
+  const filteredNotifications = useMemo(() => {
+    if (!allNotifications) return [];
+    if (activeTab === 'all') return allNotifications;
+    return allNotifications.filter((n) => getCategory(n.notification_type) === activeTab);
+  }, [allNotifications, activeTab]);
 
-  // Calculate date range from month/year
-  const dateRange = useMemo(() => {
-    if (yearParam && monthParam) {
-      const date = new Date(parseInt(yearParam), parseInt(monthParam) - 1, 1);
-      return {
-        from: format(startOfMonth(date), 'yyyy-MM-dd'),
-        to: format(endOfMonth(date), 'yyyy-MM-dd'),
-      };
+  // Category counts
+  const counts = useMemo(() => {
+    if (!allNotifications) return { all: 0, alerts: 0, system: 0, activity: 0 };
+    const result = { all: allNotifications.length, alerts: 0, system: 0, activity: 0 };
+    for (const n of allNotifications) {
+      const cat = getCategory(n.notification_type);
+      result[cat]++;
     }
-    return { from: undefined, to: undefined };
-  }, [yearParam, monthParam]);
+    return result;
+  }, [allNotifications]);
 
-  const { data, isLoading, error, refetch } = useNotificationsList({
-    resolved: isResolved,
-    page: pageParam,
-    dateFrom: dateRange.from,
-    dateTo: dateRange.to,
-  });
+  // Date-grouped feed
+  const dateGroups = useMemo(
+    () => groupByDate(filteredNotifications, (key) => t(`notifications:${key}`)),
+    [filteredNotifications, t]
+  );
 
-  const handleFilterChange = (updates) => {
-    setSearchParams((prev) => {
-      const next = new URLSearchParams(prev);
-      Object.entries(updates).forEach(([key, value]) => {
-        if (value) next.set(key, value);
-        else next.delete(key);
-      });
-      next.set('page', '1');
-      return next;
+  const handleResolve = useCallback((id) => {
+    resolve(id);
+  }, [resolve]);
+
+  const handleMarkAllRead = useCallback(() => {
+    markAllMutation.mutate(undefined, {
+      onSuccess: () => toast.success(t('common:success.updated')),
     });
+  }, [markAllMutation, t]);
+
+  const handleLoadOlder = () => {
+    setPage((p) => p + 1);
   };
 
-  const clearFilters = () => {
-    setSearchParams({ resolved: resolvedParam, page: '1' });
-  };
+  const hasStoredUnresolved = allNotifications?.some(
+    (n) => n.notification_source === 'stored' && !n.resolved_at
+  );
 
-  const handlePageChange = (newPage) => {
-    setSearchParams((prev) => {
-      const next = new URLSearchParams(prev);
-      next.set('page', newPage.toString());
-      return next;
-    });
-  };
-
-  const columns = [
-    {
-      header: t('notifications:table.type'),
-      key: 'notification_type',
-      render: (type) => (
-        <Badge variant="default" size="sm" className="font-normal">
-          {t('notifications:types.' + type)}
-        </Badge>
-      ),
-    },
-    {
-      header: t('notifications:table.content'),
-      key: 'title',
-      render: (_, row) => (
-        <div className="max-w-md">
-          <p className="font-medium text-neutral-900 dark:text-neutral-50 truncate">
-            {row.title}
-          </p>
-          {row.body && (
-            <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate mt-0.5">
-              {row.body}
-            </p>
-          )}
-        </div>
-      ),
-    },
-    {
-      header: isResolved ? t('notifications:table.resolvedDate') : t('notifications:table.date'),
-      key: isResolved ? 'resolved_at' : 'created_at',
-      render: (date) => (
-        <span className="text-xs text-neutral-500 dark:text-neutral-400">
-          {date ? format(parseISO(date), 'dd.MM.yyyy', { locale: tr }) : '-'}
-        </span>
-      ),
-    },
-    {
-      header: t('notifications:table.actions'),
-      key: 'actions',
-      align: 'right',
-      render: (_, row) => {
-        const getRoute = (entityType, entityId) => {
-          if (!entityId && entityType !== 'task') return null;
-          switch (entityType) {
-            case 'work_order': return `/work-orders/${entityId}`;
-            case 'proposal': return `/proposals/${entityId}`;
-            case 'subscription': return `/subscriptions/${entityId}`;
-            case 'task': return '/tasks';
-            case 'sim_card': return `/sim-cards/${entityId}/edit`;
-            default: return null;
-          }
-        };
-        const route = getRoute(row.entity_type, row.entity_id);
-
-        return (
-          <div className="flex items-center justify-end gap-2">
-            {route && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate(route)}
-                title={t('common:actions.viewDetails')}
-              >
-                <ExternalLink className="w-4 h-4" />
-              </Button>
-            )}
-            {!isResolved && row.notification_source === 'stored' && row.notification_id && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => resolve(row.notification_id)}
-                className="text-neutral-400 hover:text-success-600"
-                title={t('notifications:actions.resolve')}
-              >
-                <Check className="w-4 h-4" />
-              </Button>
-            )}
-          </div>
-        );
-      },
-    },
-  ];
-
-  const years = useMemo(() => {
-    const currentYear = new Date().getFullYear();
-    return Array.from({ length: 5 }, (_, i) => (currentYear - 2 + i).toString());
-  }, []);
-
-  const monthOptions = [
-    { value: '', label: t('notifications:filters.month') },
-    ...Object.entries(t('notifications:months', { returnObjects: true })).map(([val, label]) => ({
-      value: val,
-      label,
-    })),
-  ];
-
-  const yearOptions = [
-    { value: '', label: t('notifications:filters.year') },
-    ...years.map((y) => ({ value: y, label: y })),
-  ];
+  if (error) {
+    return (
+      <PageContainer maxWidth="full">
+        <ErrorState message={t('notifications:error.loadFailed')} onRetry={refetch} />
+      </PageContainer>
+    );
+  }
 
   return (
     <PageContainer maxWidth="full">
-      <PageHeader title={t('notifications:page.title')} />
+      <PageHeader
+        title={t('notifications:page.title')}
+        description={t('notifications:subtitle')}
+        actions={
+          <div className="flex gap-3">
+            {hasStoredUnresolved && (
+              <Button
+                variant="outline"
+                leftIcon={<CheckCheck className="w-4 h-4" />}
+                onClick={handleMarkAllRead}
+                loading={markAllMutation.isPending}
+              >
+                {t('notifications:actions.markAllRead')}
+              </Button>
+            )}
+          </div>
+        }
+      />
 
-      <Card className="p-3 mb-6 border-neutral-200/60 dark:border-neutral-800/60">
-        <div className="flex flex-col lg:flex-row items-end gap-3">
-          <div className="w-full lg:w-48">
-            <Select
-              label={t('notifications:filters.status')}
-              value={resolvedParam}
-              onChange={(e) => handleFilterChange({ resolved: e.target.value })}
-              options={[
-                { value: 'undone', label: t('notifications:filters.undone') },
-                { value: 'done', label: t('notifications:filters.done') },
-              ]}
-              size="sm"
-            />
-          </div>
-          <div className="w-full lg:w-32">
-            <Select
-              label={t('notifications:filters.year')}
-              value={yearParam}
-              onChange={(e) => handleFilterChange({ year: e.target.value })}
-              options={yearOptions}
-              size="sm"
-            />
-          </div>
-          <div className="w-full lg:w-40">
-            <Select
-              label={t('notifications:filters.month')}
-              value={monthParam}
-              onChange={(e) => handleFilterChange({ month: e.target.value })}
-              options={monthOptions}
-              size="sm"
-            />
-          </div>
-          <div className="flex items-center gap-2 pb-1">
-            <Button variant="ghost" size="sm" onClick={clearFilters}>
-              {t('notifications:filters.clear')}
-            </Button>
-          </div>
+      {/* Tabs */}
+      <div className="mt-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div className="flex gap-1 p-1 bg-neutral-100 dark:bg-[#131313] rounded-xl">
+          <TabButton active={activeTab === 'all'} onClick={() => setActiveTab('all')} count={counts.all}>
+            {t('notifications:tabs.all')}
+          </TabButton>
+          <TabButton active={activeTab === 'alerts'} onClick={() => setActiveTab('alerts')} count={counts.alerts}>
+            {t('notifications:tabs.alerts')}
+          </TabButton>
+          <TabButton active={activeTab === 'system'} onClick={() => setActiveTab('system')} count={counts.system}>
+            {t('notifications:tabs.system')}
+          </TabButton>
+          <TabButton active={activeTab === 'activity'} onClick={() => setActiveTab('activity')} count={counts.activity}>
+            {t('notifications:tabs.activity')}
+          </TabButton>
         </div>
-      </Card>
+      </div>
 
-      {error ? (
-        <ErrorState message={t('notifications:error.loadFailed')} onRetry={refetch} />
-      ) : (
-        <>
-          <Table
-            columns={columns}
-            data={data || []}
-            loading={isLoading}
-            emptyState={
-              <EmptyState
-                title={t('notifications:empty.title')}
-                description={isResolved ? t('notifications:empty.done') : t('notifications:empty.undone')}
-              />
-            }
-          />
+      {/* 12-col grid: Feed (8) + Sidebar (4) */}
+      <div className="mt-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Left: Feed */}
+        <div className="lg:col-span-8">
+          {isLoading ? (
+            <div className="flex justify-center py-16">
+              <Spinner size="lg" />
+            </div>
+          ) : filteredNotifications.length === 0 ? (
+            <EmptyState
+              title={t('notifications:empty.title')}
+              description={t('notifications:empty.undone')}
+            />
+          ) : (
+            <div className="space-y-3">
+              {dateGroups.map((group) => (
+                <div key={group.label}>
+                  {/* Date Header */}
+                  <div className="pt-4 pb-2">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
+                      {group.label}
+                    </span>
+                  </div>
+                  {/* Cards */}
+                  <div className="space-y-3">
+                    {group.items.map((n, idx) => (
+                      <NotificationFeedCard
+                        key={n.notification_id || `${n.notification_type}-${n.entity_id}-${idx}`}
+                        {...n}
+                        onResolve={handleResolve}
+                      />
+                    ))}
+                  </div>
+                </div>
+              ))}
 
-          <div className="mt-6 flex justify-center gap-4">
-            <Button
-              variant="outline"
-              disabled={pageParam <= 1}
-              onClick={() => handlePageChange(pageParam - 1)}
-            >
-              {t('common:pagination.previous')}
-            </Button>
-            <Button
-              variant="outline"
-              disabled={!data || data.length < 20}
-              onClick={() => handlePageChange(pageParam + 1)}
-            >
-              {t('common:pagination.next')}
-            </Button>
-          </div>
-        </>
-      )}
+              {/* Load Older */}
+              <div className="flex justify-center pt-6 pb-2">
+                <button
+                  type="button"
+                  onClick={handleLoadOlder}
+                  className="text-sm font-bold text-neutral-500 hover:text-blue-500 transition-colors flex items-center gap-2"
+                >
+                  {t('notifications:actions.loadOlder')}
+                  <ChevronDown className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Right: Sidebar */}
+        <div className="lg:col-span-4">
+          <NotificationSidebar notifications={allNotifications} loading={isLoading} />
+        </div>
+      </div>
+
+      {/* FAB: New Incident → Work Order */}
+      <button
+        type="button"
+        onClick={() => navigate('/work-orders/new')}
+        className={cn(
+          'fixed bottom-6 right-6 h-14 w-14 rounded-full',
+          'bg-blue-600 text-white shadow-lg',
+          'flex items-center justify-center',
+          'transition-all hover:scale-110 active:scale-95',
+          'z-50 group'
+        )}
+        aria-label={t('notifications:actions.newIncident')}
+      >
+        <Plus className="w-6 h-6" />
+        <span className="absolute right-full mr-3 bg-white dark:bg-[#201f1f] text-neutral-900 dark:text-neutral-100 text-xs font-bold px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-xl border border-neutral-200 dark:border-neutral-700 pointer-events-none">
+          {t('notifications:actions.newIncident')}
+        </span>
+      </button>
     </PageContainer>
   );
 }

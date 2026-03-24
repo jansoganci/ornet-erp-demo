@@ -11,9 +11,11 @@ import {
   Download,
   Receipt,
   MapPin,
+  Copy,
 } from 'lucide-react';
 import { pdf } from '@react-pdf/renderer';
 import { toast } from 'sonner';
+import { calcProposalTotals, calcTotalCosts } from '../../lib/proposalCalc';
 import { PageContainer } from '../../components/layout';
 import {
   Button,
@@ -29,6 +31,7 @@ import {
   useProposalItems,
   useUpdateProposalStatus,
   useDeleteProposal,
+  useDuplicateProposal,
   useProposalWorkOrders,
   useUnlinkWorkOrder,
 } from './hooks';
@@ -83,6 +86,7 @@ export function ProposalDetailPage() {
   const deleteMutation = useDeleteProposal();
   const unlinkMutation = useUnlinkWorkOrder();
   const updateProposalMutation = useUpdateProposal();
+  const duplicateMutation = useDuplicateProposal();
 
   if (isLoading) return <DetailSkeleton />;
 
@@ -101,36 +105,9 @@ export function ProposalDetailPage() {
   }
 
   const currency = proposal.currency ?? 'USD';
-  const subtotal = items.reduce(
-    (sum, item) =>
-      sum +
-      Number(
-        item.line_total ??
-          item.total_usd ??
-          ((Number(item.quantity) * Number(item.unit_price ?? item.unit_price_usd)) || 0)
-      ),
-    0
-  );
+  const { subtotal, discountAmount, grandTotal } = calcProposalTotals(items, proposal.discount_percent);
   const discountPercent = Number(proposal.discount_percent) || 0;
-  const discountAmount = subtotal * (discountPercent / 100);
-  const grandTotal = subtotal - discountAmount;
-
-  const totalCosts = items.reduce((sum, item) => {
-    const qty = Number(item.quantity) || 0;
-    const single =
-      (item.cost ?? item.cost_usd) != null && (item.cost ?? item.cost_usd) !== ''
-        ? Number(item.cost ?? item.cost_usd)
-        : NaN;
-    if (Number.isFinite(single)) {
-      return sum + single * qty;
-    }
-    const product = Number(item.product_cost ?? item.product_cost_usd) || 0;
-    const labor = Number(item.labor_cost ?? item.labor_cost_usd) || 0;
-    const shipping = Number(item.shipping_cost ?? item.shipping_cost_usd) || 0;
-    const material = Number(item.material_cost ?? item.material_cost_usd) || 0;
-    const misc = Number(item.misc_cost ?? item.misc_cost_usd) || 0;
-    return sum + (product + labor + shipping + material + misc) * qty;
-  }, 0);
+  const totalCosts = calcTotalCosts(items);
   const netProfit = grandTotal - totalCosts;
 
   const handleStatusChange = (newStatus) => {
@@ -407,7 +384,7 @@ export function ProposalDetailPage() {
       )}
 
       {/* Mobil FAB */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/80 dark:bg-[#171717]/80 backdrop-blur-md border-t border-neutral-200 dark:border-[#262626] z-50 flex gap-3 lg:hidden">
+      <div className="fixed bottom-0 left-0 right-0 px-4 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] bg-white/80 dark:bg-[#171717]/80 backdrop-blur-md border-t border-neutral-200 dark:border-[#262626] z-50 flex gap-3 lg:hidden">
         {proposal.status === 'draft' && (
           <>
             <Button variant="outline" className="flex-1" onClick={handleEdit}>
@@ -505,6 +482,22 @@ export function ProposalDetailPage() {
             </Button>
           </>
         )}
+        {/* Duplicate — available for all statuses */}
+        <Button
+          variant="ghost"
+          className="flex-1"
+          leftIcon={<Copy className="w-4 h-4" />}
+          onClick={() => {
+            duplicateMutation.mutate(id, {
+              onSuccess: (newProposal) => {
+                navigate(`/proposals/${newProposal.id}`);
+              },
+            });
+          }}
+          loading={duplicateMutation.isPending}
+        >
+          {t('proposals:detail.actions.duplicate')}
+        </Button>
       </div>
 
       {/* Confirm Status Modal */}

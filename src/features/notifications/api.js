@@ -73,6 +73,15 @@ export async function resolveNotification(id) {
   if (error) throw error;
 }
 
+export async function markAllStoredAsResolved() {
+  const { error } = await supabase
+    .from('notifications')
+    .update({ resolved_at: new Date().toISOString() })
+    .is('resolved_at', null);
+
+  if (error) throw error;
+}
+
 export async function fetchReminders() {
   const { data, error } = await supabase
     .from('user_reminders')

@@ -7,6 +7,7 @@ import {
   fetchSubscriptions,
   fetchSubscriptionsPaginated,
   fetchSubscriptionsByCustomer,
+  fetchPendingPaymentInsightsForSubscriptions,
   fetchSubscription,
   createSubscription,
   updateSubscription,
@@ -109,6 +110,18 @@ export function useCustomerSubscriptions(customerId) {
     queryKey: subscriptionKeys.listByCustomer(customerId),
     queryFn: () => fetchSubscriptionsByCustomer(customerId),
     enabled: !!customerId,
+  });
+}
+
+/**
+ * Overdue pending totals + earliest pending payment month (admin/accountant only via RLS).
+ */
+export function usePendingPaymentInsights(subscriptionIds, enabled = true) {
+  const sortedKey = [...(subscriptionIds || [])].sort().join(',');
+  return useQuery({
+    queryKey: [...subscriptionKeys.all, 'pendingInsights', sortedKey],
+    queryFn: () => fetchPendingPaymentInsightsForSubscriptions(subscriptionIds),
+    enabled: enabled && Array.isArray(subscriptionIds) && subscriptionIds.length > 0,
   });
 }
 

@@ -3,6 +3,9 @@
  * Each segment: { label: string, to?: string }
  * Uses i18n keys from common.nav and common.breadcrumb.
  */
+import { getRichGuideTitle } from '../features/technicalGuide/content';
+import { getTopicBySlug } from '../features/technicalGuide/guideRegistry';
+
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export function getBreadcrumbFromPath(pathname) {
@@ -39,8 +42,20 @@ export function getBreadcrumbFromPath(pathname) {
       result.push({ labelKey: 'common:breadcrumb.priceRevision', to: null });
     } else if (UUID_REGEX.test(seg)) {
       result.push({ labelKey: 'common:breadcrumb.detail', to: null });
+    } else if (prev === 'technical-guide') {
+      const entry = getTechnicalGuideTopicLabel(seg);
+      if (entry.label != null) {
+        result.push({ label: entry.label, to: isLast ? null : `/${accumulatedPath}` });
+      } else if (entry.labelKey) {
+        result.push({ labelKey: entry.labelKey, to: isLast ? null : `/${accumulatedPath}` });
+      }
     } else {
-      const { labelKey } = prev === 'subscriptions' ? getSubscriptionsLabel(seg) : getFinanceLabel(prev, seg);
+      let labelKey = null;
+      if (prev === 'subscriptions') {
+        labelKey = getSubscriptionsLabel(seg).labelKey;
+      } else if (prev === 'finance') {
+        labelKey = getFinanceLabel(prev, seg).labelKey;
+      }
       if (labelKey) result.push({ labelKey, to: isLast ? null : `/${accumulatedPath}` });
     }
   }
@@ -63,6 +78,7 @@ function getRootLabel(seg) {
     equipment: { labelKey: 'common:nav.equipment', to: '/equipment' },
     'sim-cards': { labelKey: 'simCards:title', to: '/sim-cards' },
     operations: { labelKey: 'common:nav.operations', to: '/operations' },
+    'technical-guide': { labelKey: 'common:nav.technicalGuide', to: '/technical-guide' },
   };
   return map[seg] ?? { labelKey: 'common:nav.dashboard', to: '/' };
 }
@@ -87,4 +103,12 @@ function getFinanceLabel(prev, seg) {
     reports: { labelKey: 'common:nav.finance.reports', to: '/finance/reports' },
   };
   return map[seg] ?? { labelKey: 'common:nav.finance.dashboard', to: '/finance' };
+}
+
+function getTechnicalGuideTopicLabel(seg) {
+  const topic = getTopicBySlug(seg);
+  if (!topic) return { labelKey: 'common:nav.technicalGuide' };
+  const inlineTitle = getRichGuideTitle(topic.i18nKey);
+  if (inlineTitle) return { label: inlineTitle };
+  return { labelKey: 'common:nav.technicalGuide' };
 }

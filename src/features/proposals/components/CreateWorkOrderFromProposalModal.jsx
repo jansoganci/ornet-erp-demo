@@ -82,9 +82,9 @@ export function CreateWorkOrderFromProposalModal({ open, onClose, proposal, onSu
       <form id="create-wo-from-proposal-form" onSubmit={handleSubmit} className="space-y-6">
         {/* Read-only summary */}
         <div className="rounded-xl bg-neutral-50 dark:bg-[#1a1a1a] p-4 space-y-2 text-sm">
-          {(proposal?.company_name || proposal?.site_name) && (
+          {(proposal?.customer_company_name || proposal?.company_name || proposal?.site_name) && (
             <p className="font-medium text-neutral-900 dark:text-neutral-50">
-              {[proposal.company_name, proposal.site_name].filter(Boolean).join(' · ')}
+              {[proposal?.customer_company_name || proposal?.company_name, proposal?.site_name].filter(Boolean).join(' · ')}
             </p>
           )}
           <p className="text-neutral-600 dark:text-neutral-400">

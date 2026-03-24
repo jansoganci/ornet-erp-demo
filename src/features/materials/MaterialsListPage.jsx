@@ -6,7 +6,7 @@ import { PageContainer, PageHeader } from '../../components/layout';
 import {
   Button,
   SearchInput,
-  Select,
+  ListboxSelect,
   Table,
   Badge,
   Card,
@@ -238,33 +238,33 @@ export function MaterialsListPage() {
           </div>
           <div className="flex flex-wrap items-end gap-3 w-full lg:w-auto">
             <div className="w-full sm:flex-1 md:w-48">
-              <Select
-                label={t('materials:filters.category')}
+              <ListboxSelect
                 options={[
                   { value: 'all', label: t('materials:filters.all') },
                   ...categories.map(cat => ({ value: cat, label: t(`materials:categories.${cat}`) || cat }))
                 ]}
                 value={category}
-                onChange={(e) => handleFilterChange('category', e.target.value)}
+                onChange={(v) => handleFilterChange('category', v)}
+                placeholder={t('materials:filters.category')}
                 leftIcon={<Filter className="w-4 h-4" />}
                 size="sm"
               />
             </div>
             <div className="w-full sm:flex-1 md:w-32">
-              <Select
-                label={t('materials:filters.selectYear')}
+              <ListboxSelect
                 options={yearOptions}
-                value={yearParam}
-                onChange={(e) => handleFilterChange('year', e.target.value)}
+                value={yearParam || 'all'}
+                onChange={(v) => handleFilterChange('year', v)}
+                placeholder={t('materials:filters.selectYear')}
                 size="sm"
               />
             </div>
             <div className="w-full sm:flex-1 md:w-36">
-              <Select
-                label={t('materials:filters.selectMonth')}
+              <ListboxSelect
                 options={monthOptions}
-                value={monthParam}
-                onChange={(e) => handleFilterChange('month', e.target.value)}
+                value={monthParam || 'all'}
+                onChange={(v) => handleFilterChange('month', v)}
+                placeholder={t('materials:filters.selectMonth')}
                 size="sm"
               />
             </div>

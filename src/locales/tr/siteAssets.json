@@ -1,6 +1,8 @@
 {
   "title": "Varlık Takip Listesi",
+  "subtitle": "Operasyonel donanım ve varlık takibi",
   "addButton": "Varlık Ekle",
+  "exportButton": "Dışa Aktar",
   "empty": {
     "title": "Varlık Kaydı Yok",
     "description": "Bu lokasyonda kayıtlı ekipman bulunmuyor."
@@ -14,7 +16,8 @@
     "equipmentList": "Malzeme/Ürün Adetleri",
     "quantity": "Adet",
     "installationDate": "Kurulum Tarihi",
-    "subscriptionStatus": "Abonelik Durumu"
+    "subscriptionStatus": "Abonelik Durumu",
+    "deviceAge": "Cihaz Yaşı"
   },
   "subscriptionStatus": {
     "active": "Aktif",
@@ -28,11 +31,42 @@
   "actions": {
     "viewSubscription": "Abonelik"
   },
+  "kpi": {
+    "totalAssets": "Toplam Ekipman",
+    "sitesCovered": "Kapsanan Lokasyon",
+    "cancelledSites": "Geri Alınacak",
+    "cancelledSitesHint": "Aboneliği iptal edilmiş lokasyonlar",
+    "recentInstalls": "Son 30 Gün",
+    "recentInstallsHint": "Son 30 günde kurulan ekipman",
+    "unit": "adet",
+    "sites": "lokasyon",
+    "activeSubscriptions": "Aktif Abonelik",
+    "totalDevices": "Toplam Cihaz"
+  },
+  "sidebar": {
+    "distribution": "Ekipman Dağılımı",
+    "distributionDesc": "En çok kullanılan ekipman türleri",
+    "retrievalQueue": "Geri Alma Kuyruğu",
+    "retrievalQueueDesc": "Aboneliği iptal — ekipman geri alınmalı",
+    "retrievalQueueEmpty": "Geri alınacak ekipman yok",
+    "equipmentCount": "{{count}} ekipman",
+    "recentActivity": "Son Kurulumlar",
+    "recentActivityEmpty": "Henüz kurulum kaydı yok",
+    "viewAll": "Tümünü Gör",
+    "otherTypes": "Diğer"
+  },
+  "age": {
+    "new": "Yeni",
+    "months": "{{count}} ay",
+    "years": "{{count}} yıl",
+    "overdue": "Yaşlı"
+  },
   "filters": {
     "allSites": "Tüm Lokasyonlar",
     "allStatuses": "Tümü",
     "search": "Müşteri, ACC veya ekipman ara...",
-    "subscriptionStatus": "Abonelik Durumu"
+    "subscriptionStatus": "Abonelik Durumu",
+    "retrievalNeeded": "Cihaz Alımı Bekliyor"
   },
   "placeholders": {
     "equipmentName": "Ör: Alarm Paneli, Kamera",
@@ -50,6 +84,12 @@
   "section": {
     "title": "Varlıklar",
     "sites": "lokasyon"
+  },
+  "mobile": {
+    "summaryTitle": "Özet & Aktivite",
+    "summarySubtitle": "Son aktiviteler",
+    "moreEquipment": "+{{count}} daha",
+    "assetList": "Varlık Listesi"
   },
   "import": {
     "title": "Excel ile toplu yükle",

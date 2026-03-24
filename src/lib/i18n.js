@@ -25,6 +25,7 @@ import invoiceAnalysisTr from '../locales/tr/invoiceAnalysis.json'
 import actionBoardTr from '../locales/tr/actionBoard.json'
 import collectionTr from '../locales/tr/collection.json'
 import operationsTr from '../locales/tr/operations.json'
+import technicalGuideTr from '../locales/tr/technicalGuide.json'
 
 i18n.use(initReactI18next).init({
   lng: 'tr',
@@ -54,6 +55,7 @@ i18n.use(initReactI18next).init({
     'actionBoard',
     'collection',
     'operations',
+    'technicalGuide',
   ],
   resources: {
     tr: {
@@ -80,6 +82,7 @@ i18n.use(initReactI18next).init({
       actionBoard: actionBoardTr,
       collection: collectionTr,
       operations: operationsTr,
+      technicalGuide: technicalGuideTr,
     },
   },
   interpolation: {

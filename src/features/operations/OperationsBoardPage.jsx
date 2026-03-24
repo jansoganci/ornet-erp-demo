@@ -27,7 +27,7 @@ export function OperationsBoardPage() {
 
       {/* Tab bar */}
       <div className="mt-4 border-b border-neutral-200 dark:border-neutral-800">
-        <nav className="flex gap-1 -mb-px" role="tablist">
+        <nav className="flex gap-1 -mb-px overflow-x-auto scrollbar-hide" role="tablist">
           {TABS.map(({ id, icon: Icon, labelKey }) => {
             const isActive = activeTab === id;
             return (

@@ -14,7 +14,7 @@ function renderIcon(Icon, className) {
 }
 
 const sizes = {
-  sm: 'h-8 text-sm',
+  sm: 'h-10 md:h-8 text-base md:text-sm',
   md: 'h-12 md:h-10 text-base',
   lg: 'h-14 md:h-12 text-lg',
 };

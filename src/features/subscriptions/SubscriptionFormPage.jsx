@@ -284,7 +284,7 @@ export function SubscriptionFormPage() {
         <input type="hidden" {...register('site_id')} />
 
         {/* 1. Customer & Site Selection */}
-        <Card className="rounded-[2rem] p-8 overflow-visible border-neutral-200/60 dark:border-[#262626] shadow-sm">
+        <Card className="rounded-[2rem] p-4 sm:p-6 lg:p-8 overflow-visible border-neutral-200/60 dark:border-[#262626] shadow-sm">
           <CustomerSiteSelector
             selectedCustomerId={selectedCustomerId}
             selectedSiteId={selectedSiteId}
@@ -654,7 +654,7 @@ export function SubscriptionFormPage() {
         </div>
 
         {/* Floating Action Bar */}
-        <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/80 dark:bg-[#171717]/80 backdrop-blur-md border-t border-neutral-200 dark:border-[#262626] z-50 flex gap-3 lg:static lg:bg-transparent lg:border-none lg:p-0 lg:justify-end">
+        <div className="fixed bottom-0 left-0 right-0 px-4 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] bg-white/80 dark:bg-[#171717]/80 backdrop-blur-md border-t border-neutral-200 dark:border-[#262626] z-50 flex gap-3 lg:static lg:bg-transparent lg:border-none lg:p-0 lg:pb-0 lg:justify-end">
           <Button
             type="button"
             variant="outline"

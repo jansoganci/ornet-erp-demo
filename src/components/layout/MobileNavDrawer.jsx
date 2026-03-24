@@ -103,7 +103,7 @@ export function MobileNavDrawer({ open, onClose }) {
         </div>
 
         {/* Nav Content - Scrollable */}
-        <div className="flex-1 overflow-y-auto overscroll-contain py-4">
+        <div className="flex-1 overflow-y-auto overscroll-contain pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
           <nav className="space-y-1 px-4">
             {profileIsLoading ? (
               <>

@@ -64,9 +64,9 @@ export function TodayTaskChecklist() {
   }
 
   return (
-    <div className="rounded-xl border overflow-hidden bg-white border-gray-200 dark:bg-gray-800/40 dark:backdrop-blur-sm dark:border-white/10">
+    <div className="rounded-xl border overflow-hidden bg-white border-gray-200 dark:bg-gray-800/40 dark:backdrop-blur-sm dark:border-white/10 flex flex-col min-h-0 h-full">
       {/* Card header */}
-      <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-white/5">
+      <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100 dark:border-white/5 flex-shrink-0">
         <div className="flex items-center gap-2">
           <h3 className="text-xs font-semibold uppercase tracking-widest text-neutral-500 dark:text-neutral-500">
             {t('sections.todayTasks')}
@@ -90,13 +90,13 @@ export function TodayTaskChecklist() {
       {isLoading ? (
         <ChecklistSkeleton />
       ) : taskList.length === 0 && checkedIds.size === 0 ? (
-        <div className="px-5 py-8 text-center">
+        <div className="px-5 py-6 text-center flex-1 flex items-center justify-center">
           <p className="text-sm text-neutral-500 dark:text-neutral-500">
             {t('feed.emptyTasks')}
           </p>
         </div>
       ) : (
-        <div className="divide-y divide-gray-100 dark:divide-white/5">
+        <div className="divide-y divide-gray-100 dark:divide-white/5 flex-1 overflow-y-auto min-h-0">
           {taskList.map((task, index) => {
             const isChecked = checkedIds.has(task.id);
             const daysOverdue = getDaysOverdue(task);
@@ -105,7 +105,7 @@ export function TodayTaskChecklist() {
               <div
                 key={task.id}
                 className={cn(
-                  'feed-row flex items-start gap-3 px-5 py-3.5',
+                  'feed-row flex items-start gap-3 px-5 py-2',
                   'transition-colors',
                   isChecked
                     ? 'opacity-50'

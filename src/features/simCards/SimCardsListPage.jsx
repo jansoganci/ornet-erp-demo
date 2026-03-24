@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import * as XLSX from 'xlsx';
-import { Plus, Download, Filter, Edit2, Trash2, FileSpreadsheet, Pencil, Cpu as SimIcon, Calendar, ChevronLeft, ChevronRight, Package, CheckCircle2, TrendingUp, CreditCard } from 'lucide-react';
+import { Plus, Download, Filter, Edit2, Trash2, FileSpreadsheet, Pencil, Cpu as SimIcon, Calendar, ChevronLeft, ChevronRight, Package, CheckCircle2, TrendingUp, CreditCard, ArrowLeft, Search, MapPin, Smartphone } from 'lucide-react';
 import { useSimCardsPaginated, useDeleteSimCard, useUpdateSimCard, useSimFinancialStats, useProviderCompanies } from './hooks';
 import { fetchSimCards } from './api';
 import { useDebouncedValue } from '../../hooks/useDebouncedValue';
@@ -10,7 +10,7 @@ import { PageContainer, PageHeader } from '../../components/layout';
 import {
   Button,
   SearchInput,
-  Select,
+  ListboxSelect,
   Card,
   Badge,
   EmptyState,
@@ -22,7 +22,7 @@ import {
   DateRangeFilter,
   KpiCard,
 } from '../../components/ui';
-import { formatCurrency, formatDate } from '../../lib/utils';
+import { formatCurrency, formatDate, cn } from '../../lib/utils';
 import { getErrorMessage } from '../../lib/errorHandler';
 import { QuickStatusSelect } from './components/QuickStatusSelect';
 
@@ -170,9 +170,28 @@ export function SimCardsListPage() {
 
   if (isLoading) {
     return (
-      <PageContainer maxWidth="full">
-        <PageHeader title={t('title')} />
-        <div className="space-y-4">
+      <PageContainer maxWidth="full" className="space-y-6">
+        {/* Mobile Loading Skeleton */}
+        <div className="md:hidden space-y-4">
+          <Skeleton className="h-14 w-full rounded-xl" />
+          <Skeleton className="h-12 w-full rounded-xl" />
+          <div className="flex gap-2">
+            {[1, 2, 3, 4].map((i) => (
+              <Skeleton key={i} className="h-8 w-20 rounded-full flex-shrink-0" />
+            ))}
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            {[1, 2, 3, 4].map((i) => (
+              <Skeleton key={i} className="h-[90px] w-full rounded-xl" />
+            ))}
+          </div>
+          {[1, 2, 3, 4].map((i) => (
+            <Skeleton key={i} className="h-36 w-full rounded-xl" />
+          ))}
+        </div>
+        {/* Desktop Loading Skeleton */}
+        <div className="hidden md:block space-y-4">
+          <PageHeader title={t('title')} />
           <Skeleton className="h-32 w-full" />
           <Skeleton className="h-96 w-full" />
         </div>
@@ -322,42 +341,151 @@ export function SimCardsListPage() {
 
   return (
     <PageContainer maxWidth="full" className="space-y-6">
-      <PageHeader
-        title={t('title')}
-        breadcrumbs={[
-          { label: t('common:nav.dashboard'), to: '/' },
-          { label: t('title') },
-        ]}
-        actions={
-          <div className="flex flex-wrap gap-3">
-            <Button
-              variant="outline"
-              leftIcon={<FileSpreadsheet className="w-4 h-4" />}
-              onClick={handleExport}
-              loading={isExporting}
-              disabled={totalCount === 0}
-            >
-              {t('common:actions.export')}
-            </Button>
-            <Button
-              variant="outline"
-              leftIcon={<Download className="w-4 h-4" />}
-              onClick={handleImport}
-            >
-              {t('common:import.bulkImportButton')}
-            </Button>
-            <Button
-              variant="primary"
-              leftIcon={<Plus className="w-4 h-4" />}
-              onClick={handleAdd}
-            >
-              {t('actions.add')}
-            </Button>
-          </div>
-        }
-      />
+      {/* Mobile Sticky Header — md:hidden */}
+      <div className="md:hidden sticky top-0 z-30 -mx-4 -mt-6 px-4 bg-white/80 dark:bg-[#0a0a0a]/80 backdrop-blur-xl border-b border-neutral-200/60 dark:border-[#262626]">
+        <div className="flex items-center justify-between h-14">
+          <button
+            type="button"
+            onClick={() => navigate('/')}
+            className="flex items-center justify-center w-10 h-10 -ml-2 rounded-xl text-primary-600 dark:text-primary-400 active:scale-95 transition-transform"
+            aria-label={t('common:actions.back')}
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <h1 className="text-lg font-bold text-primary-600 dark:text-primary-400 tracking-tight">
+            {t('title')}
+          </h1>
+          <button
+            type="button"
+            onClick={handleAdd}
+            className="flex items-center justify-center w-10 h-10 -mr-2 rounded-xl text-primary-600 dark:text-primary-400 active:scale-95 transition-transform"
+            aria-label={t('actions.add')}
+          >
+            <Plus className="w-5 h-5" />
+          </button>
+        </div>
+      </div>
 
-      <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-5 mb-6">
+      {/* Mobile Search Bar — md:hidden */}
+      <div className="md:hidden">
+        <div className="relative">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400 dark:text-neutral-500" />
+          <input
+            type="text"
+            value={localSearch}
+            onChange={(e) => setLocalSearch(e.target.value)}
+            placeholder={t('list.searchPlaceholder')}
+            className="w-full h-12 pl-11 pr-4 rounded-xl border-none bg-neutral-100 dark:bg-[#1f1f1f] text-neutral-900 dark:text-neutral-50 placeholder:text-neutral-400 dark:placeholder:text-neutral-500 text-sm focus:ring-1 focus:ring-primary-500 transition-all"
+          />
+        </div>
+      </div>
+
+      {/* Mobile Filter Chips — md:hidden */}
+      <div className="md:hidden flex overflow-x-auto scrollbar-hide -mx-4 px-4 gap-2">
+        {[
+          { label: t('list.filters.all'), isActive: statusFilter === 'all' && operatorFilter === 'all', onClick: () => { handleFilterChange('status', 'all'); handleFilterChange('operator', 'all'); } },
+          { label: t('list.filters.active'), isActive: statusFilter === 'active', onClick: () => { handleFilterChange('operator', 'all'); handleFilterChange('status', 'active'); } },
+          { label: t('list.filters.available'), isActive: statusFilter === 'available', onClick: () => { handleFilterChange('operator', 'all'); handleFilterChange('status', 'available'); } },
+          { label: t('list.filters.cancelled'), isActive: statusFilter === 'cancelled', onClick: () => { handleFilterChange('operator', 'all'); handleFilterChange('status', 'cancelled'); } },
+          { label: t('operators.TURKCELL'), isActive: operatorFilter === 'TURKCELL', onClick: () => { handleFilterChange('status', 'all'); handleFilterChange('operator', 'TURKCELL'); } },
+          { label: t('operators.VODAFONE'), isActive: operatorFilter === 'VODAFONE', onClick: () => { handleFilterChange('status', 'all'); handleFilterChange('operator', 'VODAFONE'); } },
+          { label: t('operators.TURK_TELEKOM'), isActive: operatorFilter === 'TURK_TELEKOM', onClick: () => { handleFilterChange('status', 'all'); handleFilterChange('operator', 'TURK_TELEKOM'); } },
+        ].map((chip) => (
+          <button
+            key={chip.label}
+            type="button"
+            onClick={chip.onClick}
+            className={cn(
+              'flex-shrink-0 px-4 py-2 rounded-full text-sm font-semibold transition-all active:scale-95',
+              chip.isActive
+                ? 'bg-primary-600 text-white dark:bg-primary-500'
+                : 'bg-neutral-100 dark:bg-[#262626] text-neutral-600 dark:text-neutral-400'
+            )}
+          >
+            {chip.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Desktop PageHeader — hidden on mobile */}
+      <div className="hidden md:block">
+        <PageHeader
+          title={t('title')}
+          breadcrumbs={[
+            { label: t('common:nav.dashboard'), to: '/' },
+            { label: t('title') },
+          ]}
+          actions={
+            <div className="flex flex-wrap gap-3">
+              <Button
+                variant="outline"
+                leftIcon={<FileSpreadsheet className="w-4 h-4" />}
+                onClick={handleExport}
+                loading={isExporting}
+                disabled={totalCount === 0}
+              >
+                {t('common:actions.export')}
+              </Button>
+              <Button
+                variant="outline"
+                leftIcon={<Download className="w-4 h-4" />}
+                onClick={handleImport}
+              >
+                {t('common:import.bulkImportButton')}
+              </Button>
+              <Button
+                variant="primary"
+                leftIcon={<Plus className="w-4 h-4" />}
+                onClick={handleAdd}
+              >
+                {t('actions.add')}
+              </Button>
+            </div>
+          }
+        />
+      </div>
+
+      {/* Mobile KPI Strip — md:hidden */}
+      <div className="md:hidden grid grid-cols-2 gap-3">
+        <div className="rounded-xl border border-neutral-200/80 dark:border-[#262626] bg-white dark:bg-[#171717] p-4 flex flex-col justify-between min-h-[90px]">
+          <span className="text-[10px] uppercase tracking-widest font-bold text-neutral-500 dark:text-neutral-400">
+            {t('stats.total')}
+          </span>
+          <span className="text-2xl font-extrabold tracking-tight text-neutral-900 dark:text-neutral-50">
+            {simStats?.total_count ?? simCards?.length ?? 0}
+          </span>
+        </div>
+        <div className="rounded-xl border border-neutral-200/80 dark:border-[#262626] bg-white dark:bg-[#171717] p-4 flex flex-col justify-between min-h-[90px]">
+          <div className="flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-success-500 animate-pulse" />
+            <span className="text-[10px] uppercase tracking-widest font-bold text-neutral-500 dark:text-neutral-400">
+              {t('stats.active')}
+            </span>
+          </div>
+          <span className="text-2xl font-extrabold tracking-tight text-success-600 dark:text-success-400">
+            {simStats?.active_sim_count ?? 0}
+          </span>
+        </div>
+        <div className="rounded-xl border border-neutral-200/80 dark:border-[#262626] bg-white dark:bg-[#171717] p-4 flex flex-col justify-between min-h-[90px]">
+          <span className="text-[10px] uppercase tracking-widest font-bold text-neutral-500 dark:text-neutral-400">
+            {t('stats.unassigned')}
+          </span>
+          <span className="text-2xl font-extrabold tracking-tight text-amber-500 dark:text-amber-400">
+            {simStats?.available_count ?? 0}
+          </span>
+        </div>
+        <div className="rounded-xl border border-neutral-200/80 dark:border-[#262626] bg-white dark:bg-[#171717] p-4 flex flex-col justify-between min-h-[90px]">
+          <span className="text-[10px] uppercase tracking-widest font-bold text-neutral-500 dark:text-neutral-400">
+            {t('stats.monthlyRevenue')}
+          </span>
+          <span className="text-2xl font-extrabold tracking-tight text-primary-600 dark:text-primary-400">
+            {formatCurrency(simStats?.total_monthly_profit ?? 0)}
+          </span>
+        </div>
+      </div>
+
+      {/* Desktop KPI Strip — hidden on mobile */}
+      <div className="hidden md:grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-5 mb-6">
         <KpiCard
           title={t('stats.total')}
           value={simStats?.total_count ?? simCards?.length ?? 0}
@@ -392,7 +520,7 @@ export function SimCardsListPage() {
         />
       </div>
 
-      <Card className="p-3 border-neutral-200/60 dark:border-neutral-800/60">
+      <Card className="hidden md:block p-3 border-neutral-200/60 dark:border-neutral-800/60">
         <div className="flex flex-col lg:flex-row items-end gap-3">
           <div className="flex-1 min-w-[200px] w-full">
             <SearchInput
@@ -406,10 +534,9 @@ export function SimCardsListPage() {
 
           <div className="flex flex-wrap items-end gap-3 w-full lg:w-auto">
             <div className="w-full sm:flex-1 md:w-40">
-              <Select
-                label={t('list.filters.status')}
+              <ListboxSelect
                 value={statusFilter}
-                onChange={(e) => handleFilterChange('status', e.target.value)}
+                onChange={(v) => handleFilterChange('status', v)}
                 options={[
                   { value: 'all', label: t('list.filters.all') },
                   { value: 'available', label: t('list.filters.available') },
@@ -417,53 +544,53 @@ export function SimCardsListPage() {
                   { value: 'subscription', label: t('list.filters.subscription') },
                   { value: 'cancelled', label: t('list.filters.cancelled') }
                 ]}
+                placeholder={t('list.filters.status')}
                 leftIcon={<Filter className="w-4 h-4" />}
                 size="sm"
               />
             </div>
             <div className="w-full sm:flex-1 md:w-40">
-              <Select
-                label={t('list.filters.operator')}
+              <ListboxSelect
                 value={operatorFilter}
-                onChange={(e) => handleFilterChange('operator', e.target.value)}
+                onChange={(v) => handleFilterChange('operator', v)}
                 options={[
                   { value: 'all', label: t('list.filters.allOperators') },
                   { value: 'TURKCELL', label: t('operators.TURKCELL') },
                   { value: 'VODAFONE', label: t('operators.VODAFONE') },
                   { value: 'TURK_TELEKOM', label: t('operators.TURK_TELEKOM') },
                 ]}
+                placeholder={t('list.filters.operator')}
                 size="sm"
               />
             </div>
             <div className="w-full sm:flex-1 md:w-40">
-              <Select
-                label={t('list.filters.provider')}
+              <ListboxSelect
                 value={providerFilter}
-                onChange={(e) => handleFilterChange('provider_company_id', e.target.value)}
+                onChange={(v) => handleFilterChange('provider_company_id', v)}
                 options={[
                   { value: 'all', label: t('list.filters.all') },
                   ...(providerCompanies || []).map((p) => ({ value: p.id, label: p.name })),
                 ]}
+                placeholder={t('list.filters.provider')}
                 size="sm"
               />
             </div>
             <div className="w-full sm:flex-1 md:w-32">
-              <Select
-                label={t('list.filters.selectYear')}
-                value={yearParam}
-                onChange={(e) => handleFilterChange('year', e.target.value)}
+              <ListboxSelect
+                value={yearParam || 'all'}
+                onChange={(v) => handleFilterChange('year', v)}
                 options={[
                   { value: 'all', label: t('list.filters.all') },
                   ...Array.from({ length: 5 }, (_, i) => (new Date().getFullYear() - 2 + i).toString()).map(y => ({ value: y, label: y }))
                 ]}
+                placeholder={t('list.filters.selectYear')}
                 size="sm"
               />
             </div>
             <div className="w-full sm:flex-1 md:w-36">
-              <Select
-                label={t('list.filters.selectMonth')}
-                value={monthParam}
-                onChange={(e) => handleFilterChange('month', e.target.value)}
+              <ListboxSelect
+                value={monthParam || 'all'}
+                onChange={(v) => handleFilterChange('month', v)}
                 options={[
                   { value: 'all', label: t('list.filters.all') },
                   ...Object.entries(t('notifications:months', { returnObjects: true })).map(([val, label]) => ({
@@ -471,6 +598,7 @@ export function SimCardsListPage() {
                     label,
                   })),
                 ]}
+                placeholder={t('list.filters.selectMonth')}
                 size="sm"
               />
             </div>
@@ -497,40 +625,159 @@ export function SimCardsListPage() {
           onAction={handleAdd}
         />
       ) : (
-        <div className={`bg-white dark:bg-[#171717] rounded-2xl border border-neutral-200 dark:border-[#262626] overflow-hidden shadow-sm transition-opacity ${isFetching && !isLoading ? 'opacity-70' : ''}`}>
-          <Table
-            columns={columns}
-            data={simCards}
-            onRowClick={(row) => handleEdit(row.id)}
-            className="border-none"
-          />
-          {pageCount > 1 && (
-            <div className="flex items-center justify-between px-4 py-3 border-t border-neutral-200 dark:border-neutral-800">
-              <span className="text-sm text-neutral-500 dark:text-neutral-400">
-                {page * pageSize + 1}–{Math.min((page + 1) * pageSize, totalCount)} / {totalCount} SIM
-              </span>
-              <div className="flex items-center gap-1">
+        <>
+          {/* Mobile Card List — md:hidden */}
+          <div className={cn('md:hidden space-y-3', isFetching && !isLoading && 'opacity-70')}>
+            {(simCards || []).map((sim) => {
+              const isActive = sim.status === 'active' || sim.status === 'subscription';
+              const isAvailable = sim.status === 'available';
+              const isCancelled = sim.status === 'cancelled';
+              const customerName = sim.customers?.company_name || sim.customer_label;
+
+              return (
                 <button
-                  onClick={() => handlePageChange(page - 1)}
-                  disabled={page === 0}
-                  className="p-1.5 rounded-lg text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                  key={sim.id}
+                  type="button"
+                  onClick={() => handleEdit(sim.id)}
+                  className={cn(
+                    'w-full text-left rounded-xl p-4 border-l-4 transition-colors active:scale-[0.98] duration-150',
+                    'bg-white dark:bg-[#171717] border border-neutral-200/80 dark:border-[#262626]',
+                    isActive && 'border-l-success-500/50',
+                    isAvailable && 'border-l-amber-500',
+                    isCancelled && 'border-l-neutral-400 dark:border-l-neutral-600 opacity-60',
+                  )}
                 >
-                  <ChevronLeft className="w-4 h-4" />
+                  {/* Row 1: Phone + Status */}
+                  <div className="flex justify-between items-start mb-2">
+                    <span className={cn(
+                      'font-mono text-lg font-bold tracking-tight',
+                      isCancelled ? 'text-neutral-500 dark:text-neutral-400' : 'text-primary-600 dark:text-primary-400'
+                    )}>
+                      {sim.phone_number}
+                    </span>
+                    <Badge variant={getStatusVariant(sim.status)} size="sm">
+                      {t(`status.${sim.status}`)}
+                    </Badge>
+                  </div>
+                  {/* Row 2: Customer + Operator */}
+                  <div className="flex items-center justify-between mb-3">
+                    <span className={cn(
+                      'text-sm font-bold truncate mr-2',
+                      isCancelled
+                        ? 'text-neutral-500 dark:text-neutral-400 line-through'
+                        : 'text-neutral-900 dark:text-neutral-50'
+                    )}>
+                      {customerName || t('list.unassigned')}
+                    </span>
+                    {sim.operator && (
+                      <span className="flex-shrink-0 text-[10px] font-semibold text-neutral-500 dark:text-neutral-400 border border-neutral-300 dark:border-neutral-700 px-1.5 py-0.5 rounded">
+                        {t(`operators.${sim.operator}`)}
+                      </span>
+                    )}
+                  </div>
+                  {/* Row 3: Location */}
+                  <div className="flex items-center text-xs text-neutral-500 dark:text-neutral-400 mb-4">
+                    {customerName ? (
+                      <>
+                        <MapPin className="w-3.5 h-3.5 mr-1 shrink-0" />
+                        <span className="truncate">{sim.site_name || sim.provider_company?.name || '-'}</span>
+                      </>
+                    ) : (
+                      <>
+                        <Package className="w-3.5 h-3.5 mr-1 shrink-0" />
+                        <span>{t('stats.unassigned')}</span>
+                      </>
+                    )}
+                  </div>
+                  {/* Row 4: Capacity + Account No + Price */}
+                  <div className="flex justify-between items-end pt-3 border-t border-neutral-100 dark:border-neutral-800">
+                    <div className="flex gap-4">
+                      {sim.capacity && (
+                        <div className="flex flex-col">
+                          <span className="text-[9px] uppercase text-neutral-400 dark:text-neutral-500">{t('list.columns.capacity')}</span>
+                          <span className="text-xs font-bold text-neutral-900 dark:text-neutral-100">{sim.capacity}</span>
+                        </div>
+                      )}
+                      {sim.account_no && (
+                        <div className="flex flex-col">
+                          <span className="text-[9px] uppercase text-neutral-400 dark:text-neutral-500">{t('list.columns.accountNo')}</span>
+                          <span className="text-xs font-mono text-neutral-600 dark:text-neutral-400">{sim.account_no}</span>
+                        </div>
+                      )}
+                    </div>
+                    <span className="text-sm font-extrabold text-neutral-900 dark:text-neutral-50">
+                      {formatCurrency(sim.sale_price ?? 0)}
+                    </span>
+                  </div>
                 </button>
-                <span className="text-sm text-neutral-600 dark:text-neutral-400 px-2">
-                  {page + 1} / {pageCount}
+              );
+            })}
+
+            {/* Mobile Pagination */}
+            {pageCount > 1 && (
+              <div className="flex items-center justify-between pt-2 pb-4">
+                <span className="text-xs text-neutral-500 dark:text-neutral-400">
+                  {page * pageSize + 1}–{Math.min((page + 1) * pageSize, totalCount)} / {totalCount}
                 </span>
-                <button
-                  onClick={() => handlePageChange(page + 1)}
-                  disabled={page >= pageCount - 1}
-                  className="p-1.5 rounded-lg text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                >
-                  <ChevronRight className="w-4 h-4" />
-                </button>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => handlePageChange(page - 1)}
+                    disabled={page === 0}
+                    className="p-2.5 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                  <span className="text-sm text-neutral-600 dark:text-neutral-400 px-2">
+                    {page + 1} / {pageCount}
+                  </span>
+                  <button
+                    onClick={() => handlePageChange(page + 1)}
+                    disabled={page >= pageCount - 1}
+                    className="p-2.5 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+
+          {/* Desktop Table — hidden on mobile */}
+          <div className={cn('hidden md:block bg-white dark:bg-[#171717] rounded-2xl border border-neutral-200 dark:border-[#262626] overflow-hidden shadow-sm', isFetching && !isLoading && 'opacity-70')}>
+            <Table
+              columns={columns}
+              data={simCards}
+              onRowClick={(row) => handleEdit(row.id)}
+              className="border-none"
+            />
+            {pageCount > 1 && (
+              <div className="flex items-center justify-between px-4 py-3 border-t border-neutral-200 dark:border-neutral-800">
+                <span className="text-sm text-neutral-500 dark:text-neutral-400">
+                  {page * pageSize + 1}–{Math.min((page + 1) * pageSize, totalCount)} / {totalCount} SIM
+                </span>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => handlePageChange(page - 1)}
+                    disabled={page === 0}
+                    className="p-2.5 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                  <span className="text-sm text-neutral-600 dark:text-neutral-400 px-2">
+                    {page + 1} / {pageCount}
+                  </span>
+                  <button
+                    onClick={() => handlePageChange(page + 1)}
+                    disabled={page >= pageCount - 1}
+                    className="p-2.5 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </>
       )}
       <Modal
         open={!!simToDelete}

@@ -13,10 +13,76 @@ function sanitizeDates(data) {
   return result;
 }
 
+/** Empty string is not a valid UUID for Postgres; coalesce to null for optional FK columns. */
+function coalesceUuid(value) {
+  if (value == null || value === '') return null;
+  return value;
+}
+
+function toFiniteNumber(value, fallback = 0) {
+  if (value === '' || value === undefined || value === null) return fallback;
+  const n = typeof value === 'number' ? value : Number(value);
+  return Number.isFinite(n) ? n : fallback;
+}
+
+function toNullableNumber(value) {
+  if (value === '' || value === undefined || value === null) return null;
+  const n = typeof value === 'number' ? value : Number(value);
+  return Number.isFinite(n) ? n : null;
+}
+
+/**
+ * Build one proposal_items row for insert (numbers + nulls safe for PostgREST / Postgres).
+ */
+function buildProposalItemInsertRow(proposalId, item, sortOrder, currency) {
+  const _currency = currency || 'USD';
+  const qty = toFiniteNumber(item.quantity, 1);
+  const quantity = qty > 0 ? qty : 1;
+  const unitPrice = toFiniteNumber(item.unit_price, 0);
+  const cost = toNullableNumber(item.cost);
+  const description = String(item.description ?? '').trim() || '—';
+  const unit = (item.unit && String(item.unit).trim()) || 'adet';
+  const marginPercent = toNullableNumber(item.margin_percent);
+
+  const productCost = toNullableNumber(item.product_cost);
+  const laborCost = toNullableNumber(item.labor_cost);
+  const shippingCost = toNullableNumber(item.shipping_cost);
+  const materialCost = toNullableNumber(item.material_cost);
+  const miscCost = toNullableNumber(item.misc_cost);
+
+  return {
+    proposal_id: proposalId,
+    sort_order: sortOrder,
+    description,
+    quantity,
+    unit,
+    unit_price: _currency === 'USD' ? 0 : unitPrice,
+    unit_price_usd: _currency === 'USD' ? unitPrice : 0,
+    material_id: coalesceUuid(item.material_id),
+    cost: _currency === 'USD' ? null : cost,
+    cost_usd: _currency === 'USD' ? cost : null,
+    margin_percent: marginPercent,
+    product_cost: _currency === 'USD' ? null : productCost,
+    product_cost_usd: _currency === 'USD' ? productCost : null,
+    labor_cost: _currency === 'USD' ? null : laborCost,
+    labor_cost_usd: _currency === 'USD' ? laborCost : null,
+    shipping_cost: _currency === 'USD' ? null : shippingCost,
+    shipping_cost_usd: _currency === 'USD' ? shippingCost : null,
+    material_cost: _currency === 'USD' ? null : materialCost,
+    material_cost_usd: _currency === 'USD' ? materialCost : null,
+    misc_cost: _currency === 'USD' ? null : miscCost,
+    misc_cost_usd: _currency === 'USD' ? miscCost : null,
+  };
+}
+
+function lineTotalForProposalItem(item) {
+  return toFiniteNumber(item.quantity, 1) * toFiniteNumber(item.unit_price, 0);
+}
+
 /**
  * Fetch all proposals with optional filters
  */
-export async function fetchProposals({ search = '', status = '', dateFrom = '', dateTo = '' } = {}) {
+export async function fetchProposals({ search = '', status = '', dateFrom = '', dateTo = '', year, month } = {}) {
   let query = supabase
     .from('proposals_detail')
     .select('*')
@@ -30,7 +96,11 @@ export async function fetchProposals({ search = '', status = '', dateFrom = '', 
   }
 
   if (status) {
-    query = query.eq('status', status);
+    if (status.includes(',')) {
+      query = query.in('status', status.split(','));
+    } else {
+      query = query.eq('status', status);
+    }
   }
 
   if (dateFrom) {
@@ -38,6 +108,16 @@ export async function fetchProposals({ search = '', status = '', dateFrom = '', 
   }
   if (dateTo) {
     query = query.lte('created_at', dateTo + 'T23:59:59');
+  }
+
+  if (year) {
+    query = query.gte('created_at', `${year}-01-01`).lte('created_at', `${year}-12-31T23:59:59`);
+  }
+  if (month) {
+    const m = String(month).padStart(2, '0');
+    const y = year || new Date().getFullYear();
+    const lastDay = new Date(y, Number(m), 0).getDate();
+    query = query.gte('created_at', `${y}-${m}-01`).lte('created_at', `${y}-${m}-${lastDay}T23:59:59`);
   }
 
   const { data, error } = await query;
@@ -106,33 +186,9 @@ export async function createProposal({ items, ...proposalData }) {
 
   if (items?.length > 0) {
     const _currency = proposalData.currency || 'USD';
-    const itemsToInsert = items.map((item, index) => {
-      const unitPrice = item.unit_price ?? 0;
-      const cost = item.cost ?? null;
-      return {
-        proposal_id: proposal.id,
-        sort_order: index,
-        description: item.description,
-        quantity: item.quantity,
-        unit: item.unit || 'adet',
-        unit_price: _currency === 'USD' ? null : unitPrice,
-        unit_price_usd: _currency === 'USD' ? unitPrice : null,
-        material_id: item.material_id ?? null,
-        cost: _currency === 'USD' ? null : cost,
-        cost_usd: _currency === 'USD' ? cost : null,
-        margin_percent: item.margin_percent ?? null,
-        product_cost: _currency === 'USD' ? null : (item.product_cost ?? null),
-        product_cost_usd: _currency === 'USD' ? (item.product_cost ?? null) : null,
-        labor_cost: _currency === 'USD' ? null : (item.labor_cost ?? null),
-        labor_cost_usd: _currency === 'USD' ? (item.labor_cost ?? null) : null,
-        shipping_cost: _currency === 'USD' ? null : (item.shipping_cost ?? null),
-        shipping_cost_usd: _currency === 'USD' ? (item.shipping_cost ?? null) : null,
-        material_cost: _currency === 'USD' ? null : (item.material_cost ?? null),
-        material_cost_usd: _currency === 'USD' ? (item.material_cost ?? null) : null,
-        misc_cost: _currency === 'USD' ? null : (item.misc_cost ?? null),
-        misc_cost_usd: _currency === 'USD' ? (item.misc_cost ?? null) : null,
-      };
-    });
+    const itemsToInsert = items.map((item, index) =>
+      buildProposalItemInsertRow(proposal.id, item, index, _currency),
+    );
 
     const { error: itemsError } = await supabase
       .from('proposal_items')
@@ -140,7 +196,7 @@ export async function createProposal({ items, ...proposalData }) {
 
     if (itemsError) throw itemsError;
 
-    const total = items.reduce((sum, i) => sum + (i.quantity * (i.unit_price ?? 0)), 0);
+    const total = items.reduce((sum, i) => sum + lineTotalForProposalItem(i), 0);
     const updatePayload = { total_amount: total };
     if ((proposalData.currency || 'USD') === 'USD') {
       updatePayload.total_amount_usd = total;
@@ -193,33 +249,9 @@ export async function updateProposalItems(proposalId, items) {
 
   // Insert new items
   if (items?.length > 0) {
-    const itemsToInsert = items.map((item, index) => {
-      const unitPrice = item.unit_price ?? 0;
-      const cost = item.cost ?? null;
-      return {
-        proposal_id: proposalId,
-        sort_order: index,
-        description: item.description,
-        quantity: item.quantity,
-        unit: item.unit || 'adet',
-        unit_price: _currency === 'USD' ? null : unitPrice,
-        unit_price_usd: _currency === 'USD' ? unitPrice : null,
-        material_id: item.material_id ?? null,
-        cost: _currency === 'USD' ? null : cost,
-        cost_usd: _currency === 'USD' ? cost : null,
-        margin_percent: item.margin_percent ?? null,
-        product_cost: _currency === 'USD' ? null : (item.product_cost ?? null),
-        product_cost_usd: _currency === 'USD' ? (item.product_cost ?? null) : null,
-        labor_cost: _currency === 'USD' ? null : (item.labor_cost ?? null),
-        labor_cost_usd: _currency === 'USD' ? (item.labor_cost ?? null) : null,
-        shipping_cost: _currency === 'USD' ? null : (item.shipping_cost ?? null),
-        shipping_cost_usd: _currency === 'USD' ? (item.shipping_cost ?? null) : null,
-        material_cost: _currency === 'USD' ? null : (item.material_cost ?? null),
-        material_cost_usd: _currency === 'USD' ? (item.material_cost ?? null) : null,
-        misc_cost: _currency === 'USD' ? null : (item.misc_cost ?? null),
-        misc_cost_usd: _currency === 'USD' ? (item.misc_cost ?? null) : null,
-      };
-    });
+    const itemsToInsert = items.map((item, index) =>
+      buildProposalItemInsertRow(proposalId, item, index, _currency),
+    );
 
     const { error: insertError } = await supabase
       .from('proposal_items')
@@ -228,7 +260,7 @@ export async function updateProposalItems(proposalId, items) {
     if (insertError) throw insertError;
   }
 
-  const total = (items || []).reduce((sum, i) => sum + (i.quantity * (i.unit_price ?? 0)), 0);
+  const total = (items || []).reduce((sum, i) => sum + lineTotalForProposalItem(i), 0);
   const updatePayload = { total_amount: total };
   if (_currency === 'USD') {
     updatePayload.total_amount_usd = total;
@@ -266,16 +298,63 @@ export async function updateProposalStatus({ id, status }) {
 }
 
 /**
- * Delete a proposal
+ * Soft-delete a proposal (sets deleted_at).
+ * Uses SECURITY DEFINER RPC — see 00161_soft_delete_proposal_rpc.sql — to avoid
+ * PostgREST 403 when RLS WITH CHECK + get_my_role() misbehaves on direct UPDATE.
  */
 export async function deleteProposal(id) {
-  const { error } = await supabase
-    .from('proposals')
-    .update({ deleted_at: new Date().toISOString() })
-    .eq('id', id);
+  const { error } = await supabase.rpc('soft_delete_proposal', { p_id: id });
 
   if (error) throw error;
   return { success: true };
+}
+
+/**
+ * Duplicate a proposal (creates a new draft copy with all items)
+ */
+export async function duplicateProposal(proposalId) {
+  // Fetch original proposal
+  const { data: original, error: origError } = await supabase
+    .from('proposals')
+    .select('*')
+    .eq('id', proposalId)
+    .single();
+  if (origError) throw origError;
+
+  // Fetch original items
+  const { data: origItems, error: itemsError } = await supabase
+    .from('proposal_items')
+    .select('*')
+    .eq('proposal_id', proposalId)
+    .order('sort_order', { ascending: true });
+  if (itemsError) throw itemsError;
+
+  // Map items to createProposal format
+  const currency = original.currency || 'USD';
+  const items = (origItems || []).map((item) => ({
+    description: item.description,
+    quantity: item.quantity,
+    unit: item.unit || 'adet',
+    unit_price: currency === 'USD' ? (item.unit_price_usd ?? 0) : (item.unit_price ?? 0),
+    material_id: coalesceUuid(item.material_id),
+    cost: currency === 'USD' ? item.cost_usd : item.cost,
+    margin_percent: item.margin_percent,
+    product_cost: currency === 'USD' ? item.product_cost_usd : item.product_cost,
+    labor_cost: currency === 'USD' ? item.labor_cost_usd : item.labor_cost,
+    shipping_cost: currency === 'USD' ? item.shipping_cost_usd : item.shipping_cost,
+    material_cost: currency === 'USD' ? item.material_cost_usd : item.material_cost,
+    misc_cost: currency === 'USD' ? item.misc_cost_usd : item.misc_cost,
+  }));
+
+  // Strip fields that shouldn't be copied
+  const {
+    id: _id, proposal_no: _no, created_at: _ca, updated_at: _ua,
+    status: _s, sent_at: _sa, accepted_at: _aa, rejected_at: _ra,
+    deleted_at: _da, created_by: _cb, total_amount: _ta, total_amount_usd: _tau,
+    ...copyData
+  } = original;
+
+  return createProposal({ ...copyData, items });
 }
 
 /**

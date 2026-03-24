@@ -15,6 +15,12 @@
       "dates": "Tarihler",
       "createdAt": "Oluşturulma"
     },
+    "tabs": {
+      "all": "Tümü",
+      "drafts": "Taslaklar",
+      "sent": "Gönderilenler",
+      "archive": "Arşiv"
+    },
     "empty": {
       "title": "Henüz teklif yok",
       "description": "İlk teklifinizi oluşturun."
@@ -53,9 +59,11 @@
       "reject": "Reddet",
       "cancel": "İptal Et",
       "markComplete": "Montaj Tamamlandı",
-      "bill": "Faturalandır"
+      "bill": "Faturalandır",
+      "duplicate": "Kopyala"
     },
     "comingSoon": "Bu özellik yakında aktif edilecektir.",
+    "duplicateSuccess": "Teklif kopyalandı.",
     "confirmAccept": "Bu teklifi onaylamak istediğinize emin misiniz?",
     "confirmReject": "Bu teklifi reddetmek istediğinize emin misiniz?",
     "confirmSent": "Bu teklifi gönderildi olarak işaretlemek istediğinize emin misiniz?",
@@ -78,11 +86,39 @@
     "siteOptional": "(isteğe bağlı)",
     "editTitle": "Teklifi Düzenle",
     "customerRequired": "Lütfen bir müşteri seçin",
+    "stepper": {
+      "general": "Genel Bilgiler",
+      "services": "Hizmetler",
+      "review": "Önizleme"
+    },
+    "serviceChips": {
+      "title": "Hızlı Hizmet Ekle",
+      "cctv": "CCTV",
+      "alarm": "Alarm",
+      "maintenance": "Bakım",
+      "accessControl": "Geçiş Kontrol",
+      "fireDetection": "Yangın Algılama",
+      "intercom": "İnterkom",
+      "networkCabling": "Ağ Kablolama",
+      "barriers": "Bariyerler"
+    },
+    "preview": {
+      "title": "Canlı Önizleme",
+      "companyLabel": "Firma",
+      "projectLabel": "Proje",
+      "noItems": "Henüz malzeme eklenmedi.",
+      "subtotal": "Ara Toplam",
+      "discount": "İskonto",
+      "grandTotal": "Genel Toplam",
+      "vat": "KDV",
+      "totalWithVat": "KDV Dahil Toplam",
+      "preparedBy": "Hazırlayan",
+      "approvalLine": "Kaşe / Ad Soyad / İmza"
+    },
     "fields": {
       "title": "Teklif Başlığı",
       "scopeOfWork": "Kapsam",
       "notes": "Dahili Notlar",
-      "companyName": "Firma Adı (PDF)",
       "proposalDate": "Teklif Tarihi",
       "surveyDate": "Keşif Tarihi",
       "authorizedPerson": "Yetkili Kişi",
@@ -100,8 +136,7 @@
     "placeholders": {
       "title": "ör. Güvenlik Kamera Sistemi Kurulumu",
       "scopeOfWork": "İş kapsamını açıklayın...",
-      "notes": "Sadece dahili kullanım...",
-      "companyName": "PDF başlığında görünecek firma adı"
+      "notes": "Sadece dahili kullanım..."
     },
     "sections": {
       "items": "Malzemeler",

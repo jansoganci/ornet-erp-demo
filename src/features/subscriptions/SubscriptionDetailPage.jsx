@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   Edit,
@@ -8,16 +8,19 @@ import {
   Calendar,
   Building2,
   ChevronRight,
+  ChevronDown,
+  ChevronUp,
   CreditCard,
   Users,
   StickyNote,
   Pause,
   XCircle,
   Play,
-  CheckCircle2,
-  Clock,
+  ArrowLeft,
+  MoreVertical,
+  Pencil,
 } from 'lucide-react';
-import { PageContainer, PageHeader } from '../../components/layout';
+import { PageContainer } from '../../components/layout';
 import {
   Button,
   Badge,
@@ -25,7 +28,7 @@ import {
   Skeleton,
   ErrorState,
 } from '../../components/ui';
-import { formatDate } from '../../lib/utils';
+import { cn, formatDate } from '../../lib/utils';
 import {
   useSubscription,
   useSubscriptionPayments,
@@ -40,24 +43,31 @@ import { MonthlyPaymentGrid } from './components/MonthlyPaymentGrid';
 import { PauseSubscriptionModal } from './components/PauseSubscriptionModal';
 import { CancelSubscriptionModal } from './components/CancelSubscriptionModal';
 import { StaticIpCard } from './components/StaticIpCard';
+import { SubscriptionTabBar } from './components/SubscriptionTabBar';
+import { SubscriptionWorkOrdersTab } from './tabs/SubscriptionWorkOrdersTab';
+import { SubscriptionAssetsTab } from './tabs/SubscriptionAssetsTab';
+import { useWorkOrdersBySite } from '../workOrders/hooks';
+import { useAssetsBySite } from '../siteAssets/hooks';
+
+const SURFACE_CARD =
+  'rounded-xl border border-neutral-200/80 bg-white shadow-sm dark:border-[#262626] dark:bg-[#1a1a1a]/90';
 
 function DetailSkeleton() {
   return (
-    <PageContainer maxWidth="lg" padding="default" className="space-y-6">
-      <div className="flex items-center gap-4 mb-6">
-        <Skeleton className="w-12 h-12 rounded-full" />
-        <div className="flex-1 space-y-2">
-          <Skeleton className="h-8 w-1/3" />
-          <Skeleton className="h-4 w-48" />
-        </div>
+    <PageContainer maxWidth="full" padding="default" className="space-y-8">
+      <div className="space-y-1">
+        <Skeleton className="h-4 w-56" />
+        <Skeleton className="h-3 w-32" />
       </div>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
-          <Card className="h-48 w-full" />
-          <Card className="h-64 w-full" />
+      <Skeleton className="h-10 w-full max-w-xl" />
+      <Skeleton className="h-5 w-full max-w-md" />
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+        <div className="space-y-6 lg:col-span-2">
+          <Card className={cn(SURFACE_CARD, 'h-56 w-full')} />
+          <Card className={cn(SURFACE_CARD, 'h-72 w-full')} />
         </div>
         <div className="space-y-6">
-          <Card className="h-96 w-full" />
+          <Card className={cn(SURFACE_CARD, 'h-80 w-full')} />
         </div>
       </div>
     </PageContainer>
@@ -70,8 +80,24 @@ export function SubscriptionDetailPage() {
   const { t } = useTranslation(['subscriptions', 'common', 'customers', 'notifications']);
   const { t: tCommon } = useTranslation('common');
 
+  const [searchParams, setSearchParams] = useSearchParams();
   const [showPauseModal, setShowPauseModal] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [notesExpanded, setNotesExpanded] = useState(false);
+
+  const tabParam = searchParams.get('tab');
+  const activeTab = tabParam === 'assets' || tabParam === 'workOrders' ? tabParam : 'workOrders';
+  const handleTabChange = (tab) => {
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        next.set('tab', tab);
+        return next;
+      },
+      { replace: true },
+    );
+  };
 
   const { data: subscription, isLoading, error, refetch } = useSubscription(id);
   const { data: payments = [] } = useSubscriptionPayments(id);
@@ -79,6 +105,8 @@ export function SubscriptionDetailPage() {
   const { data: siteSubscriptions = [] } = useSubscriptionsBySite(subscription?.site_id);
   const { data: currentProfile } = useCurrentProfile();
   const reactivateMutation = useReactivateSubscription();
+  const { data: siteWorkOrders = [] } = useWorkOrdersBySite(subscription?.site_id);
+  const { data: siteAssets = [] } = useAssetsBySite(subscription?.site_id);
 
   const isAdmin = currentProfile?.role === 'admin';
   const pendingPaymentsCount = payments.filter((p) => p.status === 'pending').length;
@@ -88,7 +116,7 @@ export function SubscriptionDetailPage() {
 
   if (error || !subscription) {
     return (
-      <PageContainer maxWidth="lg" padding="default">
+      <PageContainer maxWidth="full" padding="default">
         <ErrorState
           message={error?.message || t('common:errors.loadFailed')}
           onRetry={() => refetch()}
@@ -104,57 +132,406 @@ export function SubscriptionDetailPage() {
     reactivateMutation.mutate(id);
   };
 
+  const breadcrumbs = [
+    { label: t('subscriptions:list.title'), to: '/subscriptions' },
+    { label: subscription.company_name, to: `/customers/${subscription.customer_id}` },
+    { label: subscription.site_name || t('subscriptions:detail.title') },
+  ];
+
   return (
-    <PageContainer maxWidth="lg" padding="default" className="space-y-6 pb-24">
-      {/* Header */}
-      <PageHeader
-        title={
-          <div className="flex items-center gap-3">
-            <span>
-              {subscription.service_type
-                ? t(`subscriptions:serviceTypes.${subscription.service_type}`)
-                : t('subscriptions:detail.title')}
+    <PageContainer maxWidth="full" padding="default" className="space-y-8 pb-24">
+      {/* Mobile Sticky Header — md:hidden */}
+      <div className="md:hidden sticky top-0 z-30 -mx-4 -mt-8 px-4 bg-white/80 dark:bg-[#0a0a0a]/80 backdrop-blur-xl border-b border-neutral-200/60 dark:border-[#262626]">
+        <div className="flex items-center justify-between h-14">
+          <button
+            type="button"
+            onClick={() => navigate('/subscriptions')}
+            className="flex items-center justify-center w-10 h-10 -ml-2 rounded-xl text-neutral-600 dark:text-neutral-400 active:scale-95 transition-transform"
+            aria-label={tCommon('actions.back')}
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <div className="flex-1 min-w-0 px-3">
+            <p className="text-sm font-bold text-neutral-900 dark:text-neutral-50 truncate">
+              {subscription.company_name}
+            </p>
+            <div className="flex items-center gap-1.5">
+              <span className={cn(
+                'w-1.5 h-1.5 rounded-full animate-pulse',
+                subscription.status === 'active' && 'bg-success-500',
+                subscription.status === 'paused' && 'bg-amber-400',
+                subscription.status === 'cancelled' && 'bg-error-500',
+              )} />
+              <span className="text-[11px] text-neutral-500 dark:text-neutral-400">
+                {t(`subscriptions:statuses.${subscription.status}`)}
+              </span>
+            </div>
+          </div>
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setShowMobileMenu((v) => !v)}
+              className="flex items-center justify-center w-10 h-10 -mr-2 rounded-xl text-neutral-600 dark:text-neutral-400 active:scale-95 transition-transform"
+              aria-label={t('subscriptions:detail.moreOptions')}
+            >
+              <MoreVertical className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile More Options Dropdown */}
+      {showMobileMenu && (
+        <div className="md:hidden fixed inset-0 z-40" onClick={() => setShowMobileMenu(false)}>
+          <div className="absolute inset-0 bg-black/20 dark:bg-black/40" />
+          <div
+            className="absolute top-14 right-4 w-56 bg-white dark:bg-[#1f1f1f] rounded-xl border border-neutral-200 dark:border-[#262626] shadow-xl py-1 overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={() => { setShowMobileMenu(false); navigate(`/customers/${subscription.customer_id}`); }}
+              className="w-full flex items-center gap-3 px-4 py-3 text-sm text-neutral-700 dark:text-neutral-300 active:bg-neutral-100 dark:active:bg-neutral-800 transition-colors"
+            >
+              <Building2 className="w-4 h-4 text-neutral-400" />
+              {t('subscriptions:detail.viewCustomer')}
+            </button>
+            {subscription.status === 'active' && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => { setShowMobileMenu(false); setShowPauseModal(true); }}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-sm text-amber-600 dark:text-amber-400 active:bg-neutral-100 dark:active:bg-neutral-800 transition-colors"
+                >
+                  <Pause className="w-4 h-4" />
+                  {t('subscriptions:actions.pause')}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setShowMobileMenu(false); setShowCancelModal(true); }}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-sm text-error-600 dark:text-error-400 active:bg-neutral-100 dark:active:bg-neutral-800 transition-colors"
+                >
+                  <XCircle className="w-4 h-4" />
+                  {t('subscriptions:actions.cancel')}
+                </button>
+              </>
+            )}
+            {subscription.status === 'paused' && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => { setShowMobileMenu(false); handleReactivate(); }}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-sm text-primary-600 dark:text-primary-400 active:bg-neutral-100 dark:active:bg-neutral-800 transition-colors"
+                >
+                  <Play className="w-4 h-4" />
+                  {t('subscriptions:actions.reactivate')}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setShowMobileMenu(false); setShowCancelModal(true); }}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-sm text-error-600 dark:text-error-400 active:bg-neutral-100 dark:active:bg-neutral-800 transition-colors"
+                >
+                  <XCircle className="w-4 h-4" />
+                  {t('subscriptions:actions.cancel')}
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Desktop Hero — hidden on mobile */}
+      <header className="hidden md:flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between lg:gap-8">
+        <div className="min-w-0 flex-1 space-y-3">
+          <nav
+            className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-neutral-500 dark:text-neutral-400"
+            aria-label="Breadcrumb"
+          >
+            {breadcrumbs.map((crumb, index) => {
+              const isLast = index === breadcrumbs.length - 1;
+              return (
+                <div key={`${crumb.label}-${index}`} className="flex items-center gap-2">
+                  {index > 0 && <ChevronRight className="h-3.5 w-3.5 shrink-0 opacity-70" />}
+                  {crumb.to && !isLast ? (
+                    <Link
+                      to={crumb.to}
+                      className="transition-colors hover:text-neutral-800 dark:hover:text-neutral-200"
+                    >
+                      {crumb.label}
+                    </Link>
+                  ) : (
+                    <span
+                      className={cn(
+                        isLast
+                          ? 'font-medium text-neutral-800 dark:text-neutral-100'
+                          : '',
+                      )}
+                    >
+                      {crumb.label}
+                    </span>
+                  )}
+                </div>
+              );
+            })}
+          </nav>
+          <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-neutral-500 dark:text-neutral-400">
+            {t('subscriptions:detail.heroEyebrow')}
+          </p>
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+            <h1 className="max-w-full text-balance break-words font-heading text-3xl font-bold leading-tight tracking-tight text-neutral-900 dark:text-neutral-50 sm:text-4xl">
+              {subscription.company_name || subscription.site_name || t('subscriptions:detail.title')}
+            </h1>
+            <span className="shrink-0">
+              <SubscriptionStatusBadge status={subscription.status} />
             </span>
           </div>
-        }
-        description={
-          <div className="flex items-center gap-2 mt-1">
-            <SubscriptionStatusBadge status={subscription.status} />
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5 text-sm text-neutral-600 dark:text-neutral-300">
+            {subscription.service_type && (
+              <span className="font-medium text-neutral-700 dark:text-neutral-200">
+                {t(`subscriptions:serviceTypes.${subscription.service_type}`)}
+              </span>
+            )}
             {subscription.account_no && (
               <>
-                <span className="text-neutral-300 dark:text-neutral-700">|</span>
+                {subscription.service_type && (
+                  <span className="text-neutral-300 dark:text-neutral-600" aria-hidden>
+                    |
+                  </span>
+                )}
                 <Badge variant="info" size="sm" className="font-mono">
                   {subscription.account_no}
                 </Badge>
               </>
             )}
           </div>
-        }
-        breadcrumbs={[
-          { label: t('subscriptions:list.title'), to: '/subscriptions' },
-          { label: subscription.company_name, to: `/customers/${subscription.customer_id}` },
-          { label: subscription.site_name || '' },
-        ]}
-        actions={
+          {subscription.site_address && (
+            <div className="border-t border-neutral-200/70 pt-3 dark:border-neutral-700/60">
+              <p className="flex items-start gap-2.5 text-sm leading-relaxed text-neutral-600 dark:text-neutral-400">
+                <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-neutral-400 dark:text-neutral-500" aria-hidden />
+                <span>{subscription.site_address}</span>
+              </p>
+            </div>
+          )}
+        </div>
+        <div className="grid w-full shrink-0 grid-cols-2 gap-2 sm:gap-3 lg:w-auto lg:max-w-md lg:pt-1">
           <Button
             variant="outline"
-            leftIcon={<Edit className="w-4 h-4" />}
+            className="min-w-0 w-full rounded-xl border-neutral-300 dark:border-neutral-600"
+            leftIcon={<Edit className="h-4 w-4" />}
             onClick={() => navigate(`/subscriptions/${id}/edit`)}
           >
             {tCommon('actions.edit')}
           </Button>
-        }
-      />
+          <Button
+            className="min-w-0 w-full rounded-xl shadow-lg shadow-primary-600/15"
+            onClick={() => navigate(`/customers/${subscription.customer_id}`)}
+          >
+            {t('subscriptions:detail.viewCustomer')}
+          </Button>
+          {subscription.status === 'active' && (
+            <>
+              <Button
+                variant="warning"
+                className="min-w-0 w-full rounded-xl"
+                leftIcon={<Pause className="h-4 w-4" />}
+                onClick={() => setShowPauseModal(true)}
+              >
+                {t('subscriptions:actions.pause')}
+              </Button>
+              <Button
+                variant="ghost"
+                className="min-w-0 w-full rounded-xl text-error-600 hover:bg-error-50 dark:text-error-400 dark:hover:bg-error-950/30"
+                leftIcon={<XCircle className="h-4 w-4" />}
+                onClick={() => setShowCancelModal(true)}
+              >
+                {t('subscriptions:actions.cancel')}
+              </Button>
+            </>
+          )}
+          {subscription.status === 'paused' && (
+            <>
+              <Button
+                className="min-w-0 w-full rounded-xl shadow-lg shadow-primary-600/15"
+                leftIcon={<Play className="h-4 w-4" />}
+                onClick={handleReactivate}
+                loading={reactivateMutation.isPending}
+              >
+                {t('subscriptions:actions.reactivate')}
+              </Button>
+              <Button
+                variant="ghost"
+                className="min-w-0 w-full rounded-xl text-error-600 hover:bg-error-50 dark:text-error-400 dark:hover:bg-error-950/30"
+                leftIcon={<XCircle className="h-4 w-4" />}
+                onClick={() => setShowCancelModal(true)}
+              >
+                {t('subscriptions:actions.cancel')}
+              </Button>
+            </>
+          )}
+        </div>
+      </header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-6">
-        {/* Left Column */}
-        <div className="lg:col-span-2 space-y-8">
-          {/* Customer & Site Info */}
-          <Card className="overflow-hidden border-primary-100 dark:border-primary-900/20">
-            <div className="bg-primary-50/50 dark:bg-primary-950/10 px-6 py-4 border-b border-primary-100 dark:border-primary-900/20 flex items-center justify-between">
+      {/* Mobile Quick Info Card — md:hidden */}
+      <div className="md:hidden space-y-4">
+        <div className={cn(SURFACE_CARD, 'p-5 space-y-4')}>
+          <p className="text-[10px] uppercase tracking-widest text-neutral-500 dark:text-neutral-400 font-bold">
+            {t('subscriptions:detail.sections.quickInfo')}
+          </p>
+          <div>
+            <h2 className="text-lg font-bold text-neutral-900 dark:text-neutral-50 leading-tight">
+              {subscription.company_name}
+            </h2>
+            {subscription.site_name && (
+              <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
+                {subscription.site_name}
+              </p>
+            )}
+          </div>
+          {subscription.site_address && (
+            <div className="flex items-start gap-2">
+              <MapPin className="w-4 h-4 mt-0.5 shrink-0 text-neutral-400 dark:text-neutral-500" />
+              <p className="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed line-clamp-2">
+                {subscription.site_address}
+              </p>
+            </div>
+          )}
+          <div className="flex flex-wrap gap-2">
+            {subscription.service_type && (
+              <span className="px-3 py-1 rounded-full text-[11px] font-semibold uppercase tracking-wide bg-primary-600/10 text-primary-600 dark:text-primary-400 border border-primary-600/20">
+                {t(`subscriptions:serviceTypes.${subscription.service_type}`)}
+              </span>
+            )}
+            {subscription.billing_frequency && (
+              <span className="px-3 py-1 rounded-full text-[11px] font-semibold uppercase tracking-wide bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border border-transparent">
+                {t(`subscriptions:form.fields.${subscription.billing_frequency}`)}
+              </span>
+            )}
+          </div>
+          <div className="flex items-center justify-between pt-2 border-t border-neutral-100 dark:border-neutral-800">
+            <div className="min-w-0">
+              {subscription.account_no && (
+                <code className="text-xs text-primary-600 dark:text-primary-400 font-mono font-bold tracking-widest">
+                  {subscription.account_no}
+                </code>
+              )}
+            </div>
+            {subscription.site_phone && (
+              <a
+                href={`tel:${subscription.site_phone}`}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary-600 text-white text-xs font-bold active:scale-95 transition-transform shadow-lg shadow-primary-600/20"
+              >
+                <Phone className="w-3.5 h-3.5" />
+                {t('subscriptions:detail.callButton')}
+              </a>
+            )}
+          </div>
+        </div>
+
+        {/* Mobile Pricing Card */}
+        <SubscriptionPricingCard
+          subscription={subscription}
+          isAdmin={isAdmin}
+          className={cn(SURFACE_CARD, 'w-full')}
+        />
+        <div className="h-0.5 rounded-full bg-gradient-to-r from-primary-500 to-primary-400 opacity-30" />
+      </div>
+
+      {/* Mobile Extra Info Grid — md:hidden */}
+      <div className="md:hidden grid grid-cols-2 gap-3">
+        {[
+          { label: t('subscriptions:detail.fields.startDate'), value: formatDate(subscription.start_date) },
+          { label: t('subscriptions:detail.fields.billingDay'), value: subscription.billing_day ? `${subscription.billing_day}. gün` : '—' },
+          { label: t('subscriptions:detail.fields.billingFrequency'), value: subscription.billing_frequency ? t(`subscriptions:form.fields.${subscription.billing_frequency}`) : '—' },
+          { label: t('subscriptions:detail.fields.officialInvoice'), value: subscription.official_invoice !== false ? t('subscriptions:detail.officialInvoiceResmi') : t('subscriptions:detail.officialInvoiceGayri') },
+          { label: t('subscriptions:detail.fields.managedBy'), value: subscription.managed_by_name || '—' },
+          { label: t('subscriptions:detail.fields.soldBy'), value: subscription.sold_by_name || '—' },
+        ].map((item) => (
+          <div key={item.label} className={cn(SURFACE_CARD, 'p-3')}>
+            <p className="text-[10px] uppercase font-bold text-neutral-400 dark:text-neutral-500 tracking-widest mb-1">
+              {item.label}
+            </p>
+            <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 truncate">
+              {item.value}
+            </p>
+          </div>
+        ))}
+      </div>
+
+      {/* Mobile Collapsible Notes — md:hidden */}
+      {(subscription.setup_notes || subscription.notes || revisionNotes.length > 0) && (
+        <div className="md:hidden">
+          <div className={cn(SURFACE_CARD, 'overflow-hidden')}>
+            <button
+              type="button"
+              onClick={() => setNotesExpanded((v) => !v)}
+              className="w-full flex items-center justify-between px-4 py-3.5 active:bg-neutral-50 dark:active:bg-neutral-800/50 transition-colors"
+            >
+              <div className="flex items-center gap-2">
+                <StickyNote className="w-4 h-4 text-primary-600 dark:text-primary-400" />
+                <span className="text-xs font-bold uppercase tracking-wider text-neutral-800 dark:text-neutral-200">
+                  {t('subscriptions:detail.sections.notesAndRevision')}
+                </span>
+              </div>
+              {notesExpanded ? (
+                <ChevronUp className="w-4 h-4 text-neutral-400" />
+              ) : (
+                <ChevronDown className="w-4 h-4 text-neutral-400" />
+              )}
+            </button>
+            {notesExpanded && (
+              <div className="px-4 pb-4 space-y-4 border-t border-neutral-100 dark:border-neutral-800 pt-3">
+                {subscription.setup_notes && (
+                  <div>
+                    <p className="text-[10px] uppercase font-bold text-neutral-400 tracking-widest mb-1">
+                      {t('subscriptions:detail.fields.setupNotes')}
+                    </p>
+                    <p className="text-sm text-neutral-700 dark:text-neutral-300 whitespace-pre-wrap">
+                      {subscription.setup_notes}
+                    </p>
+                  </div>
+                )}
+                {subscription.notes && (
+                  <div>
+                    <p className="text-[10px] uppercase font-bold text-neutral-400 tracking-widest mb-1">
+                      {t('common:fields.notes', 'Not')}
+                    </p>
+                    <p className="text-sm text-neutral-700 dark:text-neutral-300 whitespace-pre-wrap">
+                      {subscription.notes}
+                    </p>
+                  </div>
+                )}
+                {revisionNotes.length > 0 && (
+                  <div>
+                    <p className="text-[10px] uppercase font-bold text-neutral-400 tracking-widest mb-1">
+                      {t('subscriptions:priceRevision.notes.title')}
+                    </p>
+                    <ul className="space-y-2">
+                      {revisionNotes.map((n) => (
+                        <li key={n.id} className="text-sm border-l-2 border-neutral-200 dark:border-[#262626] pl-3 py-1">
+                          <span className="font-medium text-neutral-700 dark:text-neutral-300">
+                            {formatDate(n.revision_date)}
+                          </span>
+                          <p className="text-neutral-600 dark:text-neutral-400 whitespace-pre-wrap mt-0.5">
+                            {n.note}
+                          </p>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Desktop Row 1 — Müşteri & lokasyon | Fiyatlandırma — hidden on mobile */}
+      <div className="hidden md:grid grid-cols-1 gap-8 lg:grid-cols-3 lg:items-stretch">
+          <Card className={cn('flex h-full min-h-0 flex-col overflow-hidden', SURFACE_CARD, 'lg:col-span-2')}>
+            <div className="flex items-center justify-between border-b border-neutral-200/90 bg-neutral-50/90 px-6 py-4 dark:border-[#262626] dark:bg-[#141414]/80">
               <div className="flex items-center space-x-2">
-                <Building2 className="w-5 h-5 text-primary-600" />
-                <h3 className="font-bold text-primary-900 dark:text-primary-100 uppercase tracking-wider text-xs">
+                <Building2 className="h-5 w-5 text-primary-600 dark:text-primary-400" />
+                <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-800 dark:text-neutral-200">
                   {t('subscriptions:detail.sections.customerSite')}
                 </h3>
               </div>
@@ -261,28 +638,58 @@ export function SubscriptionDetailPage() {
                 </div>
               </div>
             </div>
+            <div className="border-t border-neutral-200/70 px-6 py-5 dark:border-neutral-700/60">
+              <div className="mb-3 flex items-center gap-2">
+                <Users className="h-4 w-4 text-primary-600 dark:text-primary-400" />
+                <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-800 dark:text-neutral-200">
+                  {t('subscriptions:detail.sections.assignment')}
+                </h3>
+              </div>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div className="flex items-center justify-between gap-2 rounded-lg border border-neutral-200/60 bg-neutral-50/90 px-3 py-2.5 dark:border-neutral-700/50 dark:bg-neutral-900/30">
+                  <span className="text-xs text-neutral-500">{t('subscriptions:detail.fields.managedBy')}</span>
+                  <span className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
+                    {subscription.managed_by_name || '—'}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between gap-2 rounded-lg border border-neutral-200/60 bg-neutral-50/90 px-3 py-2.5 dark:border-neutral-700/50 dark:bg-neutral-900/30">
+                  <span className="text-xs text-neutral-500">{t('subscriptions:detail.fields.soldBy')}</span>
+                  <span className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
+                    {subscription.sold_by_name || '—'}
+                  </span>
+                </div>
+              </div>
+            </div>
           </Card>
 
-          {/* Payment Grid */}
+          <div className="flex min-h-0 lg:col-span-1">
+            <SubscriptionPricingCard
+              subscription={subscription}
+              isAdmin={isAdmin}
+              className={cn(SURFACE_CARD, 'h-full w-full')}
+            />
+          </div>
+      </div>
+
+      {/* Row 2 — Ödeme takvimi | Statik IP + Ödeme */}
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-3 lg:items-start">
+        <div className="min-h-0 lg:col-span-2">
           <MonthlyPaymentGrid
             subscriptionId={id}
             payments={payments}
             subscriptionStatus={subscription.status}
+            className={SURFACE_CARD}
           />
         </div>
-
-        {/* Right Column */}
-        <div className="space-y-8">
-          {/* Pricing Card */}
-          <SubscriptionPricingCard subscription={subscription} isAdmin={isAdmin} />
-
-          {/* Static IP Card */}
+        <div className="hidden md:flex flex-col gap-4 lg:col-span-1">
           {subscription.sim_card_id && (
-            <StaticIpCard simCardId={subscription.sim_card_id} isAdmin={isAdmin} />
+            <StaticIpCard
+              simCardId={subscription.sim_card_id}
+              isAdmin={isAdmin}
+              className={SURFACE_CARD}
+            />
           )}
-
-          {/* Payment Method & subscription details */}
-          <Card className="p-5">
+          <Card className={cn(SURFACE_CARD, 'p-5')}>
             <div className="flex items-center space-x-2 mb-4">
               <CreditCard className="w-4 h-4 text-primary-600" />
               <h3 className="font-bold text-neutral-900 dark:text-neutral-100 uppercase tracking-wider text-xs">
@@ -348,71 +755,14 @@ export function SubscriptionDetailPage() {
               )}
             </div>
           </Card>
+        </div>
+      </div>
 
-          {/* Status History */}
-          <Card className="p-5">
-            <div className="flex items-center space-x-2 mb-4">
-              <Clock className="w-4 h-4 text-primary-600" />
-              <h3 className="font-bold text-neutral-900 dark:text-neutral-100 uppercase tracking-wider text-xs">
-                {t('subscriptions:detail.sections.statusHistory')}
-              </h3>
-            </div>
-            <div className="space-y-3 text-sm">
-              {/* Start Date */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Calendar className="w-3.5 h-3.5 text-success-600" />
-                  <span className="text-xs text-neutral-500">{t('subscriptions:detail.fields.startDate')}</span>
-                </div>
-                <span className="font-medium text-neutral-900 dark:text-neutral-100">
-                  {formatDate(subscription.start_date)}
-                </span>
-              </div>
-
-              {/* Paused Date */}
-              {subscription.paused_at && (
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Pause className="w-3.5 h-3.5 text-warning-600" />
-                    <span className="text-xs text-neutral-500">{t('subscriptions:detail.fields.pausedDate')}</span>
-                  </div>
-                  <span className="font-medium text-neutral-900 dark:text-neutral-100">
-                    {formatDate(subscription.paused_at)}
-                  </span>
-                </div>
-              )}
-
-              {/* Cancelled Date */}
-              {subscription.cancelled_at && (
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <XCircle className="w-3.5 h-3.5 text-error-600" />
-                    <span className="text-xs text-neutral-500">{t('subscriptions:detail.fields.cancelledDate')}</span>
-                  </div>
-                  <span className="font-medium text-neutral-900 dark:text-neutral-100">
-                    {formatDate(subscription.cancelled_at)}
-                  </span>
-                </div>
-              )}
-
-              {/* Reactivated Date */}
-              {subscription.reactivated_at && (
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-success-600" />
-                    <span className="text-xs text-neutral-500">{t('subscriptions:detail.fields.reactivatedDate')}</span>
-                  </div>
-                  <span className="font-medium text-neutral-900 dark:text-neutral-100">
-                    {formatDate(subscription.reactivated_at)}
-                  </span>
-                </div>
-              )}
-            </div>
-          </Card>
-
+      {/* Row 3 — Diğer hizmetler, notlar, revizyon */}
+      <div className="space-y-8">
           {/* Other services at this site */}
           {otherServicesAtSite.length > 0 && (
-            <Card className="p-5">
+            <Card className={cn(SURFACE_CARD, 'p-5')}>
               <div className="flex items-center space-x-2 mb-4">
                 <CreditCard className="w-4 h-4 text-primary-600" />
                 <h3 className="font-bold text-neutral-900 dark:text-neutral-100 uppercase tracking-wider text-xs">
@@ -442,33 +792,10 @@ export function SubscriptionDetailPage() {
             </Card>
           )}
 
-          {/* Assignment */}
-          <Card className="p-5">
-            <div className="flex items-center space-x-2 mb-4">
-              <Users className="w-4 h-4 text-primary-600" />
-              <h3 className="font-bold text-neutral-900 dark:text-neutral-100 uppercase tracking-wider text-xs">
-                {t('subscriptions:detail.sections.assignment')}
-              </h3>
-            </div>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-neutral-500">{t('subscriptions:detail.fields.managedBy')}</span>
-                <span className="text-sm font-bold text-neutral-900 dark:text-neutral-100">
-                  {subscription.managed_by_name || '---'}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-neutral-500">{t('subscriptions:detail.fields.soldBy')}</span>
-                <span className="text-sm font-bold text-neutral-900 dark:text-neutral-100">
-                  {subscription.sold_by_name || '---'}
-                </span>
-              </div>
-            </div>
-          </Card>
-
-          {/* Notes */}
+          {/* Notes — hidden on mobile (collapsible version above) */}
+          <div className="hidden md:grid grid-cols-1 gap-8 lg:grid-cols-2 lg:items-start">
           {(subscription.setup_notes || subscription.notes) && (
-            <Card className="p-5">
+            <Card className={cn(SURFACE_CARD, 'p-5')}>
               <div className="flex items-center space-x-2 mb-4">
                 <StickyNote className="w-4 h-4 text-primary-600" />
                 <h3 className="font-bold text-neutral-900 dark:text-neutral-100 uppercase tracking-wider text-xs">
@@ -501,7 +828,13 @@ export function SubscriptionDetailPage() {
           )}
 
           {/* Fiyat revizyon notları */}
-          <Card className="p-5">
+          <Card
+            className={cn(
+              SURFACE_CARD,
+              'p-5',
+              !(subscription.setup_notes || subscription.notes) && 'lg:col-span-2',
+            )}
+          >
             <div className="flex items-center space-x-2 mb-4">
               <StickyNote className="w-4 h-4 text-primary-600" />
               <h3 className="font-bold text-neutral-900 dark:text-neutral-100 uppercase tracking-wider text-xs">
@@ -535,6 +868,7 @@ export function SubscriptionDetailPage() {
               </ul>
             )}
           </Card>
+          </div>
 
           {/* Pause/Cancel reason */}
           {subscription.status === 'paused' && subscription.pause_reason && (
@@ -558,57 +892,28 @@ export function SubscriptionDetailPage() {
               </p>
             </Card>
           )}
+      </div>
 
-          {/* Action Buttons */}
-          {subscription.status !== 'cancelled' && (
-            <div className="space-y-3">
-              {subscription.status === 'active' && (
-                <>
-                  <Button
-                    variant="warning"
-                    className="w-full"
-                    leftIcon={<Pause className="w-4 h-4" />}
-                    onClick={() => setShowPauseModal(true)}
-                  >
-                    {t('subscriptions:actions.pause')}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    className="w-full"
-                    leftIcon={<XCircle className="w-4 h-4" />}
-                    onClick={() => setShowCancelModal(true)}
-                  >
-                    {t('subscriptions:actions.cancel')}
-                  </Button>
-                </>
-              )}
-              {subscription.status === 'paused' && (
-                <>
-                  <Button
-                    className="w-full"
-                    leftIcon={<Play className="w-4 h-4" />}
-                    onClick={handleReactivate}
-                    loading={reactivateMutation.isPending}
-                  >
-                    {t('subscriptions:actions.reactivate')}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    className="w-full"
-                    leftIcon={<XCircle className="w-4 h-4" />}
-                    onClick={() => setShowCancelModal(true)}
-                  >
-                    {t('subscriptions:actions.cancel')}
-                  </Button>
-                </>
-              )}
-            </div>
-          )}
-        </div>
+      {/* Tabbed bottom section — Work Orders & Assets */}
+      <div className="space-y-6">
+        <SubscriptionTabBar
+          activeTab={activeTab}
+          onTabChange={handleTabChange}
+          counts={{
+            workOrders: siteWorkOrders.length,
+            assets: siteAssets.length,
+          }}
+        />
+        {activeTab === 'workOrders' && (
+          <SubscriptionWorkOrdersTab siteId={subscription.site_id} />
+        )}
+        {activeTab === 'assets' && (
+          <SubscriptionAssetsTab siteId={subscription.site_id} />
+        )}
       </div>
 
       {/* Floating Action Bar for Mobile */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/80 dark:bg-[#171717]/80 backdrop-blur-md border-t border-neutral-200 dark:border-[#262626] z-50 flex gap-3 lg:hidden">
+      <div className="fixed bottom-0 left-0 right-0 px-4 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] bg-white/80 dark:bg-[#171717]/80 backdrop-blur-md border-t border-neutral-200 dark:border-[#262626] z-50 flex gap-3 md:hidden">
         <Button
           variant="outline"
           className="flex-1"

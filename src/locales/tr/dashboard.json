@@ -75,7 +75,8 @@
     "daysOverdue_other": "{{count}} gündür bekliyor",
     "monthsOverdue_one": "{{count}} ay gecikmiş",
     "monthsOverdue_other": "{{count}} ay gecikmiş",
-    "call": "Ara"
+    "call": "Ara",
+    "moreItems": "ödeme daha"
   },
   "checklist": {
     "counter": "{{completed}} / {{total}} tamamlandı"

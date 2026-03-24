@@ -1,9 +1,9 @@
 import { useTranslation } from 'react-i18next';
 import { DollarSign } from 'lucide-react';
 import { Card } from '../../../components/ui';
-import { formatCurrency } from '../../../lib/utils';
+import { cn, formatCurrency } from '../../../lib/utils';
 
-export function SubscriptionPricingCard({ subscription, isAdmin = false }) {
+export function SubscriptionPricingCard({ subscription, isAdmin = false, className }) {
   const { t } = useTranslation('subscriptions');
 
   const basePrice = Number(subscription.base_price) || 0;
@@ -21,10 +21,10 @@ export function SubscriptionPricingCard({ subscription, isAdmin = false }) {
   const profit = subtotal - cost - staticIpCost;
 
   return (
-    <Card className="overflow-hidden">
-      <div className="bg-primary-50/50 dark:bg-primary-950/10 px-5 py-3 border-b border-primary-100 dark:border-primary-900/20 flex items-center space-x-2">
-        <DollarSign className="w-4 h-4 text-primary-600" />
-        <h3 className="font-bold text-primary-900 dark:text-primary-100 uppercase tracking-wider text-xs">
+    <Card className={cn('overflow-hidden', className)}>
+      <div className="flex items-center space-x-2 border-b border-neutral-200/90 bg-neutral-50/90 px-5 py-3 dark:border-[#262626] dark:bg-[#141414]/80">
+        <DollarSign className="h-4 w-4 text-primary-600 dark:text-primary-400" />
+        <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-800 dark:text-neutral-200">
           {t('detail.sections.pricing')}
         </h3>
       </div>

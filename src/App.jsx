@@ -62,6 +62,7 @@ import { FinanceDashboardPage, ExpensesPage, IncomePage, VatReportPage, Exchange
 import { SiteAssetsListPage, SiteAssetsImportPage } from './features/siteAssets';
 import { ActionBoardPage } from './features/actionBoard';
 import { OperationsBoardPage } from './features/operations';
+import { TechnicalGuideListPage, TechnicalGuideTopicPage } from './features/technicalGuide';
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -110,6 +111,8 @@ const router = createBrowserRouter(
         <Route path="work-history" element={<WorkHistoryPage />} />
         <Route path="materials" element={<MaterialsListPage />} />
         <Route path="materials/import" element={<MaterialImportPage />} />
+        <Route path="technical-guide" element={<TechnicalGuideListPage />} />
+        <Route path="technical-guide/:slug" element={<TechnicalGuideTopicPage />} />
 
         {/* Subscription routes — admin + accountant only */}
         <Route path="subscriptions" element={<RoleRoute><SubscriptionsLayout /></RoleRoute>}>

@@ -1,11 +1,5 @@
 import { z } from 'zod';
 import i18n from '../../lib/i18n';
-import { isoDateStringOptional, currencyEnum } from '../../lib/zodHelpers';
-
-const isoDateSchema = z.string().regex(
-  /^\d{4}-\d{2}-\d{2}$/,
-  'Geçerli bir tarih giriniz (YYYY-AA-GG)'
-);
 
 const optionalNum = () => z.coerce.number().min(0).optional().nullable();
 const optionalStr = () => z.string().optional().or(z.literal(''));
@@ -19,6 +13,7 @@ export const proposalItemSchema = z.object({
   unit: z.enum([
     'adet', 'boy', 'paket', 'metre', 'mm', 'V', 'A', 'W',
     'MHz', 'TB', 'MP', 'port', 'kanal', 'inç', 'rpm', 'bölge',
+    'set', 'takim',
   ]).default('adet'),
   unit_price: z.coerce.number().min(0),
   material_id: z.string().uuid().optional().nullable().or(z.literal('')),
@@ -43,7 +38,14 @@ export const proposalSchema = z.object({
   terms_warranty: optionalStr(),
   terms_other: optionalStr(),
   terms_attachments: optionalStr(),
-  vat_rate: z.preprocess(toNumber, z.number().min(0).max(100).default(20)),
+  vat_rate: z.preprocess(toNumber, z.number().min(0).max(100).default(0)),
+  currency: z.enum(['TRY', 'USD']).default('USD'),
+  proposal_date: optionalStr(),
+  survey_date: optionalStr(),
+  authorized_person: optionalStr(),
+  installation_date: optionalStr(),
+  customer_representative: optionalStr(),
+  completion_date: optionalStr(),
   items: z.array(proposalItemSchema).min(1, i18n.t('errors:validation.required')),
 });
 
@@ -88,7 +90,6 @@ export const proposalDefaultValues = {
   scope_of_work: '',
   notes: '',
   currency: 'USD',
-  company_name: '',
   proposal_date: '',
   survey_date: '',
   authorized_person: '',
@@ -101,6 +102,6 @@ export const proposalDefaultValues = {
   terms_warranty: defaultTermsWarranty,
   terms_other: defaultTermsOther,
   terms_attachments: defaultTermsAttachments,
-  vat_rate: 20,
+  vat_rate: 0,
   items: [defaultItem],
 };

@@ -777,3 +777,7 @@ input:-webkit-autofill:focus {
 .dark .rbc-addons-dnd-drag-preview {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
+
+/* ── Utility: hide scrollbar but keep scroll ── */
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }

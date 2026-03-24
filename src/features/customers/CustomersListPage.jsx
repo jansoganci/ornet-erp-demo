@@ -82,6 +82,7 @@ export function CustomersListPage() {
     {
       key: 'alarm_center',
       header: t('list.siteColumns.alarmCenter'),
+      hideOnMobile: true,
       render: (_, site) => (
         <span className="text-neutral-900 dark:text-neutral-50">{site.alarm_center || '—'}</span>
       ),
@@ -109,6 +110,7 @@ export function CustomersListPage() {
     {
       key: 'city',
       header: t('list.siteColumns.city'),
+      hideOnMobile: true,
       render: (_, site) => (
         <span className="text-neutral-900 dark:text-neutral-50">{site.city || '—'}</span>
       ),
@@ -116,6 +118,7 @@ export function CustomersListPage() {
     {
       key: 'district',
       header: t('list.siteColumns.district'),
+      hideOnMobile: true,
       render: (_, site) => (
         <span className="text-neutral-900 dark:text-neutral-50">{site.district || '—'}</span>
       ),
@@ -123,6 +126,7 @@ export function CustomersListPage() {
     {
       key: 'connection_date',
       header: t('list.siteColumns.connectionDate'),
+      hideOnMobile: true,
       render: (_, site) => (
         <span className="text-neutral-900 dark:text-neutral-50">
           {site.connection_date ? format(new Date(site.connection_date), 'dd.MM.yyyy') : '—'}
@@ -137,11 +141,12 @@ export function CustomersListPage() {
         title={t('list.title')}
         actions={
           canWrite && (
-            <div className="flex gap-2">
+            <div className="flex gap-2 w-full sm:w-auto sm:flex-initial">
               <Button
                 variant="outline"
                 leftIcon={<Download className="w-5 h-5" />}
                 onClick={handleExportExcel}
+                className="flex-1 min-w-0 sm:flex-initial"
               >
                 {t('list.exportButton')}
               </Button>
@@ -149,6 +154,7 @@ export function CustomersListPage() {
                 variant="outline"
                 leftIcon={<Upload className="w-5 h-5" />}
                 onClick={handleImport}
+                className="hidden lg:inline-flex"
               >
                 {t('common:import.bulkImportButton')}
               </Button>
@@ -156,6 +162,7 @@ export function CustomersListPage() {
                 variant="primary"
                 leftIcon={<Plus className="w-5 h-5" />}
                 onClick={handleAddCustomer}
+                className="flex-1 min-w-0 sm:flex-initial"
               >
                 {t('list.addButton')}
               </Button>
@@ -169,7 +176,6 @@ export function CustomersListPage() {
           value={search}
           onChange={setSearch}
           placeholder={t('list.searchPlaceholder')}
-          className="max-w-md"
         />
 
         {!isLoading && sites != null && (

@@ -181,6 +181,48 @@ export async function fetchSubscriptionsByCustomer(customerId) {
   return data ?? [];
 }
 
+/** First calendar day of current month (YYYY-MM-DD), local timezone */
+function firstDayOfCurrentMonthISO() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  return `${y}-${m}-01`;
+}
+
+/**
+ * Pending subscription payments: overdue total (pending & before this month) and earliest pending month.
+ * RLS: admin/accountant only (subscription_payments).
+ */
+export async function fetchPendingPaymentInsightsForSubscriptions(subscriptionIds) {
+  if (!subscriptionIds?.length) {
+    return { overdueTotal: 0, earliestPendingMonth: null };
+  }
+
+  const monthStart = firstDayOfCurrentMonthISO();
+  const { data, error } = await supabase
+    .from('subscription_payments')
+    .select('payment_month, total_amount, status')
+    .in('subscription_id', subscriptionIds)
+    .eq('status', 'pending');
+
+  if (error) throw error;
+
+  let overdueTotal = 0;
+  let earliestPendingMonth = null;
+
+  for (const row of data || []) {
+    const pm = row.payment_month;
+    if (pm < monthStart) {
+      overdueTotal += Number(row.total_amount) || 0;
+    }
+    if (!earliestPendingMonth || pm < earliestPendingMonth) {
+      earliestPendingMonth = pm;
+    }
+  }
+
+  return { overdueTotal, earliestPendingMonth };
+}
+
 /**
  * Fetch a single subscription by ID
  */

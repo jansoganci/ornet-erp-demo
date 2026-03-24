@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Plus, CreditCard, Filter, Tag, TrendingUp, TrendingDown, Minus, Users, Pause, AlertTriangle, FileSpreadsheet, Receipt, Wallet, Building2, Calendar, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { Plus, CreditCard, Filter, Tag, TrendingUp, TrendingDown, Minus, Users, Pause, AlertTriangle, FileSpreadsheet, Receipt, Wallet, Building2, Calendar, ChevronLeft, ChevronRight, X, PauseCircle } from 'lucide-react';
 import { PageContainer, PageHeader } from '../../components/layout';
 import {
   Button,
   SearchInput,
-  Select,
+  ListboxSelect,
   Table,
   Badge,
   Card,
@@ -305,6 +305,7 @@ export function SubscriptionsListPage() {
                 variant="outline"
                 onClick={() => navigate('/subscriptions/price-revision')}
                 leftIcon={<Receipt className="w-4 h-4" />}
+                className="hidden md:inline-flex"
               >
                 {t('subscriptions:priceRevision.title')}
               </Button>
@@ -313,25 +314,104 @@ export function SubscriptionsListPage() {
               variant="outline"
               onClick={() => navigate('/subscriptions/import')}
               leftIcon={<FileSpreadsheet className="w-4 h-4" />}
+              className="hidden md:inline-flex"
             >
               {t('common:import.bulkImportButton')}
             </Button>
+            {/* Desktop: full button | Mobile: icon-only */}
             <Button
               variant="primary"
               onClick={() => navigate('/subscriptions/new')}
               leftIcon={<Plus className="w-4 h-4" />}
+              className="hidden md:inline-flex"
             >
               {t('subscriptions:list.addButton')}
             </Button>
+            <button
+              type="button"
+              onClick={() => navigate('/subscriptions/new')}
+              className="md:hidden flex items-center justify-center w-10 h-10 rounded-xl bg-primary-600 text-white active:scale-95 transition-transform shadow-lg shadow-primary-600/20"
+              aria-label={t('subscriptions:list.addButton')}
+            >
+              <Plus className="w-5 h-5" />
+            </button>
           </div>
         }
       />
 
       <ComplianceAlert />
 
-      {/* KPI Cards — same pattern as dashboard */}
+      {/* Mobile KPI Strip — compact 2x2 grid, md:hidden */}
       {stats && (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+        <div className="grid grid-cols-2 gap-3 md:hidden">
+          <div className="bg-white dark:bg-[#171717] rounded-xl p-4 flex flex-col justify-between h-24 border border-neutral-200/60 dark:border-[#262626]">
+            <span className="text-[10px] uppercase tracking-widest text-neutral-500 dark:text-neutral-400 font-bold">
+              {t('subscriptions:stats.activeCount')}
+            </span>
+            <div className="flex items-end justify-between">
+              <span className="text-2xl font-bold text-neutral-900 dark:text-neutral-50 tracking-tighter">
+                {stats.active_count ?? 0}
+              </span>
+              {activeTrend && (
+                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                  activeTrend.isPositive
+                    ? 'text-success-600 dark:text-success-400 bg-success-50 dark:bg-success-950/30'
+                    : 'text-error-600 dark:text-error-400 bg-error-50 dark:bg-error-950/30'
+                }`}>
+                  {activeTrend.isPositive ? '+' : '-'}{activeTrend.value}%
+                </span>
+              )}
+            </div>
+          </div>
+          <div className="bg-white dark:bg-[#171717] rounded-xl p-4 flex flex-col justify-between h-24 border border-neutral-200/60 dark:border-[#262626]">
+            <span className="text-[10px] uppercase tracking-widest text-neutral-500 dark:text-neutral-400 font-bold">
+              {t('subscriptions:stats.overdueCount')}
+            </span>
+            <div className="flex items-end justify-between">
+              <span className="text-2xl font-bold text-error-600 dark:text-error-400 tracking-tighter">
+                {stats.overdue_invoice_count ?? 0}
+              </span>
+              {(stats.overdue_invoice_count ?? 0) > 0 && (
+                <AlertTriangle className="w-4 h-4 text-error-500 dark:text-error-400" />
+              )}
+            </div>
+          </div>
+          <div className="bg-white dark:bg-[#171717] rounded-xl p-4 flex flex-col justify-between h-24 border border-neutral-200/60 dark:border-[#262626]">
+            <span className="text-[10px] uppercase tracking-widest text-neutral-500 dark:text-neutral-400 font-bold">
+              {t('subscriptions:stats.mrr')}
+            </span>
+            <div className="flex items-end justify-between">
+              <span className="text-2xl font-bold text-primary-600 dark:text-primary-400 tracking-tighter">
+                {formatCurrency(stats.mrr || 0)}
+              </span>
+              {mrrTrend && (
+                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                  mrrTrend.isPositive
+                    ? 'text-success-600 dark:text-success-400 bg-success-50 dark:bg-success-950/30'
+                    : 'text-error-600 dark:text-error-400 bg-error-50 dark:bg-error-950/30'
+                }`}>
+                  {mrrTrend.isPositive ? '+' : '-'}{mrrTrend.value}%
+                </span>
+              )}
+            </div>
+          </div>
+          <div className="bg-white dark:bg-[#171717] rounded-xl p-4 flex flex-col justify-between h-24 border border-neutral-200/60 dark:border-[#262626]">
+            <span className="text-[10px] uppercase tracking-widest text-neutral-500 dark:text-neutral-400 font-bold">
+              {t('subscriptions:stats.pausedCount')}
+            </span>
+            <div className="flex items-end justify-between">
+              <span className="text-2xl font-bold text-neutral-400 dark:text-neutral-500 tracking-tighter">
+                {stats.paused_count ?? 0}
+              </span>
+              <PauseCircle className="w-4 h-4 text-neutral-400 dark:text-neutral-500" />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Desktop KPI Cards — hidden on mobile */}
+      {stats && (
+        <div className="hidden md:grid md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
           <KpiCard
             title={t('subscriptions:stats.mrr')}
             value={formatCurrency(stats.mrr || 0)}
@@ -381,8 +461,63 @@ export function SubscriptionsListPage() {
         </div>
       )}
 
-      {/* Filters */}
-      <Card className="p-3 border-neutral-200/60 dark:border-neutral-800/60">
+      {/* Mobile Search + Filter Chips — md:hidden */}
+      <div className="md:hidden space-y-3 sticky top-0 z-20 -mx-4 px-4 pt-3 pb-2 bg-white/80 dark:bg-[#0a0a0a]/80 backdrop-blur-xl">
+        <SearchInput
+          placeholder={t('subscriptions:list.searchPlaceholder')}
+          value={localSearch}
+          onChange={handleSearch}
+          className="w-full"
+          size="sm"
+        />
+        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+          {[
+            { key: 'all', label: t('subscriptions:list.filters.allStatuses'), isActive: status === 'all' && !overdue },
+            { key: 'active', label: t('subscriptions:statuses.active'), isActive: status === 'active' && !overdue },
+            { key: 'overdue', label: t('subscriptions:list.filters.overduePayments'), isActive: overdue },
+            { key: 'paused', label: t('subscriptions:statuses.paused'), isActive: status === 'paused' && !overdue },
+            { key: 'cancelled', label: t('subscriptions:statuses.cancelled'), isActive: status === 'cancelled' && !overdue },
+          ].map((chip) => (
+            <button
+              key={chip.key}
+              type="button"
+              onClick={() => {
+                if (chip.key === 'overdue') {
+                  // Clear status filter, toggle overdue
+                  setSearchParams((prev) => {
+                    const next = new URLSearchParams(prev);
+                    next.delete('status');
+                    if (!overdue) next.set('overdue', 'true');
+                    else next.delete('overdue');
+                    next.delete('page');
+                    return next;
+                  });
+                } else {
+                  // Clear overdue, set status
+                  setSearchParams((prev) => {
+                    const next = new URLSearchParams(prev);
+                    next.delete('overdue');
+                    if (chip.key !== 'all') next.set('status', chip.key);
+                    else next.delete('status');
+                    next.delete('page');
+                    return next;
+                  });
+                }
+              }}
+              className={`px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors ${
+                chip.isActive
+                  ? 'bg-primary-600/10 text-primary-600 dark:text-primary-400 border border-primary-600/20'
+                  : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400 border border-transparent'
+              }`}
+            >
+              {chip.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Desktop Filters — hidden on mobile */}
+      <Card className="hidden md:block p-3 border-neutral-200/60 dark:border-neutral-800/60">
         {overdue && (
           <div className="flex items-center gap-2 mb-3 px-1">
             <button
@@ -407,40 +542,40 @@ export function SubscriptionsListPage() {
           </div>
           <div className="flex flex-wrap items-end gap-3 w-full lg:w-auto">
             <div className="w-full sm:flex-1 md:w-40">
-              <Select
-                label={t('subscriptions:list.filters.status')}
+              <ListboxSelect
                 options={statusOptions}
                 value={status}
-                onChange={(e) => handleFilterChange('status', e.target.value)}
+                onChange={(v) => handleFilterChange('status', v)}
+                placeholder={t('subscriptions:list.filters.status')}
                 leftIcon={<Filter className="w-4 h-4" />}
                 size="sm"
               />
             </div>
             <div className="w-full sm:flex-1 md:w-44">
-              <Select
-                label={t('subscriptions:list.filters.billingFrequency')}
+              <ListboxSelect
                 options={billingFrequencyOptions}
                 value={billingFrequency}
-                onChange={(e) => handleFilterChange('billing_frequency', e.target.value)}
+                onChange={(v) => handleFilterChange('billing_frequency', v)}
+                placeholder={t('subscriptions:list.filters.billingFrequency')}
                 leftIcon={<Calendar className="w-4 h-4" />}
                 size="sm"
               />
             </div>
             <div className="w-full sm:flex-1 md:w-32">
-              <Select
-                label={t('subscriptions:list.filters.selectYear')}
+              <ListboxSelect
                 options={yearOptions}
-                value={yearParam}
-                onChange={(e) => handleFilterChange('year', e.target.value)}
+                value={yearParam || 'all'}
+                onChange={(v) => handleFilterChange('year', v)}
+                placeholder={t('subscriptions:list.filters.selectYear')}
                 size="sm"
               />
             </div>
             <div className="w-full sm:flex-1 md:w-36">
-              <Select
-                label={t('subscriptions:list.filters.selectMonth')}
+              <ListboxSelect
                 options={monthOptions}
-                value={monthParam}
-                onChange={(e) => handleFilterChange('month', e.target.value)}
+                value={monthParam || 'all'}
+                onChange={(v) => handleFilterChange('month', v)}
+                placeholder={t('subscriptions:list.filters.selectMonth')}
                 size="sm"
               />
             </div>
@@ -449,9 +584,29 @@ export function SubscriptionsListPage() {
       </Card>
 
       {isLoading ? (
-        <div className="mt-6">
-          <TableSkeleton cols={8} />
-        </div>
+        <>
+          {/* Mobile skeleton */}
+          <div className="md:hidden space-y-3">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="bg-white dark:bg-[#171717] rounded-xl p-5 border border-neutral-200/60 dark:border-[#262626] space-y-3 animate-pulse">
+                <div className="flex justify-between">
+                  <Skeleton className="h-5 w-40" />
+                  <Skeleton className="h-5 w-16 rounded-full" />
+                </div>
+                <Skeleton className="h-3 w-32" />
+                <Skeleton className="h-3 w-20" />
+                <div className="flex justify-between pt-1">
+                  <Skeleton className="h-3 w-28" />
+                  <Skeleton className="h-5 w-20" />
+                </div>
+              </div>
+            ))}
+          </div>
+          {/* Desktop skeleton */}
+          <div className="hidden md:block mt-6">
+            <TableSkeleton cols={8} />
+          </div>
+        </>
       ) : error ? (
         <ErrorState message={error.message} onRetry={() => refetch()} />
       ) : subscriptions.length === 0 ? (
@@ -463,55 +618,137 @@ export function SubscriptionsListPage() {
           onAction={() => navigate('/subscriptions/new')}
         />
       ) : (
-        <div className={`bg-white dark:bg-[#171717] rounded-2xl border border-neutral-200 dark:border-[#262626] overflow-hidden shadow-sm transition-opacity ${isFetching && !isLoading ? 'opacity-70' : ''}`}>
-          <Table
-            columns={columns}
-            data={subscriptions}
-            onRowClick={(row) => navigate(`/subscriptions/${row.id}`)}
-            className="border-none"
-          />
-          {totalCount > 0 && (
-            <div className="flex items-center justify-between px-4 py-3 border-t border-neutral-200 dark:border-neutral-800 flex-wrap gap-3">
-              <div className="flex items-center gap-3">
-                <span className="text-sm text-neutral-500 dark:text-neutral-400">
-                  {totalCount > 0
-                    ? `${page * pageSize + 1}–${Math.min((page + 1) * pageSize, totalCount)} / ${totalCount} ${t('subscriptions:list.pagination.subscriptions')}`
-                    : ''}
+        <>
+          {/* Mobile Card List — md:hidden */}
+          <div className={`md:hidden space-y-3 transition-opacity ${isFetching && !isLoading ? 'opacity-70' : ''}`}>
+            {subscriptions.map((row) => (
+              <button
+                key={row.id}
+                type="button"
+                onClick={() => navigate(`/subscriptions/${row.id}`)}
+                className={`w-full text-left bg-white dark:bg-[#1f1f1f] rounded-xl p-5 border border-neutral-200/60 dark:border-[#262626] shadow-sm transition-all active:scale-[0.98] ${
+                  overdue ? 'border-l-4 border-l-error-500 dark:border-l-error-500' : ''
+                }`}
+              >
+                <div className="flex justify-between items-start mb-1">
+                  <h3 className="font-bold text-base text-neutral-900 dark:text-neutral-50 leading-tight truncate pr-3">
+                    {row.company_name}
+                  </h3>
+                  <span className="shrink-0">
+                    <SubscriptionStatusBadge status={row.status} />
+                  </span>
+                </div>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-3 truncate">
+                  {row.site_name}
+                </p>
+                <div className="flex items-end justify-between">
+                  <div className="space-y-1 min-w-0">
+                    {row.account_no && (
+                      <code className="text-[10px] text-primary-600/70 dark:text-primary-400/70 font-mono tracking-widest">
+                        {row.account_no}
+                      </code>
+                    )}
+                    <div className="text-[11px] text-neutral-500 dark:text-neutral-400 uppercase tracking-tight flex items-center gap-1">
+                      {row.service_type && (
+                        <span>{t(`subscriptions:serviceTypes.${row.service_type}`)}</span>
+                      )}
+                      {row.service_type && row.billing_frequency && (
+                        <span className="w-1 h-1 rounded-full bg-neutral-300 dark:bg-neutral-600" />
+                      )}
+                      {row.billing_frequency && (
+                        <span>{t(`subscriptions:form.fields.${row.billing_frequency}`)}</span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="text-right shrink-0 pl-3">
+                    <span className="text-xl font-extrabold text-neutral-900 dark:text-neutral-50 tracking-tighter">
+                      {formatCurrency(getSubscriptionListTotalWithVat(row))}
+                    </span>
+                  </div>
+                </div>
+              </button>
+            ))}
+
+            {/* Mobile Pagination */}
+            {totalCount > 0 && (
+              <div className="flex items-center justify-between pt-2 pb-4">
+                <span className="text-xs text-neutral-500 dark:text-neutral-400">
+                  {page * pageSize + 1}–{Math.min((page + 1) * pageSize, totalCount)} / {totalCount}
                 </span>
-                <select
-                  value={pageSize}
-                  onChange={(e) => handlePageSizeChange(Number(e.target.value))}
-                  className="text-sm border border-neutral-200 dark:border-neutral-700 rounded-lg px-2 py-1 bg-white dark:bg-[#171717] text-neutral-700 dark:text-neutral-300 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
-                >
-                  {[25, 50, 100].map((n) => (
-                    <option key={n} value={n}>
-                      {t('subscriptions:list.pagination.perPage', { count: n })}
-                    </option>
-                  ))}
-                </select>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => handlePageChange(page - 1)}
+                    disabled={page === 0}
+                    className="p-2.5 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                  <span className="text-sm text-neutral-600 dark:text-neutral-400 px-2">
+                    {page + 1} / {Math.max(pageCount, 1)}
+                  </span>
+                  <button
+                    onClick={() => handlePageChange(page + 1)}
+                    disabled={page >= pageCount - 1}
+                    className="p-2.5 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={() => handlePageChange(page - 1)}
-                  disabled={page === 0}
-                  className="p-1.5 rounded-lg text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                </button>
-                <span className="text-sm text-neutral-600 dark:text-neutral-400 px-2">
-                  {page + 1} / {Math.max(pageCount, 1)}
-                </span>
-                <button
-                  onClick={() => handlePageChange(page + 1)}
-                  disabled={page >= pageCount - 1}
-                  className="p-1.5 rounded-lg text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                >
-                  <ChevronRight className="w-4 h-4" />
-                </button>
+            )}
+          </div>
+
+          {/* Desktop Table — hidden on mobile */}
+          <div className={`hidden md:block bg-white dark:bg-[#171717] rounded-2xl border border-neutral-200 dark:border-[#262626] overflow-hidden shadow-sm transition-opacity ${isFetching && !isLoading ? 'opacity-70' : ''}`}>
+            <Table
+              columns={columns}
+              data={subscriptions}
+              onRowClick={(row) => navigate(`/subscriptions/${row.id}`)}
+              className="border-none"
+            />
+            {totalCount > 0 && (
+              <div className="flex items-center justify-between px-4 py-3 border-t border-neutral-200 dark:border-neutral-800 flex-wrap gap-3">
+                <div className="flex items-center gap-3">
+                  <span className="text-sm text-neutral-500 dark:text-neutral-400">
+                    {totalCount > 0
+                      ? `${page * pageSize + 1}–${Math.min((page + 1) * pageSize, totalCount)} / ${totalCount} ${t('subscriptions:list.pagination.subscriptions')}`
+                      : ''}
+                  </span>
+                  <select
+                    value={pageSize}
+                    onChange={(e) => handlePageSizeChange(Number(e.target.value))}
+                    className="text-sm border border-neutral-200 dark:border-neutral-700 rounded-lg px-2 py-1 bg-white dark:bg-[#171717] text-neutral-700 dark:text-neutral-300 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+                  >
+                    {[25, 50, 100].map((n) => (
+                      <option key={n} value={n}>
+                        {t('subscriptions:list.pagination.perPage', { count: n })}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => handlePageChange(page - 1)}
+                    disabled={page === 0}
+                    className="p-2.5 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                  <span className="text-sm text-neutral-600 dark:text-neutral-400 px-2">
+                    {page + 1} / {Math.max(pageCount, 1)}
+                  </span>
+                  <button
+                    onClick={() => handlePageChange(page + 1)}
+                    disabled={page >= pageCount - 1}
+                    className="p-2.5 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        </>
       )}
 
     </PageContainer>

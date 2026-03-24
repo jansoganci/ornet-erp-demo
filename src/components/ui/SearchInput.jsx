@@ -3,7 +3,7 @@ import { Input } from './Input';
 import { IconButton } from './IconButton';
 import { useTranslation } from 'react-i18next';
 
-export function SearchInput({ value, onChange, placeholder, className, ...props }) {
+export function SearchInput({ value, onChange, placeholder, className, wrapperClassName, ...props }) {
   const { t } = useTranslation('common');
 
   return (
@@ -12,6 +12,7 @@ export function SearchInput({ value, onChange, placeholder, className, ...props 
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder || t('actions.search')}
       leftIcon={<Search className="h-5 w-5 text-neutral-400" />}
+      wrapperClassName={wrapperClassName || 'w-full sm:max-w-sm'}
       className={className}
       rightIcon={
         value ? (

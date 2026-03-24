@@ -11,6 +11,7 @@ import {
   updateProposalItems,
   updateProposalStatus,
   deleteProposal,
+  duplicateProposal,
   fetchProposalWorkOrders,
   linkWorkOrderToProposal,
   unlinkWorkOrderFromProposal,
@@ -128,6 +129,22 @@ export function useDeleteProposal() {
     },
     onError: (error) => {
       toast.error(getErrorMessage(error, 'common.deleteFailed'));
+    },
+  });
+}
+
+export function useDuplicateProposal() {
+  const queryClient = useQueryClient();
+  const { t } = useTranslation('proposals');
+
+  return useMutation({
+    mutationFn: duplicateProposal,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: proposalKeys.lists() });
+      toast.success(t('detail.duplicateSuccess'));
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'common.createFailed'));
     },
   });
 }

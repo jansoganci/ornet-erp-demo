@@ -12,7 +12,9 @@ export function Table({
   emptyMessage,
   emptyState,
   striped = false,
+  rowClassName,
   className,
+  mobileCardLayout = 'stacked',
   ...props
 }) {
   const { t } = useTranslation('common');
@@ -32,7 +34,7 @@ export function Table({
   return (
     <div className={className} {...props}>
       {/* Mobile View: Card Stack */}
-      <div className="grid grid-cols-1 gap-4 lg:hidden">
+      <div className="grid grid-cols-1 gap-3 md:gap-4 lg:hidden">
         {loading && (
           <div className="py-12 flex items-center justify-center">
             <Spinner size="lg" />
@@ -46,30 +48,77 @@ export function Table({
           )
         )}
         {!loading &&
-          data.map((item, rowIndex) => (
-            <Card
-              key={getKey(item, rowIndex)}
-              variant={onRowClick ? 'interactive' : 'default'}
-              onClick={onRowClick ? () => onRowClick(item) : undefined}
-              className="p-4 space-y-3"
-            >
-              {columns.map((column, colIndex) => {
-                const fieldKey = column.key ?? column.accessor ?? `col-${colIndex}`;
-                return (
-                  <div key={fieldKey} className="flex flex-col gap-1">
-                    <span className="text-[10px] uppercase font-bold text-neutral-400 tracking-wider">
-                      {column.header}
-                    </span>
-                    <div className={cn('text-sm text-neutral-900 dark:text-neutral-50', alignClasses[column.align || 'left'])}>
-                      {column.render
-                        ? column.render(item[fieldKey], item, rowIndex)
-                        : item[fieldKey]}
-                    </div>
+          data.map((item, rowIndex) => {
+            const mobileColumns = columns.filter((c) => !c.hideOnMobile);
+            const hasCardSection = mobileColumns.some((c) => c.cardSection);
+            const primaryColumns = hasCardSection
+              ? mobileColumns.filter((c) => c.cardSection === 'primary' || !c.cardSection)
+              : mobileColumns.slice(0, 2);
+            const metaColumns = hasCardSection
+              ? mobileColumns.filter((c) => c.cardSection === 'meta')
+              : mobileColumns.slice(2);
+            const useTabletGrid = metaColumns.length > 0;
+
+            const isInline = mobileCardLayout === 'inline';
+            const renderColumnBlock = (column, colIndex) => {
+              const fieldKey = column.key ?? column.accessor ?? `col-${colIndex}`;
+              return (
+                <div
+                  key={fieldKey}
+                  className={cn(
+                    'min-w-0',
+                    isInline
+                      ? 'flex items-center justify-between gap-3'
+                      : 'flex flex-col gap-0.5'
+                  )}
+                >
+                  <span className="text-[10px] uppercase font-medium text-neutral-400 dark:text-neutral-500 tracking-wider shrink-0">
+                    {column.header}
+                  </span>
+                  <div
+                    className={cn(
+                      'text-sm text-neutral-900 dark:text-neutral-50',
+                      isInline && 'min-w-0 flex-1',
+                      alignClasses[column.align || 'left'],
+                      column.cardClassName
+                    )}
+                  >
+                    {column.render
+                      ? column.render(item[fieldKey], item, rowIndex)
+                      : item[fieldKey]}
                   </div>
-                );
-              })}
-            </Card>
-          ))}
+                </div>
+              );
+            };
+
+            return (
+              <Card
+                key={getKey(item, rowIndex)}
+                variant={onRowClick ? 'interactive' : 'default'}
+                onClick={onRowClick ? () => onRowClick(item) : undefined}
+                className={cn(
+                  'p-3 md:p-4',
+                  typeof rowClassName === 'function' ? rowClassName(item, rowIndex) : rowClassName
+                )}
+              >
+                <div
+                  className={cn(
+                    'grid gap-y-2 md:gap-y-3',
+                    useTabletGrid && 'md:grid-cols-2 md:gap-x-6 md:gap-y-2'
+                  )}
+                >
+                  <div className="min-w-0 space-y-2 md:space-y-3">
+                    {primaryColumns.map((col, i) => renderColumnBlock(col, i))}
+                  </div>
+                  {useTabletGrid && (
+                    <div className="min-w-0 space-y-2 md:space-y-0 md:grid md:grid-cols-2 md:gap-x-4 md:gap-y-2">
+                      {metaColumns.map((col, i) => renderColumnBlock(col, primaryColumns.length + i))}
+                    </div>
+                  )}
+                </div>
+              </Card>
+            );
+          })}
       </div>
 
       {/* Desktop View: Standard Table */}
@@ -132,7 +181,8 @@ export function Table({
                   className={cn(
                     'transition-all duration-200',
                     onRowClick && 'cursor-pointer hover:bg-neutral-50 dark:hover:bg-[#262626]',
-                    striped && rowIndex % 2 === 1 && 'bg-neutral-50/50 dark:bg-[#1a1a1a]/30'
+                    striped && rowIndex % 2 === 1 && 'bg-neutral-50/50 dark:bg-[#1a1a1a]/30',
+                    typeof rowClassName === 'function' ? rowClassName(item, rowIndex) : rowClassName
                   )}
                 >
                   {columns.map((column, colIndex) => {

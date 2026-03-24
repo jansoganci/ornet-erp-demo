@@ -1,8 +1,9 @@
-import { useFieldArray, Controller } from 'react-hook-form';
+import { Controller } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { Plus, Trash2, Package } from 'lucide-react';
 import { Button, IconButton, Input, MaterialCombobox } from '../../../components/ui';
 import { cn, getCurrencySymbol, formatCurrency } from '../../../lib/utils';
+import { calcProposalTotals, calcTotalCosts, calcItemLineTotal } from '../../../lib/proposalCalc';
 
 const UNIT_OPTIONS = [
   { value: 'adet', labelKey: 'items.units.adet' },
@@ -11,28 +12,24 @@ const UNIT_OPTIONS = [
   { value: 'takim', labelKey: 'items.units.takim' },
 ];
 
-export function ProposalItemsEditor({ control, register, errors, watch, setValue, currency = 'USD' }) {
+export function ProposalItemsEditor({
+  control,
+  register,
+  errors,
+  watch,
+  setValue,
+  currency = 'USD',
+  fields,
+  append,
+  remove,
+}) {
   const { t } = useTranslation('proposals');
   const symbol = getCurrencySymbol(currency);
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: 'items',
-  });
 
-  const watchItems = watch('items');
+  const watchItems = watch('items') || [];
   const discountPercent = Number(watch('discount_percent')) || 0;
-  const subtotal = (watchItems || []).reduce((sum, item) => {
-    const qty = parseFloat(item?.quantity) || 0;
-    const price = parseFloat(item?.unit_price) || 0;
-    return sum + qty * price;
-  }, 0);
-  const discountAmount = subtotal * (discountPercent / 100);
-  const grandTotal = subtotal - discountAmount;
-  const totalCosts = (watchItems || []).reduce((sum, item) => {
-    const qty = parseFloat(item?.quantity) || 0;
-    const cost = parseFloat(item?.cost) || 0;
-    return sum + cost * qty;
-  }, 0);
+  const { subtotal, discountAmount, grandTotal } = calcProposalTotals(watchItems, discountPercent);
+  const totalCosts = calcTotalCosts(watchItems);
   const netProfit = grandTotal - totalCosts;
 
   const handleAddItem = () => {
@@ -104,7 +101,7 @@ export function ProposalItemsEditor({ control, register, errors, watch, setValue
         {fields.map((field, index) => {
           const qty = parseFloat(watchItems?.[index]?.quantity) || 0;
           const price = parseFloat(watchItems?.[index]?.unit_price) || 0;
-          const lineTotal = qty * price;
+          const lineTotal = calcItemLineTotal(qty, price);
 
           return (
             <div
@@ -270,7 +267,7 @@ export function ProposalItemsEditor({ control, register, errors, watch, setValue
         {fields.map((field, index) => {
           const qty = parseFloat(watchItems?.[index]?.quantity) || 0;
           const price = parseFloat(watchItems?.[index]?.unit_price) || 0;
-          const lineTotal = qty * price;
+          const lineTotal = calcItemLineTotal(qty, price);
 
           return (
             <div

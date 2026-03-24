@@ -276,7 +276,7 @@ export function PriceRevisionPage() {
     return (
       <PageContainer maxWidth="full">
         <PageHeader title={t('subscriptions:priceRevision.title')} />
-        <Card className="p-8 text-center space-y-4">
+        <Card className="p-4 sm:p-6 lg:p-8 text-center space-y-4">
           <p className="text-neutral-600 dark:text-neutral-400">
             {t('subscriptions:priceRevision.unauthorized')}
           </p>

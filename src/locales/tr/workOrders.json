@@ -1,6 +1,14 @@
 {
   "list": {
     "title": "İş Emirleri",
+    "eyebrow": "Tüm kayıtlar",
+    "kpi": {
+      "matched": "Filtreyle eşleşen",
+      "open": "Açık iş emirleri",
+      "pendingInstall": "Bekleyen montaj",
+      "completed": "Tamamlanan",
+      "placeholder": "—"
+    },
     "searchPlaceholder": "Müşteri ara...",
     "addButton": "Yeni İş Emri",
     "columns": {
@@ -75,7 +83,28 @@
     "viewProposal": "Teklifi Görüntüle",
     "notAssignedYet": "Henüz atanmadı",
     "assignedCount": "{{count}} Personel",
-    "amountNotEntered": "Tutar girilmedi"
+    "amountNotEntered": "Tutar girilmedi",
+    "activity": {
+      "title": "Aktivite Geçmişi",
+      "subtitle": "Kayıt izi",
+      "empty": "Henüz aktivite kaydı yok.",
+      "loadError": "Geçmiş yüklenemedi.",
+      "unknownUser": "Bilinmeyen kullanıcı"
+    },
+    "auditActions": {
+      "insert": "Kayıt oluşturuldu",
+      "update": "Kayıt güncellendi",
+      "status_change": "Durum değişti",
+      "delete": "Kayıt silindi"
+    },
+    "auditDescriptions": {
+      "work_order": {
+        "created": "İş emri oluşturuldu",
+        "updated": "İş emri güncellendi",
+        "status_changed": "İş emri durumu değişti",
+        "soft_deleted": "İş emri silindi (arşivlendi)"
+      }
+    }
   },
   "form": {
     "addTitle": "Yeni İş Emri",

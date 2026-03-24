@@ -12,6 +12,7 @@ export const workOrderKeys = {
   list: (filters) => [...workOrderKeys.lists(), filters],
   details: () => [...workOrderKeys.all, 'detail'],
   detail: (id) => [...workOrderKeys.details(), id],
+  auditLogs: (id) => [...workOrderKeys.detail(id), 'auditLogs'],
   bySite: (siteId) => [...workOrderKeys.all, 'site', siteId],
   byCustomer: (customerId) => [...workOrderKeys.all, 'customer', customerId],
   daily: (date, workerId) => [...workOrderKeys.all, 'daily', date, workerId],
@@ -26,6 +27,7 @@ export function useUpdateWorkOrderStatus() {
     mutationFn: ({ id, status }) => api.updateWorkOrder({ id, status }),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: workOrderKeys.detail(data.id) });
+      queryClient.invalidateQueries({ queryKey: workOrderKeys.auditLogs(data.id) });
       queryClient.invalidateQueries({ queryKey: workOrderKeys.lists() });
       toast.success(t('success.statusUpdated'));
     },
@@ -66,6 +68,15 @@ export function useWorkOrder(id) {
     queryKey: workOrderKeys.detail(id),
     queryFn: () => api.fetchWorkOrder(id),
     enabled: !!id,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useWorkOrderAuditLogs(workOrderId) {
+  return useQuery({
+    queryKey: workOrderKeys.auditLogs(workOrderId),
+    queryFn: () => api.fetchWorkOrderAuditLogs(workOrderId),
+    enabled: !!workOrderId,
     refetchOnWindowFocus: false,
   });
 }
@@ -146,6 +157,7 @@ export function useUpdateWorkOrder() {
     mutationFn: api.updateWorkOrder,
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: workOrderKeys.all });
+      queryClient.invalidateQueries({ queryKey: workOrderKeys.auditLogs(id) });
       queryClient.invalidateQueries({ queryKey: siteKeys.all });
       queryClient.invalidateQueries({ queryKey: customerKeys.all });
       queryClient.invalidateQueries({ queryKey: workOrderKeys.materials(id) });

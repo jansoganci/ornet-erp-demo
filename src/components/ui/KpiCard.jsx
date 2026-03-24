@@ -85,7 +85,7 @@ export function KpiCard({
   const gradientId = `sparkGrad-${uid.replace(/:/g, '')}`;
 
   const shellClass = cn(
-    'rounded-xl border p-5 block transition-all duration-150 hover:-translate-y-px',
+    'rounded-xl border p-3 md:p-5 block transition-all duration-150 hover:-translate-y-px',
     'bg-white border-gray-200 hover:bg-gray-50 hover:border-gray-300',
     'dark:bg-gray-800/40 dark:backdrop-blur-sm dark:border-white/10',
     'dark:hover:bg-gray-800/60 dark:hover:border-white/20',
@@ -102,9 +102,9 @@ export function KpiCard({
     return (
       <div
         className={cn(
-          'rounded-xl border p-5',
-          'bg-white border-gray-200',
-          'dark:bg-gray-800/40 dark:border-white/10 dark:backdrop-blur-sm',
+        'rounded-xl border p-3 md:p-5',
+        'bg-white border-gray-200',
+        'dark:bg-gray-800/40 dark:border-white/10 dark:backdrop-blur-sm',
           className
         )}
       >
@@ -132,7 +132,7 @@ export function KpiCard({
 
   const header = (
     <div className="flex items-start justify-between gap-2 mb-3 min-w-0">
-      <span className="text-xs font-semibold uppercase tracking-widest text-neutral-500 dark:text-neutral-500 break-words min-w-0">
+      <span className="text-xs font-semibold uppercase tracking-widest text-neutral-500 dark:text-neutral-500 break-words min-w-0 line-clamp-2">
         {title}
       </span>
       {Icon &&

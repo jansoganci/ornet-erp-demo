@@ -9,6 +9,7 @@ import {
   fetchResolvedNotifications,
   fetchBadgeCount,
   resolveNotification,
+  markAllStoredAsResolved,
   fetchReminders,
   createReminder,
   completeReminder,
@@ -99,6 +100,18 @@ export function useResolveNotification() {
 
   return useMutation({
     mutationFn: resolveNotification,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: notificationKeys.badge() });
+      queryClient.invalidateQueries({ queryKey: notificationKeys.all });
+    },
+  });
+}
+
+export function useMarkAllAsResolved() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: markAllStoredAsResolved,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: notificationKeys.badge() });
       queryClient.invalidateQueries({ queryKey: notificationKeys.all });

@@ -1,8 +1,20 @@
 {
   "title": "Bildirimler",
+  "subtitle": "Operasyonel uyarılar ve aktivite takibi",
   "resolvedAt": "Tamamlandı",
   "page": {
-    "title": "Bildirimler"
+    "title": "Bildirim Merkezi"
+  },
+  "tabs": {
+    "all": "Tümü",
+    "alerts": "Uyarılar",
+    "system": "Sistem",
+    "activity": "Aktivite"
+  },
+  "dateHeaders": {
+    "today": "Bugün",
+    "yesterday": "Dün",
+    "older": "Daha Eski"
   },
   "filters": {
     "undone": "Bekleyen",
@@ -14,7 +26,8 @@
     "year": "Yıl",
     "month": "Ay",
     "status": "Durum",
-    "clear": "Filtreleri Temizle"
+    "clear": "Filtreleri Temizle",
+    "search": "Uyarı, log veya aktivite ara..."
   },
   "months": {
     "1": "Ocak",
@@ -48,8 +61,20 @@
   },
   "actions": {
     "resolve": "Tamamlandı işaretle",
+    "dismiss": "Kaldır",
+    "viewLogs": "Detayları Gör",
     "viewAll": "Tümünü Gör",
-    "retry": "Tekrar Dene"
+    "retry": "Tekrar Dene",
+    "markAllRead": "Tümünü Okundu İşaretle",
+    "loadOlder": "Daha eski bildirimleri yükle",
+    "newIncident": "Yeni İş Emri"
+  },
+  "sidebar": {
+    "health": "Bildirim Durumu",
+    "alertsThisWeek": "Bu Hafta Uyarılar",
+    "storedNotifications": "Bekleyen Bildirimler",
+    "overdueItems": "Vadesi Geçenler",
+    "quickReminder": "Hızlı Hatırlatma"
   },
   "types": {
     "open_work_order": "Açık İş Emri",
@@ -67,6 +92,11 @@
     "user_reminder": "Hatırlatma",
     "sim_card_cancelled": "SIM Kart İptal Edildi",
     "pending_payments_summary": "Aylık abonelik ödeme özeti"
+  },
+  "categories": {
+    "alerts": "Uyarı",
+    "system": "Sistem",
+    "activity": "Aktivite"
   },
   "reminder": {
     "addButton": "Hatırlatma Ekle",

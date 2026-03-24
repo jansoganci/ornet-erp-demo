@@ -37,7 +37,8 @@
       "selectYear": "Yıl Seç",
       "selectMonth": "Ay Seç"
     },
-    "quickEdit": "Hızlı Düzenleme"
+    "quickEdit": "Hızlı Düzenleme",
+    "unassigned": "Atama Bekliyor"
   },
   "status": {
     "available": "Boşta",
@@ -87,6 +88,13 @@
     "validation": {
       "phoneNumberRequired": "Hat numarası zorunludur",
       "operatorRequired": "Operatör seçimi zorunludur"
+    },
+    "sections": {
+      "simInfo": "SIM Bilgileri",
+      "assignment": "Atama Bilgileri",
+      "advanced": "Gelişmiş",
+      "financial": "Finansal Bilgiler",
+      "notes": "Notlar"
     }
   },
   "history": {
@@ -108,7 +116,9 @@
     "available": "Boştaki Hatlar",
     "active": "Aktif Hatlar",
     "subscription": "Abonelik Hatları",
-    "monthlyProfit": "Tahmini Aylık Kar"
+    "monthlyProfit": "Tahmini Aylık Kar",
+    "unassigned": "Atanmamış",
+    "monthlyRevenue": "Aylık Gelir"
   },
   "import": {
     "pageTitle": "SIM kartlar — Excel ile toplu yükle",

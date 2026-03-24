@@ -4,11 +4,11 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Globe, ChevronDown, ChevronUp } from 'lucide-react';
 import { Card, Button, Spinner } from '../../../components/ui';
-import { formatDate } from '../../../lib/utils';
+import { cn, formatDate } from '../../../lib/utils';
 import { fetchActiveStaticIp, fetchStaticIpHistory, cancelStaticIp } from '../../simCards/staticIpApi';
 import { StaticIpModal } from './StaticIpModal';
 
-export function StaticIpCard({ simCardId, isAdmin = false }) {
+export function StaticIpCard({ simCardId, isAdmin = false, className }) {
   const { t } = useTranslation(['simCards', 'common']);
   const queryClient = useQueryClient();
   const [showModal, setShowModal] = useState(false);
@@ -40,7 +40,7 @@ export function StaticIpCard({ simCardId, isAdmin = false }) {
 
   return (
     <>
-      <Card className="overflow-hidden">
+      <Card className={cn('overflow-hidden', className)}>
         <div className="bg-blue-50/50 dark:bg-blue-950/10 px-5 py-3 border-b border-blue-100 dark:border-blue-900/20 flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <Globe className="w-4 h-4 text-blue-600" />

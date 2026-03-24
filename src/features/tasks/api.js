@@ -66,9 +66,9 @@ const mockTasks = [
 ];
 
 const mockProfiles = [
-  { id: 'mock-user', full_name: 'Admin User', role: 'admin' },
-  { id: 'user-1', full_name: 'John Technician', role: 'field_worker' },
-  { id: 'user-2', full_name: 'Jane Accountant', role: 'accountant' },
+  { id: 'mock-user', full_name: 'Admin User', role: 'admin', avatar_url: null },
+  { id: 'user-1', full_name: 'John Technician', role: 'field_worker', avatar_url: null },
+  { id: 'user-2', full_name: 'Jane Accountant', role: 'accountant', avatar_url: null },
 ];
 
 export async function fetchTasks({ status, assigned_to, dateFrom, dateTo } = {}) {
@@ -261,7 +261,7 @@ export async function fetchProfiles(filters = {}) {
   try {
     let query = supabase
       .from('profiles')
-      .select('id, full_name, role')
+      .select('id, full_name, role, avatar_url')
       .order('full_name');
 
     if (filters.role) {

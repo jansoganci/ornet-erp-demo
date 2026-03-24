@@ -17,7 +17,7 @@ export function SubscriptionsLayout() {
   return (
     <div className="space-y-6">
       {showTabs && (
-        <div className="flex gap-1 p-1 rounded-xl bg-neutral-100 dark:bg-neutral-800/50 border border-neutral-200 dark:border-[#262626] w-fit">
+        <div className="flex gap-1 p-1 rounded-xl bg-neutral-100 dark:bg-neutral-800/50 border border-neutral-200 dark:border-[#262626] w-fit max-w-full overflow-x-auto scrollbar-hide">
           <NavLink
             to="/subscriptions"
             end

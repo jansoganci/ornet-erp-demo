@@ -22,12 +22,22 @@ import {
   FileSearch,
   AlertCircle,
   Radio,
+  BookOpen,
 } from 'lucide-react';
 
 /**
- * Top-level nav items shown in bottom bar on mobile (< lg breakpoint).
- * Routes must match flat items or first child of a group.
+ * Top-level nav routes for mobile bottom bar. Role-based:
+ * - canWrite (Admin/Muhasebeci): Ana Sayfa, Operasyon, Müşteriler, İş Emri (+ ortada)
+ * - !canWrite (Teknisyen): Ana Sayfa, Müşteriler, İş Emri
  */
+const topNavRoutesForCanWrite = ['/', '/operations', '/customers', '/work-orders'];
+const topNavRoutesForNonCanWrite = ['/', '/customers', '/work-orders'];
+
+export function getTopNavRoutes(canWrite) {
+  return canWrite ? topNavRoutesForCanWrite : topNavRoutesForNonCanWrite;
+}
+
+/** @deprecated Use getTopNavRoutes(canWrite) instead */
 export const topNavRoutes = ['/', '/operations', '/customers', '/work-orders', '/proposals'];
 
 export const navItems = [
@@ -95,6 +105,7 @@ export const navItems = [
     labelKey: 'nav.groups.settings',
     icon: Settings,
     children: [
+      { to: '/technical-guide', icon: BookOpen, labelKey: 'nav.technicalGuide' },
       { to: '/materials', icon: Package, labelKey: 'nav.materials' },
       // Future: { to: '/users', icon: UserCog, labelKey: 'users', adminOnly: true }
       // Future: { to: '/company', icon: Building2, labelKey: 'companySettings', adminOnly: true }

@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Search, ClipboardList, User, Calendar } from 'lucide-react';
+import { Search, Filter } from 'lucide-react';
 import { PageContainer, PageHeader } from '../../components/layout';
 import {
   Button,
-  Select,
+  ListboxSelect,
   Input,
   SearchInput,
   Spinner,
@@ -15,6 +15,8 @@ import {
   Table,
   ErrorState,
   TableSkeleton,
+  Modal,
+  IconButton,
 } from '../../components/ui';
 import { useDebouncedValue } from '../../hooks/useDebouncedValue';
 import { useSearchWorkHistory } from './hooks';
@@ -115,6 +117,14 @@ export function WorkHistoryPage() {
     label: t(`workHistory:filters.datePresets.${p}`),
   }));
 
+  const [filterOpen, setFilterOpen] = useState(false);
+  const activeFilterCount = [
+    filters.datePreset !== 'all' && filters.datePreset !== 'custom',
+    filters.workType !== 'all',
+    filters.workerId !== 'all',
+    filters.datePreset === 'custom' && (filters.dateFrom || filters.dateTo),
+  ].filter(Boolean).length;
+
   const columns = [
     {
       header: t('workHistory:results.columns.customer'),
@@ -150,12 +160,12 @@ export function WorkHistoryPage() {
     },
     {
       header: t('workHistory:results.columns.workers'),
-      accessor: 'assigned_to',
+      accessor: 'assigned_workers',
       render: (workers) => (
         <div className="flex -space-x-2 overflow-hidden">
-          {workers?.map((w) => (
+          {workers?.map((w, idx) => (
             <div
-              key={w.id}
+              key={w?.id ?? idx}
               className="inline-flex h-7 w-7 rounded-full ring-2 ring-white dark:ring-[#171717] bg-primary-100 dark:bg-primary-900/40 items-center justify-center shrink-0"
               title={w.name}
             >
@@ -171,16 +181,53 @@ export function WorkHistoryPage() {
 
   return (
     <PageContainer maxWidth="full" padding="default" className="space-y-6">
-      <PageHeader
-        title={t('workHistory:title')}
-        description={t('workHistory:subtitle')}
-        breadcrumbs={[
-          { label: t('common:nav.dashboard'), to: '/' },
-          { label: t('workHistory:title') },
-        ]}
-      />
+      {/* Desktop: PageHeader */}
+      <div className="hidden lg:block">
+        <PageHeader
+          title={t('workHistory:title')}
+          description={t('workHistory:subtitle')}
+          breadcrumbs={[
+            { label: t('common:nav.dashboard'), to: '/' },
+            { label: t('workHistory:title') },
+          ]}
+        />
+      </div>
 
-      <Card className="p-4 border-neutral-200/60 dark:border-neutral-800/60">
+      {/* Mobile only: header with Search + Filter */}
+      <div className="lg:hidden space-y-3">
+        <div className="flex items-center gap-2">
+          <div className="min-w-0 flex-1">
+            <h1 className="font-heading text-lg font-bold text-neutral-900 dark:text-neutral-50 truncate">
+              {t('workHistory:title')}
+            </h1>
+          </div>
+          <SearchInput
+            placeholder={t('workHistory:search.placeholder')}
+            value={localSearch}
+            onChange={(v) => handleFilterChange('search', v)}
+            className="min-w-0 flex-1 max-w-[140px]"
+            size="sm"
+          />
+          <div className="relative shrink-0">
+            <IconButton
+              icon={Filter}
+              variant="secondary"
+              size="md"
+              aria-label={t('common:filters.title')}
+              onClick={() => setFilterOpen(true)}
+              className="border border-neutral-200 dark:border-[#262626] rounded-lg"
+            />
+            {activeFilterCount > 0 && (
+              <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary-600 text-[10px] font-bold text-white px-1">
+                {activeFilterCount}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Filters - desktop only */}
+      <Card className="hidden lg:block p-4 border-neutral-200/60 dark:border-neutral-800/60">
         <div className="flex flex-col gap-4">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1">
@@ -191,37 +238,40 @@ export function WorkHistoryPage() {
                 className="w-full"
               />
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 w-full md:w-auto md:min-w-[500px]">
-              <Select
+            <div className="flex flex-wrap items-end gap-3">
+              <ListboxSelect
                 options={datePresetOptions}
                 value={filters.datePreset}
-                onChange={(e) => handleFilterChange('datePreset', e.target.value)}
+                onChange={(v) => handleFilterChange('datePreset', v)}
                 placeholder={t('workHistory:filters.dateRange')}
-                leftIcon={<Calendar className="w-4 h-4" />}
+                size="sm"
+                className="w-full md:w-40"
               />
-              <Select
+              <ListboxSelect
                 options={workTypeOptions}
                 value={filters.workType}
-                onChange={(e) => handleFilterChange('workType', e.target.value)}
+                onChange={(v) => handleFilterChange('workType', v)}
                 placeholder={t('workHistory:filters.workType')}
-                leftIcon={<ClipboardList className="w-4 h-4" />}
+                size="sm"
+                className="w-full md:w-44"
               />
-              <Select
+              <ListboxSelect
                 options={workerOptions}
                 value={filters.workerId}
-                onChange={(e) => handleFilterChange('workerId', e.target.value)}
+                onChange={(v) => handleFilterChange('workerId', v)}
                 placeholder={t('workHistory:filters.worker')}
-                leftIcon={<User className="w-4 h-4" />}
+                size="sm"
+                className="w-full md:w-44"
               />
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleReset}
+                className="text-neutral-400 hover:text-primary-600 shrink-0"
+              >
+                {t('common:actions.reset')}
+              </Button>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleReset}
-              className="text-neutral-400 hover:text-primary-600 shrink-0 self-center"
-            >
-              {t('common:actions.reset')}
-            </Button>
           </div>
           {filters.datePreset === 'custom' && (
             <div className="flex flex-wrap gap-3 pt-2 border-t border-neutral-100 dark:border-neutral-800">
@@ -243,6 +293,64 @@ export function WorkHistoryPage() {
           )}
         </div>
       </Card>
+
+      {/* Filter Modal - mobile only */}
+      <Modal
+        open={filterOpen}
+        onClose={() => setFilterOpen(false)}
+        title={t('common:filters.title')}
+        size="sm"
+        footer={
+          <div className="flex justify-between w-full">
+            <Button variant="ghost" size="sm" onClick={() => { handleReset(); setFilterOpen(false); }}>
+              {t('common:filters.clear')}
+            </Button>
+            <Button variant="primary" size="sm" onClick={() => setFilterOpen(false)}>
+              {t('common:actions.done')}
+            </Button>
+          </div>
+        }
+      >
+        <div className="grid gap-4 py-2">
+          <ListboxSelect
+            options={datePresetOptions}
+            value={filters.datePreset}
+            onChange={(v) => handleFilterChange('datePreset', v)}
+            placeholder={t('workHistory:filters.dateRange')}
+            size="sm"
+          />
+          <ListboxSelect
+            options={workTypeOptions}
+            value={filters.workType}
+            onChange={(v) => handleFilterChange('workType', v)}
+            placeholder={t('workHistory:filters.workType')}
+            size="sm"
+          />
+          <ListboxSelect
+            options={workerOptions}
+            value={filters.workerId}
+            onChange={(v) => handleFilterChange('workerId', v)}
+            placeholder={t('workHistory:filters.worker')}
+            size="sm"
+          />
+          {filters.datePreset === 'custom' && (
+            <div className="grid grid-cols-2 gap-3 pt-2 border-t border-neutral-100 dark:border-neutral-800">
+              <Input
+                type="date"
+                label={t('workHistory:filters.from')}
+                value={filters.dateFrom}
+                onChange={(e) => handleFilterChange('dateFrom', e.target.value)}
+              />
+              <Input
+                type="date"
+                label={t('workHistory:filters.to')}
+                value={filters.dateTo}
+                onChange={(e) => handleFilterChange('dateTo', e.target.value)}
+              />
+            </div>
+          )}
+        </div>
+      </Modal>
 
       <div className="space-y-4">
         <div className="flex items-center justify-between px-1">

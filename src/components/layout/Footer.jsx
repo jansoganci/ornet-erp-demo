@@ -10,23 +10,17 @@ export function Footer() {
 
   return (
     <footer
-      className="mt-auto border-t border-neutral-200 dark:border-[#262626] bg-white dark:bg-[#171717] px-4 sm:px-6 lg:px-8 py-4 pb-[calc(4rem+env(safe-area-inset-bottom))] lg:pb-4"
+      className="mt-auto border-t border-neutral-200 dark:border-[#262626] bg-white dark:bg-[#171717] px-4 sm:px-6 lg:px-8 py-2 pb-[calc(4rem+env(safe-area-inset-bottom))] lg:pb-2"
       role="contentinfo"
     >
-      <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 text-sm text-neutral-500 dark:text-neutral-400">
+      <div className="flex flex-row flex-wrap items-center justify-center gap-x-2 gap-y-0 text-xs text-neutral-500 dark:text-neutral-400">
         <span>© {new Date().getFullYear()} {t('footer.copyright')}</span>
-        <span className="hidden sm:inline text-neutral-300 dark:text-[#404040]">|</span>
-        <Link
-          to="/support"
-          className="hover:text-neutral-700 dark:hover:text-neutral-200 transition-colors"
-        >
+        <span className="text-neutral-300 dark:text-[#404040]">·</span>
+        <Link to="/support" className="hover:text-neutral-700 dark:hover:text-neutral-200 transition-colors">
           {t('footer.support')}
         </Link>
-        <span className="hidden sm:inline text-neutral-300 dark:text-[#404040]">|</span>
-        <Link
-          to="/privacy"
-          className="hover:text-neutral-700 dark:hover:text-neutral-200 transition-colors"
-        >
+        <span className="text-neutral-300 dark:text-[#404040]">·</span>
+        <Link to="/privacy" className="hover:text-neutral-700 dark:hover:text-neutral-200 transition-colors">
           {t('footer.privacy')}
         </Link>
       </div>

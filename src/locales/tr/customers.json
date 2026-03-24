@@ -98,6 +98,72 @@
         "email": "E-posta",
         "address": "Adres"
       }
+    },
+    "profileLayout": {
+      "stickyIdLabel": "Müşteri",
+      "siteScopeLabel": "Lokasyon",
+      "siteAll": "Tümü",
+      "statusActive": "Aktif",
+      "linkSummary": "Özet",
+      "moreActions": "İşlemler",
+      "linkOverview": "Genel bakış",
+      "linkLocations": "Lokasyonlar",
+      "linkSimCards": "SIM kartlar",
+      "addSubscription": "Yeni abonelik",
+      "columnInfo": "Müşteri bilgileri",
+      "columnSubscriptions": "Aktif abonelikler",
+      "columnFinancial": "Finans özeti",
+      "servicesCount": "{{count}} hizmet",
+      "primaryContact": "Yetkili",
+      "contactRoleHint": "Lokasyon yetkilisi",
+      "emailPhone": "E-posta ve telefon",
+      "billingAddress": "Fatura adresi",
+      "accountManager": "Sorumlu",
+      "noManager": "Atanmadı",
+      "financial": {
+        "monthlyBilling": "Toplam aylık faturalama",
+        "perMonth": "/ay",
+        "nextInvoiceHint": "Sonraki ödeme dönemi: {{date}}",
+        "nextInvoiceUnknown": "Bekleyen ödeme kaydı yok",
+        "pendingBalance": "Bekleyen bakiye",
+        "pendingHint": "Vadesi geçmiş abonelik ödemeleri (KDV dahil)",
+        "payBalance": "Tahsilat masasına git",
+        "primaryPayment": "Ödeme yöntemi",
+        "noPaymentMethod": "Kayıtlı yöntem yok",
+        "autoPayHint": "Abonelikte kart / otomatik tahsilat",
+        "manageSubscription": "Yönet"
+      },
+      "subscriptions": {
+        "empty": "Aktif abonelik yok",
+        "nextDue": "Sonraki ödeme dönemi: {{date}}",
+        "nextDueUnknown": "Ödeme takvimi —"
+      },
+      "bottomTabs": {
+        "workOrders": "İş emri geçmişi",
+        "assets": "Varlık listesi",
+        "logs": "Kayıt geçmişi"
+      },
+      "workOrdersPanel": {
+        "searchPlaceholder": "İş emirlerinde ara…",
+        "filterStatus": "Durum",
+        "allStatuses": "Tümü",
+        "exportCsv": "CSV indir",
+        "showing": "{{from}}–{{to}} / {{total}} kayıt",
+        "columnId": "No",
+        "columnService": "Hizmet türü",
+        "columnTechnician": "Personel",
+        "columnScheduled": "Planlanan tarih",
+        "columnStatus": "Durum",
+        "columnActions": "İşlemler"
+      },
+      "logs": {
+        "emptyAdmin": "Kayıt bulunamadı",
+        "emptyNoAccess": "Bu bölüm yalnızca yöneticiler içindir.",
+        "columnWhen": "Tarih",
+        "columnAction": "İşlem",
+        "columnTable": "Kaynak",
+        "columnDetail": "Açıklama"
+      }
     }
   },
   "sites": {

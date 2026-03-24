@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="80" fill="#dc2626"/>
+  <text x="256" y="280" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-weight="800" font-size="192" fill="#ffffff" dominant-baseline="central">O</text>
+  <text x="256" y="400" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-weight="600" font-size="56" fill="rgba(255,255,255,0.8)" dominant-baseline="central">ERP</text>
+</svg>

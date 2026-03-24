@@ -60,19 +60,21 @@ export function OverduePaymentsList() {
   const { t: tCommon } = useTranslation('common');
   const { data: payments, isLoading } = useOverduePayments();
 
-  const list = Array.isArray(payments) ? payments : [];
+  const allItems = Array.isArray(payments) ? payments : [];
+  const list = allItems.slice(0, 5);
+  const hasMore = allItems.length > 5;
 
   return (
-    <div className="rounded-xl border overflow-hidden bg-white border-gray-200 dark:bg-gray-800/40 dark:backdrop-blur-sm dark:border-white/10">
+    <div className="rounded-xl border overflow-hidden bg-white border-gray-200 dark:bg-gray-800/40 dark:backdrop-blur-sm dark:border-white/10 flex flex-col min-h-0 h-full">
       {/* Header */}
-      <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-white/5">
+      <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100 dark:border-white/5 flex-shrink-0">
         <div className="flex items-center gap-2">
           <h3 className="text-xs font-semibold uppercase tracking-widest text-neutral-500 dark:text-neutral-500">
             {t('sections.overduePayments')}
           </h3>
-          {!isLoading && list.length > 0 && (
+          {!isLoading && allItems.length > 0 && (
             <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-red-500 text-[10px] font-bold text-white leading-none flex-shrink-0">
-              {list.length > 9 ? '9+' : list.length}
+              {allItems.length > 9 ? '9+' : allItems.length}
             </span>
           )}
         </div>
@@ -88,13 +90,13 @@ export function OverduePaymentsList() {
       {isLoading ? (
         <ListSkeleton />
       ) : list.length === 0 ? (
-        <div className="px-5 py-8 text-center">
+        <div className="px-5 py-6 text-center flex-1 flex items-center justify-center">
           <p className="text-sm text-neutral-500 dark:text-neutral-500">
             {t('overduePayments.empty')}
           </p>
         </div>
       ) : (
-        <div className="divide-y divide-gray-100 dark:divide-white/5">
+        <div className="divide-y divide-gray-100 dark:divide-white/5 flex-1 overflow-y-auto min-h-0">
           {list.map((item, index) => {
             const monthLabel = item.payment_month
               ? format(parseISO(item.payment_month), 'MMM yyyy', { locale: tr })
@@ -110,7 +112,7 @@ export function OverduePaymentsList() {
                 key={item.payment_id}
                 to={`/subscriptions/${item.subscription_id}`}
                 className={cn(
-                  'feed-row flex items-center gap-3 px-5 min-h-[44px] py-2.5',
+                  'feed-row flex items-center gap-3 px-5 py-2',
                   'hover:bg-gray-50 dark:hover:bg-white/5 transition-colors group'
                 )}
                 style={{ '--row-delay': `${Math.min(index, 5) * 50}ms` }}
@@ -140,6 +142,17 @@ export function OverduePaymentsList() {
               </Link>
             );
           })}
+
+          {/* Overflow indicator */}
+          {hasMore && (
+            <Link
+              to="/subscriptions"
+              className="flex items-center justify-center gap-1 px-5 py-2 text-xs font-medium text-neutral-400 hover:text-blue-500 transition-colors"
+            >
+              +{allItems.length - 5} {t('feed.moreItems')}
+              <ChevronRight className="w-3 h-3" />
+            </Link>
+          )}
         </div>
       )}
     </div>

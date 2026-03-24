@@ -7,6 +7,7 @@ import { subscriptionKeys } from '../subscriptions/hooks';
 import {
   fetchCustomers,
   fetchCustomer,
+  fetchCustomerRelatedAuditLogs,
   createCustomer,
   updateCustomer,
   deleteCustomer,
@@ -39,6 +40,15 @@ export function useCustomer(id) {
     queryKey: customerKeys.detail(id),
     queryFn: () => fetchCustomer(id),
     enabled: !!id,
+  });
+}
+
+export function useCustomerAuditLogs(customerId, subscriptionIds, enabled) {
+  const sortedIds = [...(subscriptionIds || [])].sort().join(',');
+  return useQuery({
+    queryKey: [...customerKeys.detail(customerId), 'auditLogs', sortedIds],
+    queryFn: () => fetchCustomerRelatedAuditLogs(customerId, subscriptionIds || []),
+    enabled: !!customerId && enabled,
   });
 }
 
@@ -88,7 +98,6 @@ export function useUpdateCustomer() {
  */
 export function useImportCustomersAndSites({ onProgress } = {}) {
   const queryClient = useQueryClient();
-  const { t } = useTranslation('common');
 
   return useMutation({
     mutationFn: (rows) => importCustomersAndSitesFromRows(rows, { onProgress }),

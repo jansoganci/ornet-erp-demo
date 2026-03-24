@@ -29,6 +29,8 @@ export function QuickActionsBar({ isAdmin = false }) {
         <Link
           key={href}
           to={href}
+          title={label}
+          aria-label={label}
           className={cn(
             'flex items-center gap-1.5 flex-shrink-0 rounded-lg border px-2.5 py-1.5',
             'text-xs font-medium whitespace-nowrap transition-all duration-150 hover:-translate-y-px',
@@ -46,7 +48,7 @@ export function QuickActionsBar({ isAdmin = false }) {
           )}
         >
           <Icon className="w-3.5 h-3.5 flex-shrink-0" />
-          {label}
+          <span className="hidden sm:inline">{label}</span>
         </Link>
       ))}
     </div>

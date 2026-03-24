@@ -115,7 +115,7 @@ export function CustomerLocationsTab() {
             ))}
           </div>
         ) : (
-          <Card className="p-8 text-center border-dashed">
+          <Card className="p-4 sm:p-6 lg:p-8 text-center border-dashed">
             <MapPin className="w-12 h-12 text-neutral-300 dark:text-neutral-700 mx-auto mb-3" />
             <p className="text-neutral-500 dark:text-neutral-400">{t('sites.noSites')}</p>
             {canWrite && (

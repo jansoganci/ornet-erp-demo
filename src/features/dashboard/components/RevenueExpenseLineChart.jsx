@@ -59,9 +59,9 @@ export function RevenueExpenseLineChart() {
     : [];
 
   return (
-    <div className="rounded-xl border overflow-hidden bg-white border-gray-200 dark:bg-gray-800/40 dark:backdrop-blur-sm dark:border-white/10">
+    <div className="rounded-xl border overflow-hidden bg-white border-gray-200 dark:bg-gray-800/40 dark:backdrop-blur-sm dark:border-white/10 flex flex-col min-h-0 h-full">
       {/* Header */}
-      <div className="px-5 py-4 border-b border-gray-100 dark:border-white/5">
+      <div className="px-5 py-3 border-b border-gray-100 dark:border-white/5 flex-shrink-0">
         <h3 className="text-xs font-semibold uppercase tracking-widest text-neutral-500 dark:text-neutral-500">
           {t('sections.revenueChart')}
         </h3>
@@ -71,8 +71,8 @@ export function RevenueExpenseLineChart() {
       {isLoading ? (
         <ChartSkeleton />
       ) : (
-        <div className="px-2 py-4">
-          <ResponsiveContainer width="100%" height={180}>
+        <div className="px-2 py-4 flex-1 min-h-0">
+          <ResponsiveContainer width="100%" height="100%" minHeight={180}>
             <LineChart data={chartData} margin={{ top: 4, right: 12, left: 0, bottom: 0 }}>
               <CartesianGrid
                 strokeDasharray="3 3"

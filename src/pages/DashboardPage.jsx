@@ -151,17 +151,16 @@ export function DashboardPage() {
             <CardSkeleton count={1} className="h-64" />
           </div>
         </div>
-        {/* Zone E — Checklist + Overdue skeleton */}
+        {/* Zone E — Chart + Tasks/Overdue stacked skeleton */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-          <div className="lg:col-span-6">
-            <CardSkeleton count={1} className="h-48" />
+          <div className="lg:col-span-8">
+            <CardSkeleton count={1} className="h-80" />
           </div>
-          <div className="lg:col-span-6">
-            <CardSkeleton count={1} className="h-48" />
+          <div className="lg:col-span-4 flex flex-col gap-4">
+            <CardSkeleton count={1} className="h-[calc(50%-0.5rem)]" />
+            <CardSkeleton count={1} className="h-[calc(50%-0.5rem)]" />
           </div>
         </div>
-        {/* Zone F — Revenue chart skeleton */}
-        <CardSkeleton count={1} className="h-56" />
       </PageContainer>
     );
   }
@@ -190,8 +189,8 @@ export function DashboardPage() {
     <PageContainer maxWidth="full" padding="compact" className="space-y-5">
 
       {/* ── Welcome + Currency + Shortcuts ───────────────────────────────── */}
-      <div className="flex items-start justify-between gap-4">
-        <div className="min-w-0">
+      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+        <div className="min-w-0 flex-1">
           <h1 className="text-base font-semibold text-neutral-900 dark:text-neutral-50 leading-snug">
             {greeting}, {userName}
           </h1>
@@ -202,7 +201,9 @@ export function DashboardPage() {
             <QuickActionsBar isAdmin={isAdmin} />
           </div>
         </div>
-        <CurrencyWidget />
+        <div className="w-full md:w-auto md:flex-shrink-0">
+          <CurrencyWidget />
+        </div>
       </div>
 
       {/* ── ZONE A — KPI Strip ────────────────────────────────────────────── */}
@@ -295,23 +296,6 @@ export function DashboardPage() {
           ]}
         />
         <KpiCard
-          title={t('sparkline.subscriptions')}
-          value={subStats?.active_count ?? 0}
-          trend="+5"
-          chartType="positive"
-          icon={CreditCard}
-          loading={isSubStatsLoading}
-          chartData={[
-            { name: 'Eyl', value: 210 },
-            { name: 'Eki', value: 215 },
-            { name: 'Kas', value: 218 },
-            { name: 'Ara', value: 220 },
-            { name: 'Oca', value: 224 },
-            { name: 'Şub', value: 226 },
-            { name: 'Mar', value: subStats?.active_count ?? 231 },
-          ]}
-        />
-        <KpiCard
           title={t('sparkline.mrrTrend')}
           value={new Intl.NumberFormat('tr-TR', {
             style: 'currency',
@@ -356,18 +340,24 @@ export function DashboardPage() {
         </div>
       </div>
 
-      {/* ── ZONE E — Task checklist + Overdue payments ───────────────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-        <div className="lg:col-span-6">
-          <TodayTaskChecklist />
+      {/* ── ZONE E — Chart (8) + Tasks & Overdue stacked (4) ────────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:auto-rows-fr">
+        {/* Left: Revenue/Expense chart — stretches to match right column */}
+        <div className="lg:col-span-8 flex">
+          <div className="flex-1 min-h-0">
+            <RevenueExpenseLineChart />
+          </div>
         </div>
-        <div className="lg:col-span-6">
-          <OverduePaymentsList />
+        {/* Right: Tasks + Overdue stacked — each takes exactly half */}
+        <div className="lg:col-span-4 flex flex-col gap-4">
+          <div className="flex-1 flex flex-col min-h-0">
+            <TodayTaskChecklist />
+          </div>
+          <div className="flex-1 flex flex-col min-h-0">
+            <OverduePaymentsList />
+          </div>
         </div>
       </div>
-
-      {/* ── ZONE F — Revenue / Expense line chart ────────────────────────── */}
-      <RevenueExpenseLineChart />
 
     </PageContainer>
   );

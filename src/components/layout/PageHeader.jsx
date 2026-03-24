@@ -44,12 +44,12 @@ export function PageHeader({
     <div className={cn('space-y-4', className)}>
       {/* Breadcrumbs */}
       {breadcrumbs && breadcrumbs.length > 0 && (
-        <nav className="flex items-center gap-2 text-sm" aria-label="Breadcrumb">
+        <nav className="flex items-center gap-2 text-sm overflow-x-auto scrollbar-hide" aria-label="Breadcrumb">
           {breadcrumbs.map((crumb, index) => {
             const isLast = index === breadcrumbs.length - 1;
             
             return (
-              <div key={index} className="flex items-center gap-2">
+              <div key={index} className="flex items-center gap-2 shrink-0">
                 {index > 0 && (
                   <ChevronRight className="w-4 h-4 text-neutral-400" />
                 )}

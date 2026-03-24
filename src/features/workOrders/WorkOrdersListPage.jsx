@@ -1,20 +1,33 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Plus, ClipboardList, Search, Filter, Calendar, Building2, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
-import { PageContainer, PageHeader } from '../../components/layout';
+import {
+  ClipboardList,
+  Filter,
+  Calendar,
+  Building2,
+  ChevronLeft,
+  ChevronRight,
+  CirclePlus,
+  ListFilter,
+  FolderOpen,
+  Wrench,
+  CircleCheck,
+} from 'lucide-react';
+import { PageContainer } from '../../components/layout';
 import {
   Button,
   SearchInput,
-  Select,
+  ListboxSelect,
   Table,
   Badge,
   Card,
   EmptyState,
-  Skeleton,
   ErrorState,
   TableSkeleton,
-  DateRangeFilter,
+  KpiCard,
+  Modal,
+  IconButton,
 } from '../../components/ui';
 import { 
   formatDate, 
@@ -131,10 +144,13 @@ export function WorkOrdersListPage() {
     {
       header: t('workOrders:list.columns.customer'),
       accessor: 'company_name',
+      cellClassName: 'whitespace-normal align-top max-w-[min(280px,40vw)]',
       render: (value, row) => (
-        <div className="min-w-[150px]">
-          <p className="font-bold text-neutral-900 dark:text-neutral-100 truncate">{value}</p>
-          <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate">
+        <div className="min-w-[140px]">
+          <p className="line-clamp-2 break-words font-bold text-neutral-900 dark:text-neutral-100">
+            {value}
+          </p>
+          <p className="line-clamp-2 break-words text-xs text-neutral-500 dark:text-neutral-400">
             {row.site_name || row.site_address}
           </p>
           {row.account_no && (
@@ -234,24 +250,115 @@ export function WorkOrdersListPage() {
     },
   ];
 
+  const kpiPlaceholder = t('workOrders:list.kpi.placeholder');
+  const showKpiValues = !isLoading && !error;
+
+  const [filterOpen, setFilterOpen] = useState(false);
+  const activeFilterCount = [
+    status !== 'all',
+    work_type !== 'all',
+    yearParam,
+    monthParam,
+  ].filter(Boolean).length;
+
   return (
     <PageContainer maxWidth="full" padding="default" className="space-y-6">
-      <PageHeader
-        title={t('workOrders:list.title')}
-        actions={
-          <Button 
-            onClick={() => navigate('/work-orders/new')}
-            leftIcon={<Plus className="w-4 h-4" />}
-            className="shadow-lg shadow-primary-600/20"
-          >
-            {t('workOrders:list.addButton')}
-          </Button>
-        }
-      />
+      {/* Desktop: original header */}
+      <div className="hidden lg:flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <div className="min-w-0">
+          <p className="mb-1 text-[11px] font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
+            {t('workOrders:list.eyebrow')}
+          </p>
+          <h1 className="font-heading text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-50 sm:text-3xl">
+            {t('workOrders:list.title')}
+          </h1>
+        </div>
+        <Button
+          size="lg"
+          onClick={() => navigate('/work-orders/new')}
+          leftIcon={<CirclePlus className="h-5 w-5" />}
+          className="w-full shrink-0 rounded-xl shadow-lg shadow-primary-600/20 sm:w-auto"
+        >
+          {t('workOrders:list.addButton')}
+        </Button>
+      </div>
 
-      {/* Filters */}
-      <Card className="p-3 border-neutral-200/60 dark:border-neutral-800/60">
-        <div className="flex flex-col lg:flex-row items-end gap-3">
+      {/* Mobile only: header with Search + Filter */}
+      <div className="lg:hidden space-y-3">
+        <div className="flex items-center gap-2">
+          <div className="min-w-0 flex-1">
+            <h1 className="font-heading text-lg font-bold text-neutral-900 dark:text-neutral-50 truncate">
+              {t('workOrders:list.title')}
+            </h1>
+          </div>
+          <SearchInput
+            placeholder={t('workOrders:list.searchPlaceholder')}
+            value={localSearch}
+            onChange={handleSearch}
+            className="min-w-0 flex-1 max-w-[140px]"
+            size="sm"
+          />
+          <div className="relative shrink-0">
+            <IconButton
+              icon={Filter}
+              variant="secondary"
+              size="md"
+              aria-label={t('common:filters.title')}
+              onClick={() => setFilterOpen(true)}
+              className="border border-neutral-200 dark:border-[#262626] rounded-lg"
+            />
+            {activeFilterCount > 0 && (
+              <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary-600 text-[10px] font-bold text-white px-1">
+                {activeFilterCount}
+              </span>
+            )}
+          </div>
+        </div>
+        <Button
+          size="lg"
+          onClick={() => navigate('/work-orders/new')}
+          leftIcon={<CirclePlus className="h-5 w-5" />}
+          className="w-full rounded-xl shadow-lg shadow-primary-600/20"
+        >
+          {t('workOrders:list.addButton')}
+        </Button>
+      </div>
+
+      {/* Phase A: KPI strip (only “matched” uses existing count; rest are placeholders until phase B) */}
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
+        <KpiCard
+          title={t('workOrders:list.kpi.matched')}
+          value={showKpiValues ? totalCount : kpiPlaceholder}
+          icon={ListFilter}
+          loading={isLoading}
+          className="border-neutral-200/70 bg-neutral-50/90 dark:border-[#262626] dark:bg-[#131313]"
+        />
+        <KpiCard
+          title={t('workOrders:list.kpi.open')}
+          value={kpiPlaceholder}
+          icon={FolderOpen}
+          loading={isLoading}
+          className="border-neutral-200/70 bg-neutral-50/90 dark:border-[#262626] dark:bg-[#131313]"
+        />
+        <KpiCard
+          title={t('workOrders:list.kpi.pendingInstall')}
+          value={kpiPlaceholder}
+          icon={Wrench}
+          loading={isLoading}
+          className="border-neutral-200/70 bg-neutral-50/90 dark:border-[#262626] dark:bg-[#131313]"
+        />
+        <KpiCard
+          title={t('workOrders:list.kpi.completed')}
+          value={kpiPlaceholder}
+          icon={CircleCheck}
+          loading={isLoading}
+          className="border-neutral-200/70 bg-neutral-50/90 dark:border-[#262626] dark:bg-[#131313]"
+        />
+      </div>
+
+      {/* Filters - desktop only */}
+      <Card className="hidden lg:block rounded-xl border border-neutral-200/80 bg-neutral-50/90 p-4 dark:border-[#262626] dark:bg-[#1a1a1a]/80">
+        <div className="flex flex-col items-stretch gap-4 lg:flex-row lg:items-end">
           <div className="flex-1 min-w-[200px] w-full">
             <SearchInput
               placeholder={t('workOrders:list.searchPlaceholder')}
@@ -263,46 +370,114 @@ export function WorkOrdersListPage() {
           </div>
           <div className="flex flex-wrap items-end gap-3 w-full lg:w-auto">
             <div className="w-full sm:flex-1 md:w-44">
-              <Select
-                label={t('workOrders:list.filters.status')}
+              <ListboxSelect
                 options={statusOptions}
                 value={status}
-                onChange={(e) => handleFilterChange('status', e.target.value)}
+                onChange={(v) => handleFilterChange('status', v)}
+                placeholder={t('workOrders:list.filters.status')}
                 leftIcon={<Filter className="w-4 h-4" />}
                 size="sm"
               />
             </div>
             <div className="w-full sm:flex-1 md:w-44">
-              <Select
-                label={t('workOrders:list.filters.workType')}
+              <ListboxSelect
                 options={typeOptions}
                 value={work_type}
-                onChange={(e) => handleFilterChange('work_type', e.target.value)}
+                onChange={(v) => handleFilterChange('work_type', v)}
+                placeholder={t('workOrders:list.filters.workType')}
                 leftIcon={<ClipboardList className="w-4 h-4" />}
                 size="sm"
               />
             </div>
             <div className="w-full sm:flex-1 md:w-32">
-              <Select
-                label={t('workOrders:list.filters.selectYear')}
+              <ListboxSelect
                 options={yearOptions}
-                value={yearParam}
-                onChange={(e) => handleFilterChange('year', e.target.value)}
+                value={yearParam || 'all'}
+                onChange={(v) => handleFilterChange('year', v)}
+                placeholder={t('workOrders:list.filters.selectYear')}
                 size="sm"
               />
             </div>
             <div className="w-full sm:flex-1 md:w-36">
-              <Select
-                label={t('workOrders:list.filters.selectMonth')}
+              <ListboxSelect
                 options={monthOptions}
-                value={monthParam}
-                onChange={(e) => handleFilterChange('month', e.target.value)}
+                value={monthParam || 'all'}
+                onChange={(v) => handleFilterChange('month', v)}
+                placeholder={t('workOrders:list.filters.selectMonth')}
                 size="sm"
               />
             </div>
           </div>
         </div>
       </Card>
+
+      {/* Filter Modal - mobile only */}
+      <Modal
+        open={filterOpen}
+        onClose={() => setFilterOpen(false)}
+        title={t('common:filters.title')}
+        size="sm"
+        footer={
+          <div className="flex justify-between w-full">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setSearchParams((prev) => {
+                  const next = new URLSearchParams(prev);
+                  ['status', 'work_type', 'year', 'month'].forEach((k) => next.delete(k));
+                  next.delete('page');
+                  return next;
+                });
+              }}
+            >
+              {t('common:filters.clear')}
+            </Button>
+            <Button variant="primary" size="sm" onClick={() => setFilterOpen(false)}>
+              {t('common:actions.done')}
+            </Button>
+          </div>
+        }
+      >
+        <div className="grid grid-cols-2 gap-4 py-2">
+          <div className="col-span-2">
+            <ListboxSelect
+              options={statusOptions}
+              value={status}
+              onChange={(v) => handleFilterChange('status', v)}
+              placeholder={t('workOrders:list.filters.status')}
+              size="sm"
+            />
+          </div>
+          <div className="col-span-2">
+            <ListboxSelect
+              options={typeOptions}
+              value={work_type}
+              onChange={(v) => handleFilterChange('work_type', v)}
+              placeholder={t('workOrders:list.filters.workType')}
+              size="sm"
+            />
+          </div>
+          <div>
+            <ListboxSelect
+              options={yearOptions}
+              value={yearParam || 'all'}
+              onChange={(v) => handleFilterChange('year', v)}
+              placeholder={t('workOrders:list.filters.selectYear')}
+              size="sm"
+            />
+          </div>
+          <div>
+            <ListboxSelect
+              options={monthOptions}
+              value={monthParam || 'all'}
+              onChange={(v) => handleFilterChange('month', v)}
+              placeholder={t('workOrders:list.filters.selectMonth')}
+              size="sm"
+            />
+          </div>
+        </div>
+      </Modal>
 
       {isLoading ? (
         <div className="mt-6">
@@ -319,7 +494,9 @@ export function WorkOrdersListPage() {
           onAction={() => navigate('/work-orders/new')}
         />
       ) : (
-        <div className={`bg-white dark:bg-[#171717] rounded-2xl border border-neutral-200 dark:border-[#262626] overflow-hidden shadow-sm transition-opacity ${isFetching && !isLoading ? 'opacity-70' : ''}`}>
+        <div
+          className={`overflow-hidden rounded-xl border border-neutral-200/90 bg-white shadow-xl shadow-neutral-900/5 transition-opacity dark:border-[#262626] dark:bg-[#0a0a0a] dark:shadow-black/40 ${isFetching && !isLoading ? 'opacity-70' : ''}`}
+        >
           <Table
             columns={columns}
             data={workOrders}
@@ -327,7 +504,7 @@ export function WorkOrdersListPage() {
             className="border-none"
           />
           {pageCount > 1 && (
-            <div className="flex items-center justify-between px-4 py-3 border-t border-neutral-200 dark:border-neutral-800">
+            <div className="flex items-center justify-between border-t border-neutral-200/90 bg-neutral-50/50 px-4 py-3 dark:border-[#262626] dark:bg-[#141414]/80">
               <span className="text-sm text-neutral-500 dark:text-neutral-400">
                 {page * pageSize + 1}–{Math.min((page + 1) * pageSize, totalCount)} / {totalCount} {t('workOrders:list.unit')}
               </span>
@@ -335,7 +512,7 @@ export function WorkOrdersListPage() {
                 <button
                   onClick={() => handlePageChange(page - 1)}
                   disabled={page === 0}
-                  className="p-1.5 rounded-lg text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                  className="p-2.5 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
@@ -345,7 +522,7 @@ export function WorkOrdersListPage() {
                 <button
                   onClick={() => handlePageChange(page + 1)}
                   disabled={page >= pageCount - 1}
-                  className="p-1.5 rounded-lg text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                  className="p-2.5 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                 >
                   <ChevronRight className="w-4 h-4" />
                 </button>

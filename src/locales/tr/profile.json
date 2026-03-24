@@ -1,6 +1,33 @@
 {
   "title": "Profil",
   "subtitle": "Hesap bilgilerinizi görüntüleyin ve düzenleyin",
+  "accountSettings": {
+    "title": "Hesap Ayarları",
+    "subtitle": "Profil bilgilerinizi ve güvenliğinizi yönetin."
+  },
+  "usersManagement": {
+    "title": "Kullanıcı Yönetimi",
+    "subtitle": "Erişim listesi",
+    "searchPlaceholder": "İsim veya rol ile ara…",
+    "filterRole": "Rol filtresi",
+    "filterAllRoles": "Tüm roller",
+    "columns": {
+      "user": "Kullanıcı",
+      "role": "Rol"
+    },
+    "empty": "Kullanıcı bulunamadı.",
+    "loadError": "Kullanıcı listesi yüklenemedi."
+  },
+  "accountCard": {
+    "title": "Hesap Bilgileri"
+  },
+  "securityCard": {
+    "title": "Güvenlik",
+    "subtitle": "Oturum şifrenizi güncelleyin"
+  },
+  "session": {
+    "active": "Aktif"
+  },
   "fields": {
     "fullName": "Ad Soyad",
     "email": "E-posta",

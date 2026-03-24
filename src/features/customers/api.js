@@ -116,3 +116,37 @@ export async function deleteCustomer(id) {
   if (error) throw error;
   return { success: true };
 }
+
+/**
+ * Audit log rows related to a customer (customer row + subscription rows).
+ * RLS: admin-only SELECT on audit_logs.
+ */
+export async function fetchCustomerRelatedAuditLogs(customerId, subscriptionIds = []) {
+  const customerQuery = supabase
+    .from('audit_logs')
+    .select('*')
+    .eq('table_name', 'customers')
+    .eq('record_id', customerId)
+    .order('created_at', { ascending: false })
+    .limit(40);
+
+  const subscriptionQuery =
+    subscriptionIds.length > 0
+      ? supabase
+          .from('audit_logs')
+          .select('*')
+          .eq('table_name', 'subscriptions')
+          .in('record_id', subscriptionIds)
+          .order('created_at', { ascending: false })
+          .limit(80)
+      : Promise.resolve({ data: [], error: null });
+
+  const [cRes, sRes] = await Promise.all([customerQuery, subscriptionQuery]);
+  if (cRes.error) throw cRes.error;
+  if (sRes.error) throw sRes.error;
+
+  const merged = [...(cRes.data || []), ...(sRes.data || [])].sort(
+    (a, b) => new Date(b.created_at) - new Date(a.created_at)
+  );
+  return merged.slice(0, 100);
+}

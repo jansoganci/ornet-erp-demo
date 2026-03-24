@@ -1,18 +1,12 @@
-import { Wrench, Calendar, Clock, CreditCard, Users, Edit, Trash2, ChevronLeft } from 'lucide-react';
+import { Wrench, Edit, Trash2, ChevronLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { Button, IconButton, Badge } from '../../../components/ui';
-import { formatDate, formatCurrency, workOrderStatusVariant } from '../../../lib/utils';
+import { workOrderStatusVariant } from '../../../lib/utils';
 
 export function WorkOrderHero({ workOrder, onEdit, onDelete }) {
   const { t } = useTranslation(['workOrders', 'common']);
 
-  const currency = workOrder.currency ?? 'TRY';
-  const amountStr =
-    workOrder.amount && workOrder.amount > 0
-      ? formatCurrency(workOrder.amount, currency)
-      : '—';
-  const assignedCount = workOrder.assigned_workers?.length ?? 0;
   const title = `${t(`common:workType.${workOrder.work_type}`)}${workOrder.form_no ? ` #${workOrder.form_no}` : ''}`;
   const subtitle = [workOrder.company_name, workOrder.site_name].filter(Boolean).join(' — ') || '—';
 
@@ -51,7 +45,7 @@ export function WorkOrderHero({ workOrder, onEdit, onDelete }) {
       {/* Hero Card */}
       <div className="rounded-xl border border-neutral-200 dark:border-[#262626] bg-white dark:bg-[#171717] p-5 shadow-sm">
         {/* Identity row */}
-        <div className="flex items-start gap-4 mb-5">
+        <div className="flex items-start gap-4">
           <div className="p-3 rounded-xl bg-primary-100 dark:bg-primary-950/40 flex-shrink-0">
             <Wrench className="w-7 h-7 text-primary-600 dark:text-primary-400" />
           </div>
@@ -77,59 +71,6 @@ export function WorkOrderHero({ workOrder, onEdit, onDelete }) {
                   {t(`workOrders:priorities.${workOrder.priority}`)}
                 </Badge>
               </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Stats row */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          <div className="flex items-center gap-2.5 p-3 rounded-lg bg-neutral-50 dark:bg-neutral-800/50">
-            <Calendar className="w-4 h-4 text-neutral-500 dark:text-neutral-400 flex-shrink-0" />
-            <div className="min-w-0">
-              <p className="text-[10px] uppercase font-bold text-neutral-400 dark:text-neutral-500 tracking-wider">
-                {t('workOrders:form.fields.scheduledDate')}
-              </p>
-              <p className="text-sm font-bold text-neutral-900 dark:text-neutral-50 mt-0.5 tabular-nums">
-                {workOrder.scheduled_date ? formatDate(workOrder.scheduled_date) : '—'}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2.5 p-3 rounded-lg bg-neutral-50 dark:bg-neutral-800/50">
-            <Clock className="w-4 h-4 text-neutral-500 dark:text-neutral-400 flex-shrink-0" />
-            <div className="min-w-0">
-              <p className="text-[10px] uppercase font-bold text-neutral-400 dark:text-neutral-500 tracking-wider">
-                {t('workOrders:form.fields.scheduledTime')}
-              </p>
-              <p className="text-sm font-bold text-neutral-900 dark:text-neutral-50 mt-0.5">
-                {workOrder.scheduled_time || '—'}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2.5 p-3 rounded-lg bg-neutral-50 dark:bg-neutral-800/50">
-            <CreditCard className="w-4 h-4 text-neutral-500 dark:text-neutral-400 flex-shrink-0" />
-            <div className="min-w-0">
-              <p className="text-[10px] uppercase font-bold text-neutral-400 dark:text-neutral-500 tracking-wider">
-                {t('common:fields.amount')}
-              </p>
-              <p className="text-sm font-bold text-neutral-900 dark:text-neutral-50 mt-0.5 tabular-nums">
-                {amountStr}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2.5 p-3 rounded-lg bg-neutral-50 dark:bg-neutral-800/50">
-            <Users className="w-4 h-4 text-neutral-500 dark:text-neutral-400 flex-shrink-0" />
-            <div className="min-w-0">
-              <p className="text-[10px] uppercase font-bold text-neutral-400 dark:text-neutral-500 tracking-wider">
-                {t('workOrders:form.fields.assignedTo')}
-              </p>
-              <p className="text-sm font-bold text-neutral-900 dark:text-neutral-50 mt-0.5">
-                {assignedCount > 0
-                  ? t('workOrders:detail.assignedCount', { count: assignedCount })
-                  : '—'}
-              </p>
             </div>
           </div>
         </div>

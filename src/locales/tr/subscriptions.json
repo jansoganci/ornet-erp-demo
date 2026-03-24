@@ -54,8 +54,13 @@
   },
   "detail": {
     "title": "Abonelik Detayı",
+    "heroEyebrow": "Abonelik özeti",
+    "viewCustomer": "Müşteri profili",
     "sections": {
       "customerSite": "Müşteri & Lokasyon",
+      "quickInfo": "Müşteri Bilgileri",
+      "notesAndRevision": "Notlar ve Revizyon",
+      "extraInfo": "Detay Bilgiler",
       "payments": "Ödeme Takvimi",
       "pricing": "Fiyatlandırma",
       "paymentMethod": "Ödeme Yöntemi",
@@ -65,6 +70,8 @@
       "statusHistory": "Durum Geçmişi",
       "staticIp": "Statik IP"
     },
+    "callButton": "Ara",
+    "moreOptions": "Seçenekler",
     "fields": {
       "subtotal": "Ara Toplam",
       "vatAmount": "KDV",
@@ -94,7 +101,35 @@
     "officialInvoiceResmi": "Faturalı",
     "officialInvoiceGayri": "Faturasız",
     "noDescription": "Açıklama yok",
-    "noNotes": "Not yok"
+    "noNotes": "Not yok",
+    "tabs": {
+      "workOrders": "İş Emirleri",
+      "assets": "Ekipmanlar"
+    },
+    "tabContent": {
+      "searchPlaceholder": "Ara...",
+      "exportCsv": "CSV İndir",
+      "workOrders": {
+        "empty": "Bu lokasyonda henüz iş emri bulunmuyor.",
+        "exportFilename": "lokasyon_is_emirleri",
+        "columns": {
+          "workType": "İş Tipi",
+          "description": "Açıklama",
+          "status": "Durum",
+          "scheduledDate": "Tarih",
+          "assignedWorkers": "Personel"
+        }
+      },
+      "assets": {
+        "empty": "Bu lokasyonda henüz ekipman bulunmuyor.",
+        "exportFilename": "lokasyon_ekipmanlari",
+        "columns": {
+          "equipmentName": "Ekipman",
+          "quantity": "Adet",
+          "installationDate": "Kurulum Tarihi"
+        }
+      }
+    }
   },
   "form": {
     "addTitle": "Yeni Abonelik",

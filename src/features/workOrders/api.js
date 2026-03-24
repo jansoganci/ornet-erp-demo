@@ -110,6 +110,35 @@ export async function fetchWorkOrder(id) {
   return data;
 }
 
+const WORK_ORDER_AUDIT_LIMIT = 50;
+
+/**
+ * Audit timeline for a work order. RLS: audit_select_work_orders + admin audit_select.
+ */
+export async function fetchWorkOrderAuditLogs(workOrderId) {
+  const { data, error } = await supabase
+    .from('audit_logs')
+    .select(
+      `
+      id,
+      action,
+      old_values,
+      new_values,
+      user_id,
+      description,
+      created_at,
+      profiles ( full_name )
+    `
+    )
+    .eq('table_name', 'work_orders')
+    .eq('record_id', workOrderId)
+    .order('created_at', { ascending: false })
+    .limit(WORK_ORDER_AUDIT_LIMIT);
+
+  if (error) throw error;
+  return data ?? [];
+}
+
 export async function createWorkOrder(data) {
   const { items, materials_discount_percent, ...workOrderData } = data;
 

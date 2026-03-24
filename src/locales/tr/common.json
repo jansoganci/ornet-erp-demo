@@ -17,6 +17,7 @@
     "filter": "Filtrele",
     "back": "Geri",
     "close": "Kapat",
+    "done": "Tamam",
     "confirm": "Onayla",
     "call": "Ara",
     "viewDetails": "Detayları Gör",
@@ -80,6 +81,8 @@
     "justNow": "Az önce"
   },
   "filters": {
+    "title": "Filtreler",
+    "clear": "Temizle",
     "all": "Tümü",
     "allStatuses": "Tüm Durumlar",
     "allTypes": "Tüm Tipler",
@@ -163,6 +166,7 @@
     "tasks": "Yıllık Plan",
     "calendar": "Takvim",
     "materials": "Malzeme Listesi",
+    "technicalGuide": "Teknik Rehber",
     "subscriptions": "Abonelikler",
     "priceRevision": "Fiyat Revizyonu",
     "proposals": "Teklifler",
@@ -193,7 +197,17 @@
       "recurring": "Tekrarlanan Ödemeler",
       "reports": "Raporlar"
     },
-    "account": "Hesap"
+    "account": "Hesap",
+    "quickActions": {
+      "title": "Hızlı Aksiyon",
+      "addIncome": "Gelir Ekle",
+      "addExpense": "Gider Ekle",
+      "newSimCard": "Yeni SIM Kart",
+      "newCustomer": "Yeni Müşteri",
+      "newSubscription": "Yeni Abonelik",
+      "newProposal": "Yeni Teklif",
+      "newWorkOrder": "Yeni İş Emri"
+    }
   },
   "workType": {
     "survey": "Keşif",

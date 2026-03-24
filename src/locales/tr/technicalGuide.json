@@ -1,0 +1,20 @@
+{
+  "title": "Teknik Rehber",
+  "listDescription": "Uzaktan destek ve sahada sık tekrarlanan işler için adım adım notlar. Yeni konular eklendikçe burada listelenir.",
+  "categories": {
+    "camera": "Kamera sistemleri",
+    "alarm": "Alarm sistemleri"
+  },
+  "list": {
+    "emptyCategory": "Bu başlıkta henüz konu yok.",
+    "readMore": "Devamını oku"
+  },
+  "article": {
+    "backToList": "Teknik Rehbere dön"
+  },
+  "rich": {
+    "flowCaption": "İş akışı (özet)",
+    "stepsHeading": "Operasyon adımları",
+    "goldenRulesTitle": "Altın kurallar — işe başlamadan önce"
+  }
+}

@@ -242,7 +242,7 @@ export function WorkOrderFormPage() {
         <input type="hidden" {...register('site_id')} />
 
         {/* 1. Customer & Site Selection */}
-        <Card className="rounded-[2rem] p-8 overflow-visible border-neutral-200/60 dark:border-[#262626] shadow-sm">
+        <Card className="rounded-[2rem] p-4 sm:p-6 lg:p-8 overflow-visible border-neutral-200/60 dark:border-[#262626] shadow-sm">
           <CustomerSiteSelector
             selectedCustomerId={selectedCustomerId}
             selectedSiteId={selectedSiteId}
@@ -392,7 +392,7 @@ export function WorkOrderFormPage() {
         </Card>
 
         {/* 3. Materials */}
-        <Card className="rounded-[2rem] p-8 overflow-hidden border-neutral-200/60 dark:border-[#262626] shadow-sm">
+        <Card className="rounded-[2rem] p-4 sm:p-6 lg:p-8 overflow-hidden border-neutral-200/60 dark:border-[#262626] shadow-sm">
           <WorkOrderItemsEditor
             control={control}
             register={register}
@@ -406,7 +406,7 @@ export function WorkOrderFormPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* 4. Workers */}
-          <Card className="rounded-[2rem] p-8 border-neutral-200/60 dark:border-[#262626] shadow-sm">
+          <Card className="rounded-[2rem] p-4 sm:p-6 lg:p-8 border-neutral-200/60 dark:border-[#262626] shadow-sm">
             <Controller
               name="assigned_to"
               control={control}
@@ -444,7 +444,7 @@ export function WorkOrderFormPage() {
         </div>
 
         {/* Floating Action Bar — Mobile only (hero buttons on desktop) */}
-        <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/80 dark:bg-[#171717]/80 backdrop-blur-md border-t border-neutral-200 dark:border-[#262626] z-50 flex gap-3 lg:hidden">
+        <div className="fixed bottom-0 left-0 right-0 px-4 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] bg-white/80 dark:bg-[#171717]/80 backdrop-blur-md border-t border-neutral-200 dark:border-[#262626] z-50 flex gap-3 lg:hidden">
           <Button
             type="button"
             variant="outline"

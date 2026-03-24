@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Card, Select } from '../../../../components/ui';
+import { Card, ListboxSelect } from '../../../../components/ui';
 import { ViewModeToggle } from '../ViewModeToggle';
 
 const MONTH_NAMES = [
@@ -32,19 +32,20 @@ export function FinanceDashboardFilters({ year, month, viewMode, onYearChange, o
     <Card className="p-4 border-neutral-200/60 dark:border-neutral-800/60">
       <div className="flex flex-col md:flex-row gap-3 flex-wrap items-end">
         <div className="w-full md:w-28">
-          <Select
-            label={t('dashboardV2.filters.year')}
+          <ListboxSelect
             options={yearOptions}
             value={String(year)}
-            onChange={(e) => onYearChange(Number(e.target.value))}
+            onChange={(v) => onYearChange(Number(v))}
+            placeholder={t('dashboardV2.filters.year')}
           />
         </div>
         <div className="w-full md:w-36">
-          <Select
-            label={t('dashboardV2.filters.month')}
+          <ListboxSelect
             options={monthOptions}
             value={month ? String(month) : ''}
-            onChange={(e) => onMonthChange(e.target.value ? Number(e.target.value) : null)}
+            onChange={(v) => onMonthChange(v ? Number(v) : null)}
+            placeholder={t('dashboardV2.filters.month')}
+            emptyValues={['']}
           />
         </div>
         <div className="flex items-end">

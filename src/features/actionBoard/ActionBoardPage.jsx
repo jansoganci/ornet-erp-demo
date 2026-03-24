@@ -1,3 +1,4 @@
+import { Children, cloneElement } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { AlertCircle, CheckCircle2, ChevronRight, RefreshCw } from 'lucide-react';
@@ -48,9 +49,25 @@ function Section({ title, count, variant = 'error', children, empty, emptyText, 
           <p className="text-sm text-success-700 dark:text-success-300">{emptyText}</p>
         </Card>
       ) : (
-        <div className="bg-white dark:bg-[#171717] rounded-2xl border border-neutral-200 dark:border-[#262626] overflow-hidden shadow-sm">
-          {children}
-        </div>
+        <>
+          {/* Desktop: list layout (unchanged) */}
+          <div className="hidden lg:block bg-white dark:bg-[#171717] rounded-2xl border border-neutral-200 dark:border-[#262626] overflow-hidden shadow-sm">
+            {children}
+          </div>
+          {/* Mobile: 2 cols, Tablet: 3 cols — each item as card */}
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 lg:hidden">
+            {Children.map(children, (child) => (
+              <Card
+                key={child.key}
+                variant="interactive"
+                onClick={child.props.onClick}
+                className="p-3"
+              >
+                {cloneElement(child, { asCard: true })}
+              </Card>
+            ))}
+          </div>
+        </>
       )}
     </div>
   );
@@ -59,16 +76,19 @@ function Section({ title, count, variant = 'error', children, empty, emptyText, 
 /* ─────────────────────────────────────────────
    Row components
 ───────────────────────────────────────────── */
-function WorkOrderRow({ item, onClick }) {
+function WorkOrderRow({ item, onClick, asCard }) {
   const { t } = useTranslation(['actionBoard', 'common']);
 
   return (
     <div
-      className="flex items-center justify-between gap-4 px-4 py-3 border-b border-neutral-100 dark:border-[#262626] last:border-b-0 hover:bg-neutral-50 dark:hover:bg-[#1c1c1c] transition-colors cursor-pointer group"
-      onClick={onClick}
+      className={asCard
+        ? 'flex flex-col gap-2 p-0 border-0'
+        : 'flex items-center justify-between gap-4 px-4 py-3 border-b border-neutral-100 dark:border-[#262626] last:border-b-0 hover:bg-neutral-50 dark:hover:bg-[#1c1c1c] transition-colors cursor-pointer group'
+      }
+      onClick={asCard ? undefined : onClick}
     >
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-neutral-900 dark:text-neutral-50 truncate">
+        <p className={asCard ? 'text-sm font-medium text-neutral-900 dark:text-neutral-50 line-clamp-2' : 'text-sm font-medium text-neutral-900 dark:text-neutral-50 truncate'}>
           {item.company_name}
         </p>
         <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate">
@@ -76,28 +96,33 @@ function WorkOrderRow({ item, onClick }) {
         </p>
       </div>
 
-      <div className="flex-shrink-0 text-right">
+      <div className={asCard ? 'flex-shrink-0' : 'flex-shrink-0 text-right'}>
         <p className="text-xs text-neutral-500 dark:text-neutral-400">{formatDate(item.scheduled_date)}</p>
         <p className="text-xs font-medium text-error-600 dark:text-error-400">
           {t('actionBoard:columns.daysLate', { count: item.daysLate })}
         </p>
       </div>
 
-      <ChevronRight className="w-4 h-4 text-neutral-400 group-hover:translate-x-0.5 transition-transform flex-shrink-0" />
+      {!asCard && (
+        <ChevronRight className="w-4 h-4 text-neutral-400 group-hover:translate-x-0.5 transition-transform flex-shrink-0" />
+      )}
     </div>
   );
 }
 
-function PaymentRow({ item, onClick }) {
+function PaymentRow({ item, onClick, asCard }) {
   const { t } = useTranslation('actionBoard');
 
   return (
     <div
-      className="flex items-center justify-between gap-4 px-4 py-3 border-b border-neutral-100 dark:border-[#262626] last:border-b-0 hover:bg-neutral-50 dark:hover:bg-[#1c1c1c] transition-colors cursor-pointer group"
-      onClick={onClick}
+      className={asCard
+        ? 'flex flex-col gap-2 p-0 border-0'
+        : 'flex items-center justify-between gap-4 px-4 py-3 border-b border-neutral-100 dark:border-[#262626] last:border-b-0 hover:bg-neutral-50 dark:hover:bg-[#1c1c1c] transition-colors cursor-pointer group'
+      }
+      onClick={asCard ? undefined : onClick}
     >
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-neutral-900 dark:text-neutral-50 truncate">
+        <p className={asCard ? 'text-sm font-medium text-neutral-900 dark:text-neutral-50 line-clamp-2' : 'text-sm font-medium text-neutral-900 dark:text-neutral-50 truncate'}>
           {item.company_name}
         </p>
         <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate">
@@ -105,7 +130,7 @@ function PaymentRow({ item, onClick }) {
         </p>
       </div>
 
-      <div className="flex-shrink-0 text-right">
+      <div className={asCard ? 'flex-shrink-0' : 'flex-shrink-0 text-right'}>
         <p className="text-xs font-medium text-neutral-700 dark:text-neutral-300">
           {formatCurrency(item.amount)}
         </p>
@@ -114,21 +139,26 @@ function PaymentRow({ item, onClick }) {
         </p>
       </div>
 
-      <ChevronRight className="w-4 h-4 text-neutral-400 group-hover:translate-x-0.5 transition-transform flex-shrink-0" />
+      {!asCard && (
+        <ChevronRight className="w-4 h-4 text-neutral-400 group-hover:translate-x-0.5 transition-transform flex-shrink-0" />
+      )}
     </div>
   );
 }
 
-function ProposalRow({ item, onClick }) {
+function ProposalRow({ item, onClick, asCard }) {
   const { t } = useTranslation('actionBoard');
 
   return (
     <div
-      className="flex items-center justify-between gap-4 px-4 py-3 border-b border-neutral-100 dark:border-[#262626] last:border-b-0 hover:bg-neutral-50 dark:hover:bg-[#1c1c1c] transition-colors cursor-pointer group"
-      onClick={onClick}
+      className={asCard
+        ? 'flex flex-col gap-2 p-0 border-0'
+        : 'flex items-center justify-between gap-4 px-4 py-3 border-b border-neutral-100 dark:border-[#262626] last:border-b-0 hover:bg-neutral-50 dark:hover:bg-[#1c1c1c] transition-colors cursor-pointer group'
+      }
+      onClick={asCard ? undefined : onClick}
     >
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-neutral-900 dark:text-neutral-50 truncate">
+        <p className={asCard ? 'text-sm font-medium text-neutral-900 dark:text-neutral-50 line-clamp-2' : 'text-sm font-medium text-neutral-900 dark:text-neutral-50 truncate'}>
           {item.customer_company_name}
         </p>
         <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate">
@@ -136,13 +166,15 @@ function ProposalRow({ item, onClick }) {
         </p>
       </div>
 
-      <div className="flex-shrink-0 text-right">
+      <div className={asCard ? 'flex-shrink-0' : 'flex-shrink-0 text-right'}>
         <p className="text-xs text-neutral-500 dark:text-neutral-400">
           {formatDate(item.created_at)}
         </p>
       </div>
 
-      <ChevronRight className="w-4 h-4 text-neutral-400 group-hover:translate-x-0.5 transition-transform flex-shrink-0" />
+      {!asCard && (
+        <ChevronRight className="w-4 h-4 text-neutral-400 group-hover:translate-x-0.5 transition-transform flex-shrink-0" />
+      )}
     </div>
   );
 }
