@@ -105,32 +105,43 @@ export function SimCardImportPage() {
     reader.readAsBinaryString(file);
   };
 
+  // Matching: normalizeForSearch(excelHeader).includes(normalizeForSearch(mapKey))
+  // Canonical keys = same Turkish words, diacritics stripped to ASCII (ş→s, ı→i, ü→u …).
+  // Old files with Turkish-char headers (ANA ŞİRKET, TARİH, MÜŞTERİ ÜNVANI …)
+  // are covered by aliases below — normalizeForSearch folds them to the same bytes.
   const headerMap = {
-    'HAT NO': 'phone_number',
-    'LINE NO': 'phone_number',
-    'ANA ŞİRKET': '_providerName',
-    'PROVIDER COMPANY': '_providerName',
-    'AYLIK MALIYET': 'cost_price',
-    'COST': 'cost_price',
+    // ── Canonical template headers (ASCII, Turkish words without diacritics) ─
+    'HAT NO':            'phone_number',
+    'ANA SIRKET':        '_providerName',
+    'AYLIK MALIYET':     'cost_price',
     'AYLIK SATIS FIYAT': 'sale_price',
-    'SALES': 'sale_price',
-    'SATIS': 'sale_price',
-    'TARİH': 'activation_date_raw',
-    'DATE': 'activation_date_raw',
-    'MÜŞTERİ ÜNVANI': 'customer_label',
-    'CUSTOMER TITLE': 'customer_label',
-    'MUSTERI UNVANI': 'customer_label',
-    'IMSI': 'imsi',
-    'GPRS SERI NO': 'gprs_serial_no',
-    'GPRS SERIAL NO': 'gprs_serial_no',
-    'ACCOUNT NO': 'account_no',
-    'HESAP NO': 'account_no',
-    'OPERATOR': 'operator',
-    'KAPASITE': 'capacity',
-    'CAPACITY': 'capacity',
-    'STATUS': 'status',
-    'DURUM': 'status',
-    'NOTLAR': 'notes',
+    'TARIH':             'activation_date_raw',
+    'MUSTERI UNVANI':    'customer_label',
+    'IMSI':              'imsi',
+    'GPRS SERI NO':      'gprs_serial_no',
+    'ACCOUNT NO':        'account_no',
+    'OPERATOR':          'operator',
+    'KAPASITE':          'capacity',
+    'STATUS':            'status',
+    'NOTLAR':            'notes',
+    // ── Legacy aliases (old Turkish-char headers + old English keys) ──────
+    'ANA ŞİRKET':        '_providerName',
+    'PROVIDER COMPANY':  '_providerName',
+    'COST':              'cost_price',
+    'SALES':             'sale_price',
+    'SATIS':             'sale_price',
+    'TARİH':             'activation_date_raw',
+    'DATE':              'activation_date_raw',
+    'MÜŞTERİ ÜNVANI':   'customer_label',
+    'CUSTOMER TITLE':    'customer_label',
+    'GPRS SERIAL NO':    'gprs_serial_no',
+    'HESAP NO':          'account_no',
+    'LINE NO':           'phone_number',
+    'CAPACITY':          'capacity',
+    'DURUM':             'status',
+    'NOTES':             'notes',
+    'MONTHLY COST':      'cost_price',
+    'MONTHLY SALE PRICE': 'sale_price',
   };
 
   const validateAndFormatData = (rawRows, tFn) => {
@@ -289,11 +300,11 @@ export function SimCardImportPage() {
   const downloadTemplate = () => {
     const headers = [
       'HAT NO',
-      'ANA ŞİRKET',
+      'ANA SIRKET',
       'AYLIK MALIYET',
       'AYLIK SATIS FIYAT',
-      'TARİH',
-      'MÜŞTERİ ÜNVANI',
+      'TARIH',
+      'MUSTERI UNVANI',
       'IMSI',
       'GPRS SERI NO',
       'ACCOUNT NO',

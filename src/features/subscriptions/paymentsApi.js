@@ -70,6 +70,9 @@ export async function recordPayment(paymentId, paymentData) {
     if (error.message?.includes('payment_not_found')) {
       throw new Error(i18next.t('subscriptions:payment.errors.paymentNotFound'));
     }
+    if (error.message?.includes('Unauthorized')) {
+      throw new Error(i18next.t('errors:common.unauthorized'));
+    }
     throw error;
   }
 

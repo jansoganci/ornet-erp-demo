@@ -72,13 +72,22 @@ export function PaymentRecordModal({ open, onClose, payment }) {
   }, [open, reset]);
 
   const onSubmit = async (data) => {
-    await recordMutation.mutateAsync({ paymentId: payment.id, data });
-    onClose();
+    try {
+      await recordMutation.mutateAsync({ paymentId: payment.id, data });
+      onClose();
+    } catch {
+      // onError in useRecordPayment shows the toast; swallow here to prevent
+      // "Uncaught (in promise)" in the console.
+    }
   };
 
   const onRevertWriteOff = async () => {
-    await revertMutation.mutateAsync(payment.id);
-    onClose();
+    try {
+      await revertMutation.mutateAsync(payment.id);
+      onClose();
+    } catch {
+      // handled by useRevertWriteOff onError
+    }
   };
 
   const paymentMethodOptions = PAYMENT_METHODS.map((m) => ({
