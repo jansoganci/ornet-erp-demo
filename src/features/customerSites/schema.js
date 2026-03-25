@@ -18,6 +18,7 @@ export const siteSchema = z.object({
   contact_name: z.string().max(200).optional().or(z.literal('')),
   contact_phone: phoneSchema,
   panel_info: z.string().max(1000).optional().or(z.literal('')),
+  connection_date: z.string().optional().or(z.literal('')),
   notes: z.string().max(1000).optional().or(z.literal('')),
 });
 
@@ -32,5 +33,6 @@ export const siteDefaultValues = {
   contact_name: '',
   contact_phone: '',
   panel_info: '',
+  connection_date: '',
   notes: '',
 };

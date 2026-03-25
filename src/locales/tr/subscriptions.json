@@ -343,6 +343,7 @@
     "validationErrors": "Doğrulama Hataları",
     "importErrors": "İçe Aktarım Hataları",
     "importButton": "İçe Aktar",
+    "progressLabel": "{{current}} / {{total}} işleniyor",
     "success": "{{created}} abonelik başarıyla oluşturuldu.",
     "partialSuccess": "{{created}} abonelik oluşturuldu, {{failed}} satır hatalı.",
     "failed": "İçe aktarım başarısız.",

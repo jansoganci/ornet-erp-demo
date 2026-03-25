@@ -23,7 +23,9 @@ const FIRST_SITE_KEYS = [
   'first_site_district',
   'first_site_contact_name',
   'first_site_contact_phone',
+  'first_site_alarm_center',
   'first_site_panel_info',
+  'first_site_connection_date',
   'first_site_notes',
 ];
 
@@ -43,7 +45,9 @@ function buildSitePayload(data) {
     district: data.first_site_district?.trim() || null,
     contact_name: data.first_site_contact_name?.trim() || null,
     contact_phone: data.first_site_contact_phone?.trim() || null,
+    alarm_center: data.first_site_alarm_center?.trim() || null,
     panel_info: data.first_site_panel_info?.trim() || null,
+    connection_date: data.first_site_connection_date || null,
     notes: data.first_site_notes?.trim() || null,
   };
 }
@@ -98,7 +102,9 @@ export function CustomerFormPage() {
             first_site_district: firstSite.district || '',
             first_site_contact_name: firstSite.contact_name || '',
             first_site_contact_phone: firstSite.contact_phone || '',
+            first_site_alarm_center: firstSite.alarm_center || '',
             first_site_panel_info: firstSite.panel_info || '',
+            first_site_connection_date: firstSite.connection_date || '',
             first_site_notes: firstSite.notes || '',
           }
         : {
@@ -109,7 +115,9 @@ export function CustomerFormPage() {
             first_site_district: '',
             first_site_contact_name: '',
             first_site_contact_phone: '',
+            first_site_alarm_center: '',
             first_site_panel_info: '',
+            first_site_connection_date: '',
             first_site_notes: '',
           };
       reset({ ...base, ...siteFields });
@@ -315,6 +323,19 @@ export function CustomerFormPage() {
                     },
                   })}
                 />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:col-span-2">
+                  <Input
+                    label={t('customers:sites.fields.alarmCenter')}
+                    error={errors.first_site_alarm_center?.message}
+                    {...register('first_site_alarm_center')}
+                  />
+                  <Input
+                    label={t('customers:sites.fields.connectionDate')}
+                    type="date"
+                    error={errors.first_site_connection_date?.message}
+                    {...register('first_site_connection_date')}
+                  />
+                </div>
                 <div className="lg:col-span-2">
                   <Input
                     label={t('customers:sites.fields.panelInfo')}

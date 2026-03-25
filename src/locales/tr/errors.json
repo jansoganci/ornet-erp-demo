@@ -25,7 +25,8 @@
     "deleteFailed": "Silme işlemi başarısız oldu",
     "unexpected": "Beklenmeyen bir hata oluştu",
     "networkError": "Bağlantı hatası oluştu. Lütfen internet bağlantınızı kontrol edin.",
-    "unauthorized": "Bu işlem için yetkiniz yok"
+    "unauthorized": "Bu işlem için yetkiniz yok",
+    "importFailed": "İçe aktarım başarısız oldu"
   },
   "auth": {
     "sessionExpired": "Oturumunuz sona erdi, lütfen tekrar giriş yapın",

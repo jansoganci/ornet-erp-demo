@@ -39,18 +39,23 @@ async function fetchAllSites() {
   return map;
 }
 
+const BATCH_SIZE = 25;
+
 /**
  * Import subscriptions from validated rows.
  *
- * Strategy (3 HTTP calls total):
+ * Strategy:
  *   1. Bulk-fetch all customers  (1 call)
  *   2. Bulk-fetch all sites      (1 call)
- *   3. Call bulk_import_subscriptions RPC (1 call — all inserts + payment generation server-side)
+ *   3. Call bulk_import_subscriptions RPC in batches of BATCH_SIZE
+ *      (each batch = separate transaction to avoid statement timeout)
  *
  * @param {Array} rows — validated rows from validateAndMapRows()
+ * @param {Object} [options]
+ * @param {(progress: {current: number, total: number}) => void} [options.onProgress]
  * @returns {{ created: number, failed: number, errors: Array<{row: number, message: string}> }}
  */
-export async function importSubscriptionsFromRows(rows) {
+export async function importSubscriptionsFromRows(rows, { onProgress } = {}) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error('User not authenticated');
 
@@ -115,20 +120,27 @@ export async function importSubscriptionsFromRows(rows) {
     });
   }
 
-  // --- Phase 3: Single RPC call for all valid rows ---
+  // --- Phase 3: RPC calls in batches to avoid statement timeout ---
   let rpcCreated = 0;
   let rpcErrors = [];
 
-  if (rpcItems.length > 0) {
+  const totalItems = rpcItems.length;
+  let processed = clientErrors.length; // count client errors as already processed
+  onProgress?.({ current: processed, total: rows.length });
+
+  for (let i = 0; i < totalItems; i += BATCH_SIZE) {
+    const batch = rpcItems.slice(i, i + BATCH_SIZE);
     const { data, error } = await supabase.rpc('bulk_import_subscriptions', {
-      items: rpcItems,
+      items: batch,
       p_user_id: user.id,
     });
 
     if (error) throw error;
 
-    rpcCreated = data?.created ?? 0;
-    rpcErrors = data?.errors ?? [];
+    rpcCreated += data?.created ?? 0;
+    rpcErrors = rpcErrors.concat(data?.errors ?? []);
+    processed += batch.length;
+    onProgress?.({ current: processed, total: rows.length });
   }
 
   // Merge client-side errors + server-side errors

@@ -98,12 +98,20 @@ export function useUpdateCustomer() {
  */
 export function useImportCustomersAndSites({ onProgress } = {}) {
   const queryClient = useQueryClient();
+  const { t } = useTranslation('customers');
 
   return useMutation({
     mutationFn: (rows) => importCustomersAndSitesFromRows(rows, { onProgress }),
-    onSuccess: () => {
+    onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: customerKeys.lists() });
       queryClient.invalidateQueries({ queryKey: siteKeys.all });
+      if (result.failed === 0) {
+        toast.success(t('customers:import.success', { created: result.created, skipped: result.skipped }));
+      } else if (result.created > 0) {
+        toast.warning(t('customers:import.partialSuccess', { created: result.created, skipped: result.skipped, failed: result.failed }));
+      } else {
+        toast.error(t('customers:import.failed'));
+      }
     },
     onError: (error) => {
       toast.error(getErrorMessage(error, 'common.importFailed'));

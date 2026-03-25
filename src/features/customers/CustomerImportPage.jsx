@@ -127,17 +127,6 @@ export function CustomerImportPage() {
     [t]
   );
 
-  if (importMutation.isError) {
-    return (
-      <PageContainer maxWidth="full">
-        <ErrorState
-          message={getErrorMessage(importMutation.error, 'common.importFailed')}
-          onRetry={() => importMutation.reset()}
-        />
-      </PageContainer>
-    );
-  }
-
   return (
     <PageContainer maxWidth="full">
       <PageHeader
@@ -401,6 +390,13 @@ export function CustomerImportPage() {
                   </ul>
                 )}
               </ImportResultSummary>
+            )}
+
+            {importMutation.isError && !importResult && (
+              <ErrorState
+                message={getErrorMessage(importMutation.error, 'common.importFailed')}
+                onRetry={() => importMutation.reset()}
+              />
             )}
           </div>
         )}

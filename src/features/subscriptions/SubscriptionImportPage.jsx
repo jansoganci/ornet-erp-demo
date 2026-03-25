@@ -3,10 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Download, Upload, FileSpreadsheet, AlertTriangle, XCircle } from 'lucide-react';
 import { PageContainer, PageHeader } from '../../components/layout';
-import { Button, Spinner } from '../../components/ui';
+import { Button, Spinner, Card } from '../../components/ui';
+import { ErrorState } from '../../components/ui/ErrorState';
 import { ImportInstructionCard, ImportResultSummary } from '../../components/import';
 import { parseXlsxFile, validateAndMapRows, buildTemplateBlob } from './importUtils';
 import { useImportSubscriptions } from './hooks';
+import { getErrorMessage } from '../../lib/errorHandler';
 
 const PREVIEW_ROWS = 20;
 const MAX_VISIBLE_ERRORS = 50;
@@ -119,8 +121,11 @@ export function SubscriptionImportPage() {
   const [rows, setRows] = useState([]);
   const [validationErrors, setValidationErrors] = useState([]);
   const [importResult, setImportResult] = useState(null);
+  const [importProgress, setImportProgress] = useState(null);
 
-  const importMutation = useImportSubscriptions();
+  const importMutation = useImportSubscriptions({
+    onProgress: (progress) => setImportProgress(progress),
+  });
 
   const instructionSteps = useMemo(
     () => [
@@ -168,14 +173,16 @@ export function SubscriptionImportPage() {
   const handleImport = useCallback(async () => {
     if (rows.length === 0 || validationErrors.length > 0) return;
     setImportResult(null);
+    setImportProgress({ current: 0, total: rows.length });
     try {
       const result = await importMutation.mutateAsync(rows);
       setImportResult(result);
+      setImportProgress(null);
       if (result.failed === 0) {
         setTimeout(() => navigate('/subscriptions'), 2000);
       }
     } catch {
-      // toast already in hook
+      setImportProgress(null);
     }
   }, [rows, validationErrors.length, importMutation, navigate]);
 
@@ -279,6 +286,32 @@ export function SubscriptionImportPage() {
               )}
             </div>
 
+            {importProgress && (
+              <Card className="p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                    {t('subscriptions:import.progressLabel', {
+                      current: importProgress.current,
+                      total: importProgress.total,
+                    })}
+                  </span>
+                  <span className="text-sm text-neutral-500">
+                    {importProgress.total > 0
+                      ? Math.round((importProgress.current / importProgress.total) * 100)
+                      : 0}%
+                  </span>
+                </div>
+                <div className="w-full bg-neutral-200 dark:bg-neutral-700 rounded-full h-2.5">
+                  <div
+                    className="bg-primary-600 h-2.5 rounded-full transition-all duration-300"
+                    style={{
+                      width: `${importProgress.total > 0 ? (importProgress.current / importProgress.total) * 100 : 0}%`,
+                    }}
+                  />
+                </div>
+              </Card>
+            )}
+
             <ValidationErrorTable errors={validationErrors} t={(key, opts) => t(`subscriptions:${key}`, opts)} />
           </>
         )}
@@ -299,7 +332,14 @@ export function SubscriptionImportPage() {
           </div>
         )}
 
-        {!rows.length && !importResult && (
+        {importMutation.error && !importResult && (
+          <ErrorState
+            message={getErrorMessage(importMutation.error, 'subscriptions.importFailed')}
+            onRetry={handleImport}
+          />
+        )}
+
+        {!rows.length && !importResult && !importMutation.error && (
           <div className="flex flex-col items-center justify-center py-8 text-neutral-500 dark:text-neutral-400">
             <FileSpreadsheet className="w-12 h-12 mb-3 opacity-50" />
             <p className="text-sm text-center">

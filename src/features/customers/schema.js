@@ -42,7 +42,9 @@ export const firstSiteSchema = z.object({
   first_site_district: z.string().max(200).optional().or(z.literal('')),
   first_site_contact_name: z.string().max(200).optional().or(z.literal('')),
   first_site_contact_phone: sitePhoneSchema,
+  first_site_alarm_center: z.string().max(200).optional().or(z.literal('')),
   first_site_panel_info: z.string().max(1000).optional().or(z.literal('')),
+  first_site_connection_date: z.string().optional().or(z.literal('')),
   first_site_notes: z.string().max(1000).optional().or(z.literal('')),
 });
 
@@ -57,6 +59,8 @@ export const customerCreateDefaultValues = {
   first_site_district: '',
   first_site_contact_name: '',
   first_site_contact_phone: '',
+  first_site_alarm_center: '',
   first_site_panel_info: '',
+  first_site_connection_date: '',
   first_site_notes: '',
 };

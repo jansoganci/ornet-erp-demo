@@ -188,6 +188,7 @@
       "contactName": "Yetkili Kişi",
       "contactPhone": "Yetkili Telefon",
       "panelInfo": "Panel Bilgisi",
+      "connectionDate": "Bağlantı Tarihi",
       "notes": "Notlar",
       "isActive": "Aktif"
     },
@@ -264,6 +265,7 @@
     "progressLabel": "{{current}} / {{total}} işleniyor",
     "success": "{{created}} lokasyon oluşturuldu, {{skipped}} atlandı",
     "partialSuccess": "İçe aktarma tamamlandı: {{created}} oluşturuldu, {{skipped}} atlandı, {{failed}} hata",
+    "failed": "İçe aktarım başarısız oldu",
     "resultSummary": "{{created}} oluşturuldu, {{skipped}} atlandı, {{failed}} hata",
     "validationSkippedCount": "{{count}} satır doğrulama hatası nedeniyle içe aktarılmadı (Excel'de düzeltip tekrar deneyin)",
     "status": {

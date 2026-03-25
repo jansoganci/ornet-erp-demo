@@ -48,6 +48,7 @@ export function SiteFormModal({
           contact_name: site.contact_name || '',
           contact_phone: site.contact_phone || '',
           panel_info: site.panel_info || '',
+          connection_date: site.connection_date || '',
           notes: site.notes || '',
         });
       } else {
@@ -122,11 +123,19 @@ export function SiteFormModal({
           />
         </div>
 
-        <Input
-          label={t('customers:sites.fields.alarmCenter')}
-          error={errors.alarm_center?.message}
-          {...register('alarm_center')}
-        />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Input
+            label={t('customers:sites.fields.alarmCenter')}
+            error={errors.alarm_center?.message}
+            {...register('alarm_center')}
+          />
+          <Input
+            label={t('customers:sites.fields.connectionDate')}
+            type="date"
+            error={errors.connection_date?.message}
+            {...register('connection_date')}
+          />
+        </div>
 
         <Textarea
           label={t('customers:sites.fields.address')}

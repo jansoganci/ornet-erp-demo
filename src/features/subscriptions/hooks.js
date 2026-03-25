@@ -329,12 +329,12 @@ export function useSubscriptionStats() {
   });
 }
 
-export function useImportSubscriptions() {
+export function useImportSubscriptions({ onProgress } = {}) {
   const queryClient = useQueryClient();
   const { t } = useTranslation('subscriptions');
 
   return useMutation({
-    mutationFn: importSubscriptionsFromRows,
+    mutationFn: (rows) => importSubscriptionsFromRows(rows, { onProgress }),
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: subscriptionKeys.all });
       if (result.failed === 0) {
