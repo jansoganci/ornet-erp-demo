@@ -40,6 +40,7 @@ import {
   useUpdateProposalItems,
   useUpdateProposalAnnualFixedCosts,
 } from './hooks';
+import { useFinanceSettings, useLatestRate } from '../finance/hooks';
 import { useCustomer } from '../customers/hooks';
 import { CustomerSiteSelector } from '../workOrders/CustomerSiteSelector';
 import { SiteFormModal } from '../customerSites/SiteFormModal';
@@ -47,6 +48,7 @@ import { ProposalItemsEditor } from './components/ProposalItemsEditor';
 import { ProposalAnnualFixedCostsEditor } from './components/ProposalAnnualFixedCostsEditor';
 import { ProposalStepper } from './components/ProposalStepper';
 import { ProposalLivePreview } from './components/ProposalLivePreview';
+import { calcProposalTotals, calcVatTevkifatSummary } from '../../lib/proposalCalc';
 
 export function ProposalFormPage() {
   const { id } = useParams();
@@ -63,11 +65,15 @@ export function ProposalFormPage() {
   const [hasInitialized, setHasInitialized] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [completedSteps, setCompletedSteps] = useState([]);
+  const [showTevkifatConfirmModal, setShowTevkifatConfirmModal] = useState(false);
+  const [pendingSubmit, setPendingSubmit] = useState(null);
 
   const { data: proposal, isLoading: isProposalLoading } = useProposal(id);
   const { data: existingItems = [], isLoading: isItemsLoading } = useProposalItems(id);
   const { data: existingAnnualFixed = [], isLoading: isAnnualFixedLoading } = useProposalAnnualFixedCosts(id);
   const { data: selectedCustomer } = useCustomer(selectedCustomerId);
+  const { data: financeSettings } = useFinanceSettings();
+  const { data: latestUsdRate } = useLatestRate('USD');
   const createMutation = useCreateProposal();
   const updateMutation = useUpdateProposal();
   const updateItemsMutation = useUpdateProposalItems();
@@ -106,6 +112,15 @@ export function ProposalFormPage() {
   });
 
   const selectedCurrency = watch('currency') ?? 'USD';
+  const hasVat = watch('has_vat');
+  const vatRate = watch('vat_rate');
+
+  // Logic: When has_vat is checked, default vat_rate to 20 if it's 0 or empty
+  useEffect(() => {
+    if (hasVat && (vatRate === 0 || vatRate === '0' || !vatRate)) {
+      setValue('vat_rate', 20);
+    }
+  }, [hasVat, vatRate, setValue]);
 
   // Watch all values for live preview
   const watchedValues = watch();
@@ -155,6 +170,8 @@ export function ProposalFormPage() {
           customer_representative: proposal.customer_representative || '',
           completion_date: proposal.completion_date || '',
           discount_percent: proposal.discount_percent ?? null,
+          has_vat: proposal.vat_rate > 0,
+          has_tevkifat: !!proposal.has_tevkifat,
           vat_rate: proposal.vat_rate ?? 0,
           terms_engineering: proposal.terms_engineering || '',
           terms_pricing: proposal.terms_pricing || '',
@@ -216,10 +233,33 @@ export function ProposalFormPage() {
   const handleNext = () => goToStep(currentStep + 1);
   const handlePrev = () => goToStep(currentStep - 1);
 
-  const onSubmit = async (data, { skipNavigate = false } = {}) => {
+  const getGrossTotalTry = useCallback((data) => {
+    const { grandTotal } = calcProposalTotals(data.items || [], data.discount_percent, data.currency || 'USD');
+    const currentVatRate = data.has_vat ? (Number(data.vat_rate) || 0) : 0;
+    const { totalWithVat } = calcVatTevkifatSummary(grandTotal, currentVatRate, false, 0, 1);
+    const currency = String(data.currency || 'USD').toUpperCase();
+    if (currency === 'USD') {
+      const fx = Number(latestUsdRate?.effective_rate) || 1;
+      return totalWithVat * fx;
+    }
+    return totalWithVat;
+  }, [latestUsdRate?.effective_rate]);
+
+  const needsTevkifatConfirm = useCallback((data) => {
+    if (data.has_tevkifat) return false;
+    const threshold = Number(financeSettings?.tevkifat_threshold_try) || 12000;
+    return getGrossTotalTry(data) >= threshold;
+  }, [financeSettings?.tevkifat_threshold_try, getGrossTotalTry]);
+
+  const persistSubmit = async (data, { skipNavigate = false } = {}) => {
     try {
-      const { items, annual_fixed_costs: annualFixedCosts, ...proposalData } = data;
-      const proposalPayload = { ...proposalData, company_name: null };
+      const { items, annual_fixed_costs: annualFixedCosts, has_vat, has_tevkifat, ...proposalData } = data;
+      const proposalPayload = { 
+        ...proposalData, 
+        vat_rate: has_vat ? (Number(data.vat_rate) || 0) : 0,
+        has_tevkifat: !!has_tevkifat,
+        company_name: null 
+      };
 
       if (isEdit) {
         await updateMutation.mutateAsync({ id, ...proposalPayload });
@@ -251,6 +291,16 @@ export function ProposalFormPage() {
     }
   };
 
+  const onSubmit = async (data, options = {}) => {
+    if (needsTevkifatConfirm(data)) {
+      setPendingSubmit({ data, options });
+      setShowTevkifatConfirmModal(true);
+      return false;
+    }
+    await persistSubmit(data, options);
+    return true;
+  };
+
   const onInvalid = (formErrors) => {
     if (formErrors.site_id) {
       toast.error(t('errors:validation.required'));
@@ -265,12 +315,19 @@ export function ProposalFormPage() {
     let result = null;
     await handleSubmit(
       async (data) => {
-        await onSubmit(data, { skipNavigate: true });
-        result = true;
+        result = await onSubmit(data, { skipNavigate: true });
       },
       () => { result = false; }
     )();
     return result;
+  };
+
+  const handleConfirmTevkifatProceed = async () => {
+    if (!pendingSubmit) return;
+    const queued = pendingSubmit;
+    setPendingSubmit(null);
+    setShowTevkifatConfirmModal(false);
+    await persistSubmit(queued.data, queued.options || {});
   };
 
   if (isEdit && (isProposalLoading || isItemsLoading || isAnnualFixedLoading)) {
@@ -356,16 +413,43 @@ export function ProposalFormPage() {
                         error={errors.currency?.message}
                         {...register('currency')}
                       />
-                      <Input
-                        label={t('proposals:form.fields.vatRate')}
-                        type="number"
-                        min={0}
-                        max={100}
-                        step="0.01"
-                        rightIcon={<span className="text-neutral-400 font-bold">%</span>}
-                        error={errors.vat_rate?.message}
-                        {...register('vat_rate')}
-                      />
+                      <div className="flex items-end gap-3">
+                        <label className="flex items-center gap-3 p-3 h-12 md:h-10 rounded-lg bg-neutral-50 dark:bg-neutral-900/50 cursor-pointer select-none border border-neutral-300 dark:border-[#262626] hover:border-primary-500/50 transition-colors shrink-0">
+                          <input
+                            type="checkbox"
+                            className="h-4 w-4 rounded border-neutral-300 dark:border-neutral-600 text-primary-600 focus:ring-primary-500"
+                            {...register('has_vat')}
+                          />
+                          <span className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
+                            {t('proposals:form.fields.hasVat')}
+                          </span>
+                        </label>
+
+                        {hasVat && (
+                          <div className="flex-1">
+                            <Input
+                              label={t('proposals:form.fields.vatRate')}
+                              type="number"
+                              min={0}
+                              max={100}
+                              step="0.01"
+                              rightIcon={<span className="text-neutral-400 font-bold">%</span>}
+                              error={errors.vat_rate?.message}
+                              {...register('vat_rate')}
+                            />
+                          </div>
+                        )}
+                        <label className="flex items-center gap-3 p-3 h-12 md:h-10 rounded-lg bg-neutral-50 dark:bg-neutral-900/50 cursor-pointer select-none border border-neutral-300 dark:border-[#262626] hover:border-primary-500/50 transition-colors shrink-0">
+                          <input
+                            type="checkbox"
+                            className="h-4 w-4 rounded border-neutral-300 dark:border-neutral-600 text-primary-600 focus:ring-primary-500"
+                            {...register('has_tevkifat')}
+                          />
+                          <span className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
+                            {t('proposals:form.fields.hasTevkifat')}
+                          </span>
+                        </label>
+                      </div>
                       <Input
                         label={t('proposals:form.fields.authorizedPerson')}
                         {...register('authorized_person')}
@@ -426,6 +510,8 @@ export function ProposalFormPage() {
                       fields={proposalItemFields}
                       append={appendProposalItem}
                       remove={removeProposalItem}
+                      tevkifatNumerator={Number(financeSettings?.tevkifat_rate_numerator) || 9}
+                      tevkifatDenominator={Number(financeSettings?.tevkifat_rate_denominator) || 10}
                     />
                   </Card>
 
@@ -532,6 +618,8 @@ export function ProposalFormPage() {
                   <ProposalLivePreview
                     watchedValues={watchedValues}
                     customerCompanyName={selectedCustomer?.company_name ?? ''}
+                    tevkifatNumerator={Number(financeSettings?.tevkifat_rate_numerator) || 9}
+                    tevkifatDenominator={Number(financeSettings?.tevkifat_rate_denominator) || 10}
                   />
                   <Card className="p-6 space-y-4">
                     <h3 className="font-bold text-neutral-900 dark:text-neutral-100 uppercase tracking-wider text-sm">
@@ -645,7 +733,37 @@ export function ProposalFormPage() {
         <ProposalLivePreview
           watchedValues={watchedValues}
           customerCompanyName={selectedCustomer?.company_name ?? ''}
+          tevkifatNumerator={Number(financeSettings?.tevkifat_rate_numerator) || 9}
+          tevkifatDenominator={Number(financeSettings?.tevkifat_rate_denominator) || 10}
         />
+      </Modal>
+
+      <Modal
+        open={showTevkifatConfirmModal}
+        onClose={() => {
+          setShowTevkifatConfirmModal(false);
+          setPendingSubmit(null);
+        }}
+        title={t('proposals:form.tevkifatConfirm.title')}
+        footer={(
+          <>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setShowTevkifatConfirmModal(false);
+                setPendingSubmit(null);
+              }}
+            >
+              {tCommon('actions.cancel')}
+            </Button>
+            <Button type="button" onClick={handleConfirmTevkifatProceed}>
+              {t('proposals:form.tevkifatConfirm.confirm')}
+            </Button>
+          </>
+        )}
+      >
+        <p>{t('proposals:form.tevkifatConfirm.message')}</p>
       </Modal>
     </PageContainer>
   );

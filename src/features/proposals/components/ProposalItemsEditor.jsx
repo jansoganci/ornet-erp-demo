@@ -3,7 +3,12 @@ import { useTranslation } from 'react-i18next';
 import { Plus, Trash2, Package } from 'lucide-react';
 import { Button, IconButton, Input, MaterialCombobox } from '../../../components/ui';
 import { cn, getCurrencySymbol, formatCurrency } from '../../../lib/utils';
-import { calcProposalTotals, calcTotalCosts, calcItemLineTotal } from '../../../lib/proposalCalc';
+import {
+  calcProposalTotals,
+  calcTotalCosts,
+  calcItemLineTotal,
+  calcVatTevkifatSummary,
+} from '../../../lib/proposalCalc';
 
 const UNIT_OPTIONS = [
   { value: 'adet', labelKey: 'items.units.adet' },
@@ -22,6 +27,8 @@ export function ProposalItemsEditor({
   fields,
   append,
   remove,
+  tevkifatNumerator = 9,
+  tevkifatDenominator = 10,
 }) {
   const { t } = useTranslation('proposals');
   const symbol = getCurrencySymbol(currency);
@@ -29,6 +36,15 @@ export function ProposalItemsEditor({
   const watchItems = watch('items') || [];
   const discountPercent = Number(watch('discount_percent')) || 0;
   const { subtotal, discountAmount, grandTotal } = calcProposalTotals(watchItems, discountPercent, currency);
+  const vatRate = watch('has_vat') ? (Number(watch('vat_rate')) || 0) : 0;
+  const hasTevkifat = !!watch('has_tevkifat');
+  const { vatAmount, totalWithVat, withheldVat, totalPayable } = calcVatTevkifatSummary(
+    grandTotal,
+    vatRate,
+    hasTevkifat,
+    tevkifatNumerator,
+    tevkifatDenominator,
+  );
   const totalCosts = calcTotalCosts(watchItems, currency);
   const netProfit = grandTotal - totalCosts;
 
@@ -496,6 +512,34 @@ export function ProposalItemsEditor({
             {formatCurrency(grandTotal, currency)}
           </span>
         </div>
+        {vatRate > 0 && (
+          <>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-neutral-600 dark:text-neutral-400">{t('detail.vatAmount')}</span>
+              <span className="text-neutral-900 dark:text-neutral-100">{formatCurrency(vatAmount, currency)}</span>
+            </div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-neutral-600 dark:text-neutral-400">{t('detail.totalWithVat')}</span>
+              <span className="text-neutral-900 dark:text-neutral-100">{formatCurrency(totalWithVat, currency)}</span>
+            </div>
+          </>
+        )}
+        {hasTevkifat && vatRate > 0 && (
+          <>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-neutral-600 dark:text-neutral-400">{t('detail.withheldVat')}</span>
+              <span className="text-neutral-900 dark:text-neutral-100">-{formatCurrency(withheldVat, currency)}</span>
+            </div>
+            <div className="flex items-center justify-between pt-2 border-t border-neutral-200 dark:border-[#333]">
+              <span className="text-sm font-bold text-primary-700 dark:text-primary-300 uppercase">
+                {t('detail.totalPayable')}
+              </span>
+              <span className="text-xl font-bold text-primary-600 dark:text-primary-400">
+                {formatCurrency(totalPayable, currency)}
+              </span>
+            </div>
+          </>
+        )}
         {/* Net Kar (internal only) */}
         <div className="flex items-center justify-between pt-2 border-t border-neutral-200 dark:border-[#333]">
           <span className="text-sm font-semibold text-neutral-600 dark:text-neutral-400">

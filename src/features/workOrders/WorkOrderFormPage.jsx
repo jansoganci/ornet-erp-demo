@@ -13,7 +13,8 @@ import {
   Card, 
   Spinner,
   Textarea,
-  FormSkeleton
+  FormSkeleton,
+  Modal,
 } from '../../components/ui';
 import { workOrderSchema, workOrderDefaultValues, WORK_TYPES } from './schema';
 import { useWorkOrder, useCreateWorkOrder, useUpdateWorkOrder } from './hooks';
@@ -25,7 +26,8 @@ import { AccountNoWarning } from './AccountNoWarning';
 import { SiteFormModal } from '../customerSites/SiteFormModal';
 import { useSite, useSitesByCustomer } from '../customerSites/hooks';
 import { useLinkWorkOrder } from '../proposals/hooks';
-import { resolveProposalItemUnitPrice } from '../../lib/proposalCalc';
+import { useFinanceSettings, useLatestRate } from '../finance/hooks';
+import { resolveProposalItemUnitPrice, calcVatTevkifatSummary } from '../../lib/proposalCalc';
 import { toast } from 'sonner';
 
 /** First leaf `message` in RHF FieldErrors (e.g. items[0].description). */
@@ -57,8 +59,12 @@ export function WorkOrderFormPage() {
   const [showSiteModal, setShowSiteModal] = useState(false);
   /** 'new-site' = always create; 'account-no' = edit current site if selected, else create for customer */
   const [siteModalIntent, setSiteModalIntent] = useState(null);
+  const [showTevkifatConfirmModal, setShowTevkifatConfirmModal] = useState(false);
+  const [pendingSubmitData, setPendingSubmitData] = useState(null);
 
   const { data: workOrder, isLoading: isWorkOrderLoading } = useWorkOrder(id);
+  const { data: financeSettings } = useFinanceSettings();
+  const { data: latestUsdRate } = useLatestRate('USD');
   const createMutation = useCreateWorkOrder();
   const updateMutation = useUpdateWorkOrder();
   const linkWorkOrderMutation = useLinkWorkOrder();
@@ -87,6 +93,16 @@ export function WorkOrderFormPage() {
 
   const selectedSiteId = watch('site_id');
   const workType = watch('work_type');
+  const hasVat = watch('has_vat');
+  const vatRate = watch('vat_rate');
+
+  // Logic: When has_vat is checked, default vat_rate to 20 if it's 0 or empty
+  useEffect(() => {
+    if (hasVat && (vatRate === 0 || vatRate === '0' || !vatRate)) {
+      setValue('vat_rate', 20);
+    }
+  }, [hasVat, vatRate, setValue]);
+
   /** Line-item display currency (TRY default; preserved on edit via reset). */
   const lineCurrency = watch('currency') ?? 'TRY';
   const { data: siteData } = useSite(selectedSiteId);
@@ -166,6 +182,8 @@ export function WorkOrderFormPage() {
       currency: workOrder.currency || 'TRY',
       items: items.length > 0 ? items : workOrderDefaultValues.items,
       materials_discount_percent: workOrder.materials_discount_percent ?? 0,
+      has_vat: workOrder.vat_rate > 0,
+      has_tevkifat: !!workOrder.has_tevkifat,
       vat_rate: workOrder.vat_rate ?? 20,
     });
     if (workOrder.customer_id) setSelectedCustomerId(workOrder.customer_id);
@@ -178,7 +196,31 @@ export function WorkOrderFormPage() {
     }
   }, [prefilledCustomerId]);
 
-  const onSubmit = async (data) => {
+  const getGrossTotalTry = (data) => {
+    const subtotal = (data.items || []).reduce((sum, item) => {
+      const qty = parseFloat(item?.quantity) || 0;
+      const price = parseFloat(item?.unit_price) || 0;
+      return sum + qty * price;
+    }, 0);
+    const discountPercent = Number(data.materials_discount_percent) || 0;
+    const grandTotal = subtotal - (subtotal * discountPercent / 100);
+    const vatRateForTotal = data.has_vat ? (Number(data.vat_rate) || 0) : 0;
+    const { totalWithVat } = calcVatTevkifatSummary(grandTotal, vatRateForTotal, false, 0, 1);
+    const currency = String(data.currency || 'TRY').toUpperCase();
+    if (currency === 'USD') {
+      const fx = Number(latestUsdRate?.effective_rate) || 1;
+      return totalWithVat * fx;
+    }
+    return totalWithVat;
+  };
+
+  const needsTevkifatConfirm = (data) => {
+    if (data.has_tevkifat) return false;
+    const threshold = Number(financeSettings?.tevkifat_threshold_try) || 12000;
+    return getGrossTotalTry(data) >= threshold;
+  };
+
+  const persistSubmit = async (data) => {
     try {
       const cleanValue = (val) => {
         if (val === '' || val === undefined) return null;
@@ -222,7 +264,8 @@ export function WorkOrderFormPage() {
           : [],
         items: data.items || [],
         materials_discount_percent: data.materials_discount_percent ?? 0,
-        vat_rate: data.vat_rate != null ? Number(data.vat_rate) : 20,
+        has_tevkifat: !!data.has_tevkifat,
+        vat_rate: data.has_vat ? (data.vat_rate != null ? Number(data.vat_rate) : 20) : 0,
       };
 
       if (isEdit) {
@@ -245,6 +288,15 @@ export function WorkOrderFormPage() {
       const errorMessage = err?.message || err?.details || err?.hint || t('common:errors.saveFailed');
       toast.error(`${errorMessage}${err?.code ? ` (${err.code})` : ''}`);
     }
+  };
+
+  const onSubmit = async (data) => {
+    if (needsTevkifatConfirm(data)) {
+      setPendingSubmitData(data);
+      setShowTevkifatConfirmModal(true);
+      return;
+    }
+    await persistSubmit(data);
   };
 
   const onInvalid = (formErrors) => {
@@ -414,18 +466,45 @@ export function WorkOrderFormPage() {
               {...register('description')}
             />
 
-            <div className="pt-4 border-t border-neutral-100 dark:border-[#262626] max-w-md">
-              <Input
-                label={t('workOrders:form.fields.vatRate')}
-                type="number"
-                min={0}
-                max={100}
-                step="0.01"
-                rightIcon={<span className="text-neutral-400 font-bold">%</span>}
-                error={errors.vat_rate?.message}
-                className="rounded-2xl"
-                {...register('vat_rate')}
-              />
+            <div className="pt-4 border-t border-neutral-100 dark:border-[#262626] max-w-2xl">
+              <div className="flex flex-col sm:flex-row sm:items-end gap-4">
+                <label className="flex items-center gap-3 p-3 h-12 md:h-10 rounded-2xl bg-neutral-50 dark:bg-neutral-900/50 cursor-pointer select-none border border-neutral-200 dark:border-[#262626] hover:border-primary-500/50 transition-colors shrink-0">
+                  <input
+                    type="checkbox"
+                    className="h-5 w-5 rounded border-neutral-300 dark:border-neutral-600 text-primary-600 focus:ring-primary-500"
+                    {...register('has_vat')}
+                  />
+                  <span className="text-sm font-bold text-neutral-700 dark:text-neutral-200 uppercase tracking-wider">
+                    {t('workOrders:form.fields.hasVat')}
+                  </span>
+                </label>
+
+                {hasVat && (
+                  <div className="flex-1 max-w-[200px]">
+                    <Input
+                      label={t('workOrders:form.fields.vatRate')}
+                      type="number"
+                      min={0}
+                      max={100}
+                      step="0.01"
+                      rightIcon={<span className="text-neutral-400 font-bold">%</span>}
+                      error={errors.vat_rate?.message}
+                      className="rounded-2xl"
+                      {...register('vat_rate')}
+                    />
+                  </div>
+                )}
+                <label className="flex items-center gap-3 p-3 h-12 md:h-10 rounded-2xl bg-neutral-50 dark:bg-neutral-900/50 cursor-pointer select-none border border-neutral-200 dark:border-[#262626] hover:border-primary-500/50 transition-colors shrink-0">
+                  <input
+                    type="checkbox"
+                    className="h-5 w-5 rounded border-neutral-300 dark:border-neutral-600 text-primary-600 focus:ring-primary-500"
+                    {...register('has_tevkifat')}
+                  />
+                  <span className="text-sm font-bold text-neutral-700 dark:text-neutral-200 uppercase tracking-wider">
+                    {t('workOrders:form.fields.hasTevkifat')}
+                  </span>
+                </label>
+              </div>
             </div>
           </div>
         </Card>
@@ -440,6 +519,8 @@ export function WorkOrderFormPage() {
             setValue={setValue}
             currency={lineCurrency}
             workType={workType}
+            tevkifatNumerator={Number(financeSettings?.tevkifat_rate_numerator) || 9}
+            tevkifatDenominator={Number(financeSettings?.tevkifat_rate_denominator) || 10}
           />
         </Card>
 
@@ -530,6 +611,43 @@ export function WorkOrderFormPage() {
           }
         }}
       />
+
+      <Modal
+        open={showTevkifatConfirmModal}
+        onClose={() => {
+          setShowTevkifatConfirmModal(false);
+          setPendingSubmitData(null);
+        }}
+        title={t('workOrders:form.tevkifatConfirm.title')}
+        footer={(
+          <>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setShowTevkifatConfirmModal(false);
+                setPendingSubmitData(null);
+              }}
+            >
+              {tCommon('actions.cancel')}
+            </Button>
+            <Button
+              type="button"
+              onClick={async () => {
+                if (!pendingSubmitData) return;
+                setShowTevkifatConfirmModal(false);
+                const queued = pendingSubmitData;
+                setPendingSubmitData(null);
+                await persistSubmit(queued);
+              }}
+            >
+              {t('workOrders:form.tevkifatConfirm.confirm')}
+            </Button>
+          </>
+        )}
+      >
+        <p>{t('workOrders:form.tevkifatConfirm.message')}</p>
+      </Modal>
     </PageContainer>
   );
 }

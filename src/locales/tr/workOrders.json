@@ -84,6 +84,8 @@
     "notAssignedYet": "Henüz atanmadı",
     "assignedCount": "{{count}} Personel",
     "amountNotEntered": "Tutar girilmedi",
+      "withheldVat": "Tevkifat",
+      "totalPayable": "Ödenecek Toplam",
     "activity": {
       "title": "Aktivite Geçmişi",
       "subtitle": "Kayıt izi",
@@ -137,6 +139,8 @@
       "quantity": "Miktar",
       "title": "Başlık",
       "notes": "Notlar",
+      "hasVat": "KDV?",
+      "hasTevkifat": "Tevkifat?",
       "vatRate": "KDV Oranı (%)"
     },
     "noFieldWorkers": "Listelenecek saha personeli yok. Önce kullanıcıları saha personeli rolüyle ekleyin.",
@@ -174,6 +178,11 @@
       "addSite": "Yeni Lokasyon Ekle",
       "addAccountNo": "Hesap No Ekle",
       "changeCustomer": "Değiştir"
+    },
+    "tevkifatConfirm": {
+      "title": "Tevkifat Onayı",
+      "message": "Tutar limit üstü. Tevkifat eklemeden devam edilsin mi?",
+      "confirm": "Devam Et"
     }
   },
   "common": {

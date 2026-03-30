@@ -252,6 +252,7 @@
       "paymentDate": "Ödeme Tarihi",
       "paymentMethod": "Ödeme Yöntemi",
       "invoiceNo": "Fatura No",
+      "posCode": "POS Tahsilat Kodu",
       "invoiceType": "Fatura Tipi",
       "notes": "Not",
       "referenceNo": "Dekont no",

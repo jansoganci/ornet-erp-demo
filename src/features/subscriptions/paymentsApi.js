@@ -65,6 +65,7 @@ export async function recordPayment(paymentId, paymentData) {
     p_notes:          paymentData.notes        || null,
     p_reference_no:   paymentData.reference_no || null,
     p_user_id:        user?.id || null,
+    p_pos_code:       paymentData.pos_code     || null,
   });
 
   if (error) {

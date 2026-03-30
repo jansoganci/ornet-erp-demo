@@ -30,6 +30,8 @@ export const workOrderSchema = z.object({
     cost: z.coerce.number().min(0).optional().nullable(),
   })).min(0),
   materials_discount_percent: z.coerce.number().min(0).max(100).optional().nullable(),
+  has_vat: z.boolean().default(true),
+  has_tevkifat: z.boolean().default(false),
   vat_rate: z.preprocess(toNumber, z.number().min(0).max(100).default(20)),
 }).refine((data) => {
   if (data.work_type === 'other') {
@@ -74,5 +76,7 @@ export const workOrderDefaultValues = {
     { description: '', quantity: 1, unit: 'adet', unit_price: 0, material_id: null, cost: null },
   ],
   materials_discount_percent: 0,
+  has_vat: true,
+  has_tevkifat: false,
   vat_rate: 20,
 };

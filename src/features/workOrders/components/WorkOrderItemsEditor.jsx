@@ -4,6 +4,7 @@ import { PackageOpen } from 'lucide-react';
 import { Plus, Trash2, Package } from 'lucide-react';
 import { Button, Input, MaterialCombobox } from '../../../components/ui';
 import { cn, getCurrencySymbol, formatCurrency } from '../../../lib/utils';
+import { calcVatTevkifatSummary } from '../../../lib/proposalCalc';
 
 const UNIT_OPTIONS = [
   { value: 'adet', labelKey: 'items.units.adet' },
@@ -12,7 +13,17 @@ const UNIT_OPTIONS = [
   { value: 'takim', labelKey: 'items.units.takim' },
 ];
 
-export function WorkOrderItemsEditor({ control, register, errors, watch, setValue, currency = 'TRY', workType }) {
+export function WorkOrderItemsEditor({
+  control,
+  register,
+  errors,
+  watch,
+  setValue,
+  currency = 'TRY',
+  workType,
+  tevkifatNumerator = 9,
+  tevkifatDenominator = 10,
+}) {
   const { t } = useTranslation('proposals');
   const { t: tWo } = useTranslation('workOrders');
   const symbol = getCurrencySymbol(currency);
@@ -23,6 +34,8 @@ export function WorkOrderItemsEditor({ control, register, errors, watch, setValu
 
   const watchItems = watch('items');
   const discountPercent = Number(watch('materials_discount_percent')) || 0;
+  const vatRate = watch('has_vat') ? (Number(watch('vat_rate')) || 0) : 0;
+  const hasTevkifat = !!watch('has_tevkifat');
   const subtotal = (watchItems || []).reduce((sum, item) => {
     const qty = parseFloat(item?.quantity) || 0;
     const price = parseFloat(item?.unit_price) || 0;
@@ -30,6 +43,13 @@ export function WorkOrderItemsEditor({ control, register, errors, watch, setValu
   }, 0);
   const discountAmount = subtotal * (discountPercent / 100);
   const grandTotal = subtotal - discountAmount;
+  const { vatAmount, totalWithVat, withheldVat, totalPayable } = calcVatTevkifatSummary(
+    grandTotal,
+    vatRate,
+    hasTevkifat,
+    tevkifatNumerator,
+    tevkifatDenominator,
+  );
   const totalCosts = (watchItems || []).reduce((sum, item) => {
     const qty = parseFloat(item?.quantity) || 0;
     const cost = parseFloat(item?.cost) || 0;
@@ -497,6 +517,38 @@ export function WorkOrderItemsEditor({ control, register, errors, watch, setValu
             {formatCurrency(grandTotal, currency)}
           </span>
         </div>
+        {vatRate > 0 && (
+          <>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-neutral-600 dark:text-neutral-400">KDV (%{vatRate})</span>
+              <span className="text-neutral-900 dark:text-neutral-100">{formatCurrency(vatAmount, currency)}</span>
+            </div>
+            <div className="flex items-center justify-between pt-2 border-t border-neutral-200 dark:border-[#333]">
+              <span className="text-sm font-bold text-primary-700 dark:text-primary-300 uppercase">
+                KDV DAHİL TOPLAM
+              </span>
+              <span className="text-xl font-bold text-primary-600 dark:text-primary-400">
+                {formatCurrency(totalWithVat, currency)}
+              </span>
+            </div>
+            {hasTevkifat && (
+              <>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-neutral-600 dark:text-neutral-400">{tWo('detail.withheldVat')}</span>
+                  <span className="text-neutral-900 dark:text-neutral-100">-{formatCurrency(withheldVat, currency)}</span>
+                </div>
+                <div className="flex items-center justify-between pt-2 border-t border-neutral-200 dark:border-[#333]">
+                  <span className="text-sm font-bold text-primary-700 dark:text-primary-300 uppercase">
+                    {tWo('detail.totalPayable')}
+                  </span>
+                  <span className="text-xl font-bold text-primary-600 dark:text-primary-400">
+                    {formatCurrency(totalPayable, currency)}
+                  </span>
+                </div>
+              </>
+            )}
+          </>
+        )}
         <div className="flex items-center justify-between pt-2 border-t border-neutral-200 dark:border-[#333]">
           <span className="text-sm font-semibold text-neutral-600 dark:text-neutral-400">
             {t('detail.netProfit')} (Dahili)

@@ -100,6 +100,40 @@ export function calcProposalTotals(items = [], discountPercent = 0, proposalCurr
   return { subtotal, discountAmount, grandTotal };
 }
 
+function round2(value) {
+  return Math.round((Number(value) || 0) * 100) / 100;
+}
+
+/**
+ * VAT + Tevkifat summary for a net amount.
+ * @param {number} netAmount
+ * @param {number} vatRate
+ * @param {boolean} hasTevkifat
+ * @param {number} tevkifatNumerator
+ * @param {number} tevkifatDenominator
+ * @returns {{ vatAmount: number, totalWithVat: number, withheldVat: number, totalPayable: number }}
+ */
+export function calcVatTevkifatSummary(
+  netAmount,
+  vatRate = 0,
+  hasTevkifat = false,
+  tevkifatNumerator = 9,
+  tevkifatDenominator = 10,
+) {
+  const base = Number(netAmount) || 0;
+  const rate = Math.max(Number(vatRate) || 0, 0);
+  const vatAmount = round2(base * rate / 100);
+  const totalWithVat = round2(base + vatAmount);
+
+  const n = Math.max(Number(tevkifatNumerator) || 0, 0);
+  const dRaw = Number(tevkifatDenominator);
+  const d = Number.isFinite(dRaw) && dRaw > 0 ? dRaw : 1;
+  const withheldVat = hasTevkifat ? round2(vatAmount * n / d) : 0;
+  const totalPayable = round2(totalWithVat - withheldVat);
+
+  return { vatAmount, totalWithVat, withheldVat, totalPayable };
+}
+
 /**
  * Calculate total internal costs from items.
  * @param {Array<object>} items

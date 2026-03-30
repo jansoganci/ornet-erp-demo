@@ -7,6 +7,7 @@ import {
   resolveProposalItemUnitPrice,
   calcAnnualFixedLineTotal,
   sumAnnualFixedCostsByCurrency,
+  calcVatTevkifatSummary,
 } from '../../../lib/proposalCalc';
 import { filterPersistableAnnualFixedRows } from '../api';
 
@@ -21,6 +22,8 @@ export function ProposalLivePreview({
   watchedValues = {},
   customerCompanyName = '',
   className,
+  tevkifatNumerator = 9,
+  tevkifatDenominator = 10,
 }) {
   const { t } = useTranslation('proposals');
 
@@ -33,6 +36,8 @@ export function ProposalLivePreview({
     scope_of_work = '',
     items = [],
     discount_percent = 0,
+    has_vat = false,
+    has_tevkifat = false,
     vat_rate = 0,
     currency = 'USD',
     annual_fixed_costs = [],
@@ -42,8 +47,14 @@ export function ProposalLivePreview({
   const annualSubtotals = sumAnnualFixedCostsByCurrency(annualRows);
 
   const { subtotal, discountAmount, grandTotal } = calcProposalTotals(items, discount_percent, currency);
-  const vatAmount = Math.round(grandTotal * (Number(vat_rate) || 0) / 100 * 100) / 100;
-  const totalWithVat = grandTotal + vatAmount;
+  const vatRate = has_vat ? (Number(vat_rate) || 0) : 0;
+  const { vatAmount, totalWithVat, withheldVat, totalPayable } = calcVatTevkifatSummary(
+    grandTotal,
+    vatRate,
+    !!has_tevkifat,
+    tevkifatNumerator,
+    tevkifatDenominator,
+  );
   const discountPct = Number(discount_percent) || 0;
 
   const fmt = (amount) => formatCurrency(amount, currency);
@@ -201,16 +212,28 @@ export function ProposalLivePreview({
                   <span className="text-neutral-900 dark:text-neutral-50">{t('form.preview.grandTotal')}</span>
                   <span className="text-neutral-900 dark:text-neutral-50">{fmt(grandTotal)}</span>
                 </div>
-                {Number(vat_rate) > 0 && (
+                {vatRate > 0 && (
                   <>
                     <div className="flex justify-between text-neutral-500 dark:text-neutral-400">
-                      <span>{t('form.preview.vat')} (%{Number(vat_rate)})</span>
+                      <span>{t('form.preview.vat')} (%{vatRate})</span>
                       <span>{fmt(vatAmount)}</span>
                     </div>
                     <div className="flex justify-between font-bold text-[11px]">
                       <span className="text-neutral-900 dark:text-neutral-50">{t('form.preview.totalWithVat')}</span>
                       <span className="text-primary-600 dark:text-primary-400">{fmt(totalWithVat)}</span>
                     </div>
+                    {has_tevkifat && (
+                      <>
+                        <div className="flex justify-between text-neutral-500 dark:text-neutral-400">
+                          <span>{t('form.preview.withheldVat')}</span>
+                          <span>-{fmt(withheldVat)}</span>
+                        </div>
+                        <div className="flex justify-between font-bold text-[11px]">
+                          <span className="text-primary-700 dark:text-primary-300">{t('form.preview.totalPayable')}</span>
+                          <span className="text-primary-600 dark:text-primary-400">{fmt(totalPayable)}</span>
+                        </div>
+                      </>
+                    )}
                   </>
                 )}
               </div>

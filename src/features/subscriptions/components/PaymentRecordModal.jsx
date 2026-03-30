@@ -176,6 +176,11 @@ export function PaymentRecordModal({ open, onClose, payment }) {
                 {t('subscriptions:payment.fields.invoiceNo')}: {payment.invoice_no}
               </p>
             )}
+            {payment.pos_code && (
+              <p className="text-xs text-success-600 dark:text-success-500 mt-0.5">
+                {t('subscriptions:payment.fields.posCode')}: {payment.pos_code}
+              </p>
+            )}
           </div>
         ) : (
           <>
@@ -184,6 +189,13 @@ export function PaymentRecordModal({ open, onClose, payment }) {
               type="date"
               error={errors.payment_date?.message}
               {...register('payment_date')}
+            />
+
+            <Input
+              label={t('subscriptions:payment.fields.posCode')}
+              error={errors.pos_code?.message}
+              {...register('pos_code')}
+              placeholder="Örn: 123456"
             />
 
             <Select

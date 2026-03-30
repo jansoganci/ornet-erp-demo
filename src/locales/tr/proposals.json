@@ -81,6 +81,10 @@
     "subtotal": "Ara Toplam",
     "discountPercent": "İskonto %{{percent}}",
     "discountAmount": "İskonto Tutarı",
+    "vatAmount": "KDV Tutarı",
+    "totalWithVat": "KDV Dahil Toplam",
+    "withheldVat": "Tevkifat",
+    "totalPayable": "Ödenecek Toplam",
     "summaryTitle": "Özet Bilgiler",
     "summary": {
       "createdAt": "Oluşturulma",
@@ -111,6 +115,8 @@
       "grandTotal": "Genel Toplam",
       "vat": "KDV",
       "totalWithVat": "KDV Dahil Toplam",
+      "withheldVat": "Tevkifat",
+      "totalPayable": "Ödenecek Toplam",
       "preparedBy": "Hazırlayan",
       "approvalLine": "Kaşe / Ad Soyad / İmza"
     },
@@ -125,6 +131,8 @@
       "customerRepresentative": "Müşteri Temsilcisi",
       "completionDate": "Bitiş Tarihi",
       "discountPercent": "İskonto Oranı (%)",
+      "hasVat": "KDV?",
+      "hasTevkifat": "Tevkifat?",
       "vatRate": "KDV Oranı (%)",
       "termsEngineering": "Mühendislik Hizmetleri",
       "termsPricing": "Fiyatlandırma",
@@ -143,6 +151,11 @@
       "logoAndHeader": "Logo ve PDF Başlık Bilgileri",
       "postAcceptanceDates": "Müşteri onayı sonrası doldurulacak tarihler",
       "terms": "Şartlar ve Koşullar"
+    },
+    "tevkifatConfirm": {
+      "title": "Tevkifat Onayı",
+      "message": "Tutar limit üstü. Tevkifat eklemeden devam edilsin mi?",
+      "confirm": "Devam Et"
     }
   },
   "annualFixed": {

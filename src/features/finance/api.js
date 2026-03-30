@@ -41,6 +41,11 @@ export const financeDashboardKeys = {
   recentTransactions: (limit) => [...financeDashboardKeys.all, 'recentTransactions', limit],
 };
 
+export const financeSettingsKeys = {
+  all: ['finance_settings'],
+  detail: () => [...financeSettingsKeys.all, 'detail'],
+};
+
 export function getLastNMonths(n) {
   const periods = [];
   const d = new Date();
@@ -284,6 +289,17 @@ export async function getLatestRate(currency = 'USD') {
     .select(RATE_SELECT)
     .eq('currency', currency)
     .order('rate_date', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) throw error;
+  return data;
+}
+
+export async function fetchFinanceSettings() {
+  const { data, error } = await supabase
+    .from('finance_settings')
+    .select('tevkifat_threshold_try, tevkifat_rate_numerator, tevkifat_rate_denominator')
     .limit(1)
     .maybeSingle();
 

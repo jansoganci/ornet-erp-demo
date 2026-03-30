@@ -11,6 +11,7 @@ import {
   vatReportKeys,
   financeDashboardKeys,
   dashboardV2Keys,
+  financeSettingsKeys,
 } from './api';
 
 // Transactions
@@ -298,5 +299,20 @@ export function useGeneralExpenses({ year, month, viewMode = 'total' } = {}) {
     queryKey: dashboardV2Keys.generalExpenses(year, month, viewMode),
     queryFn: () => api.fetchGeneralExpenses({ year, month, viewMode }),
     enabled: !!year,
+  });
+}
+
+export function useFinanceSettings() {
+  return useQuery({
+    queryKey: financeSettingsKeys.detail(),
+    queryFn: async () => {
+      const row = await api.fetchFinanceSettings();
+      return {
+        tevkifat_threshold_try: Number(row?.tevkifat_threshold_try) || 12000,
+        tevkifat_rate_numerator: Number(row?.tevkifat_rate_numerator) || 9,
+        tevkifat_rate_denominator: Number(row?.tevkifat_rate_denominator) || 10,
+      };
+    },
+    staleTime: 1000 * 60 * 10,
   });
 }
