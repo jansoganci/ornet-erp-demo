@@ -4,10 +4,12 @@ import { useNavigate } from 'react-router-dom';
 import { Calendar } from 'react-big-calendar';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { ChevronLeft, ChevronRight, CalendarDays } from 'lucide-react';
+import { Badge } from '../../../components/ui/Badge';
 import { Button, IconButton, Spinner, ErrorState } from '../../../components/ui';
 import { calendarLocalizer, getCalendarCulture } from '../../calendar/calendarLocalizer';
-import { getWeekRange, getMonthRange, getEventClassName, formatDateRangeLabel } from '../../calendar/utils';
+import { getWeekRange, getMonthRange, getEventClassName, formatDateRangeLabel, mapPlanItemToEvent } from '../../calendar/utils';
 import { useCalendarWorkOrders, useCalendarRealtime } from '../../calendar/hooks';
+import { usePlanItemsRange } from '../planItemsHooks';
 import { cn } from '../../../lib/utils';
 
 const VIEW_WEEK = 'week';
@@ -30,12 +32,25 @@ export function CalendarTab() {
     return formatDateRangeLabel(dateFrom, dateTo, view, i18n.language);
   }, [dateFrom, dateTo, view, i18n.language]);
 
-  const { events, isLoading, isError } = useCalendarWorkOrders({ dateFrom, dateTo });
+  const { events: workOrderEvents = [], isLoading: workOrdersLoading, isError: workOrdersError } = useCalendarWorkOrders({ dateFrom, dateTo });
+  const { data: planItems = [], isLoading: planItemsLoading, isError: planItemsError } = usePlanItemsRange(dateFrom, dateTo);
   useCalendarRealtime();
+
+  const events = useMemo(() => {
+    const mappedPlanEvents = planItems.map(mapPlanItemToEvent).filter(Boolean);
+    return [...workOrderEvents, ...mappedPlanEvents];
+  }, [planItems, workOrderEvents]);
+
+  const isLoading = workOrdersLoading || planItemsLoading;
+  const isError = workOrdersError || planItemsError;
 
   const culture = getCalendarCulture(i18n.language);
 
   const handleSelectEvent = (event) => {
+    if (event?.resource?._type === 'operations_plan') {
+      return;
+    }
+
     if (event?.resource?.id) {
       navigate(`/work-orders/${event.resource.id}`);
     }
@@ -106,7 +121,17 @@ export function CalendarTab() {
       {isError ? (
         <ErrorState message={t('common:errors.loadFailed')} />
       ) : (
-        <div className="relative min-h-[500px] rounded-lg border border-neutral-200 dark:border-[#262626] overflow-hidden bg-white dark:bg-[#171717]">
+        <div className="space-y-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge variant="info" size="sm">{t('operations:calendarLegend.workOrders')}</Badge>
+            <Badge variant="default" size="sm" className="!bg-cyan-50 !text-cyan-800 dark:!bg-cyan-900/30 dark:!text-cyan-200">
+              {t('operations:calendarLegend.planPending')}
+            </Badge>
+            <Badge variant="success" size="sm">{t('operations:calendarLegend.planDone')}</Badge>
+            <Badge variant="error" size="sm">{t('operations:calendarLegend.planNotDone')}</Badge>
+          </div>
+
+          <div className="relative min-h-[500px] rounded-lg border border-neutral-200 dark:border-[#262626] overflow-hidden bg-white dark:bg-[#171717]">
           <Calendar
             localizer={calendarLocalizer}
             culture={culture}
@@ -142,6 +167,7 @@ export function CalendarTab() {
               </div>
             </div>
           )}
+          </div>
         </div>
       )}
     </div>

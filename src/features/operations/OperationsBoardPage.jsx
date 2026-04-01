@@ -1,8 +1,10 @@
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ClipboardList, Calendar, BarChart3 } from 'lucide-react';
+import { ClipboardList, Calendar, BarChart3, Upload } from 'lucide-react';
 import { PageContainer, PageHeader } from '../../components/layout';
+import { Button } from '../../components/ui';
 import { RequestPoolTab } from './components/RequestPoolTab';
+import { PlanPanel } from './components/PlanPanel';
 import { CalendarTab } from './components/CalendarTab';
 import { InsightsTab } from './components/InsightsTab';
 
@@ -14,6 +16,7 @@ const TABS = [
 
 export function OperationsBoardPage() {
   const { t } = useTranslation(['operations', 'common']);
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab = searchParams.get('tab') || 'pool';
 
@@ -23,7 +26,16 @@ export function OperationsBoardPage() {
 
   return (
     <PageContainer maxWidth="full">
-      <PageHeader title={t('operations:title')} />
+      <PageHeader
+        title={t('operations:title')}
+        actions={
+          activeTab === 'pool' ? (
+            <Button variant="outline" leftIcon={<Upload className="w-4 h-4" />} onClick={() => navigate('/operations/import')}>
+              {t('common:import.bulkImportButton')}
+            </Button>
+          ) : null
+        }
+      />
 
       {/* Tab bar */}
       <div className="mt-4 border-b border-neutral-200 dark:border-neutral-800">
@@ -54,7 +66,12 @@ export function OperationsBoardPage() {
 
       {/* Tab content */}
       <div className="mt-6">
-        {activeTab === 'pool' && <RequestPoolTab />}
+        {activeTab === 'pool' && (
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_360px]">
+            <RequestPoolTab />
+            <PlanPanel />
+          </div>
+        )}
         {activeTab === 'calendar' && <CalendarTab />}
         {activeTab === 'insights' && <InsightsTab />}
       </div>

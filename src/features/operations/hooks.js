@@ -3,41 +3,43 @@ import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { getErrorMessage } from '../../lib/errorHandler';
 import {
-  serviceRequestKeys,
-  fetchServiceRequests,
-  fetchServiceRequest,
-  createServiceRequest,
-  updateServiceRequest,
-  deleteServiceRequest,
+  operationsItemKeys,
+  fetchOperationsItems,
+  fetchOperationsItem,
+  createOperationsItem,
+  updateOperationsItem,
+  deleteOperationsItem,
   updateContactStatus,
-  convertRequestToWorkOrder,
-  boomerangRequest,
+  convertItemToWorkOrder,
+  boomerangItem,
   fetchOperationsStats,
-  cancelServiceRequest,
+  cancelOperationsItem,
+  closeOperationsItem,
 } from './api';
+import { importOperationsItems } from './importApi';
 import { workOrderKeys } from '../workOrders/hooks';
 
 // ── Queries ─────────────────────────────────────────────────────────────────
 
-export function useServiceRequests(filters) {
+export function useOperationsItems(filters) {
   return useQuery({
-    queryKey: serviceRequestKeys.list(filters),
-    queryFn: () => fetchServiceRequests(filters),
+    queryKey: operationsItemKeys.list(filters),
+    queryFn: () => fetchOperationsItems(filters),
     staleTime: 60_000, // Pool status and contact status change frequently
   });
 }
 
-export function useServiceRequest(id) {
+export function useOperationsItem(id) {
   return useQuery({
-    queryKey: serviceRequestKeys.detail(id),
-    queryFn: () => fetchServiceRequest(id),
+    queryKey: operationsItemKeys.detail(id),
+    queryFn: () => fetchOperationsItem(id),
     enabled: !!id,
   });
 }
 
 export function useOperationsStats(dateFrom, dateTo) {
   return useQuery({
-    queryKey: serviceRequestKeys.stats({ dateFrom, dateTo }),
+    queryKey: operationsItemKeys.stats({ dateFrom, dateTo }),
     queryFn: () => fetchOperationsStats(dateFrom, dateTo),
   });
 }
@@ -45,17 +47,17 @@ export function useOperationsStats(dateFrom, dateTo) {
 // ── Mutations ───────────────────────────────────────────────────────────────
 
 /**
- * Create a new service request (Quick Entry).
+ * Create a new operations item (Quick Entry).
  */
-export function useCreateServiceRequest() {
+export function useCreateOperationsItem() {
   const queryClient = useQueryClient();
   const { t } = useTranslation('operations');
 
   return useMutation({
-    mutationFn: createServiceRequest,
+    mutationFn: createOperationsItem,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: serviceRequestKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: serviceRequestKeys.stats() });
+      queryClient.invalidateQueries({ queryKey: operationsItemKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: operationsItemKeys.stats() });
       toast.success(t('toast.created'));
     },
     onError: (error) => {
@@ -65,18 +67,18 @@ export function useCreateServiceRequest() {
 }
 
 /**
- * Update a service request (edit fields).
+ * Update an operations item (edit fields).
  */
-export function useUpdateServiceRequest() {
+export function useUpdateOperationsItem() {
   const queryClient = useQueryClient();
   const { t } = useTranslation('operations');
 
   return useMutation({
-    mutationFn: updateServiceRequest,
+    mutationFn: updateOperationsItem,
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: serviceRequestKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: serviceRequestKeys.detail(data.id) });
-      queryClient.invalidateQueries({ queryKey: serviceRequestKeys.stats() });
+      queryClient.invalidateQueries({ queryKey: operationsItemKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: operationsItemKeys.detail(data.id) });
+      queryClient.invalidateQueries({ queryKey: operationsItemKeys.stats() });
       toast.success(t('toast.updated'));
     },
     onError: (error) => {
@@ -96,8 +98,8 @@ export function useUpdateContactStatus() {
     mutationFn: ({ id, contactStatus, contactNotes }) =>
       updateContactStatus(id, contactStatus, contactNotes),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: serviceRequestKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: serviceRequestKeys.stats() });
+      queryClient.invalidateQueries({ queryKey: operationsItemKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: operationsItemKeys.stats() });
     },
     onError: (error) => {
       toast.error(getErrorMessage(error, 'common.updateFailed'));
@@ -106,19 +108,19 @@ export function useUpdateContactStatus() {
 }
 
 /**
- * Convert a confirmed request to a work order.
- * Invalidates both service_requests and workOrders caches.
+ * Convert a confirmed operations item to a work order.
+ * Invalidates both operations_items and workOrders caches.
  */
 export function useConvertToWorkOrder() {
   const queryClient = useQueryClient();
   const { t } = useTranslation('operations');
 
   return useMutation({
-    mutationFn: ({ requestId, scheduleData }) =>
-      convertRequestToWorkOrder(requestId, scheduleData),
+    mutationFn: ({ itemId, scheduleData }) =>
+      convertItemToWorkOrder(itemId, scheduleData),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: serviceRequestKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: serviceRequestKeys.stats() });
+      queryClient.invalidateQueries({ queryKey: operationsItemKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: operationsItemKeys.stats() });
       queryClient.invalidateQueries({ queryKey: workOrderKeys.lists() });
       toast.success(t('toast.workOrderCreated'));
     },
@@ -129,19 +131,19 @@ export function useConvertToWorkOrder() {
 }
 
 /**
- * Boomerang a failed request back to the pool.
- * Invalidates both service_requests and workOrders caches.
+ * Boomerang a failed operations item back to the pool.
+ * Invalidates both operations_items and workOrders caches.
  */
-export function useBoomerangRequest() {
+export function useBoomerangItem() {
   const queryClient = useQueryClient();
   const { t } = useTranslation('operations');
 
   return useMutation({
-    mutationFn: ({ requestId, failureReason }) =>
-      boomerangRequest(requestId, failureReason),
+    mutationFn: ({ itemId, failureReason }) =>
+      boomerangItem(itemId, failureReason),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: serviceRequestKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: serviceRequestKeys.stats() });
+      queryClient.invalidateQueries({ queryKey: operationsItemKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: operationsItemKeys.stats() });
       queryClient.invalidateQueries({ queryKey: workOrderKeys.lists() });
       toast.success(t('toast.boomeranged'));
     },
@@ -152,17 +154,17 @@ export function useBoomerangRequest() {
 }
 
 /**
- * Delete (soft) a service request.
+ * Delete (soft) an operations item.
  */
-export function useDeleteServiceRequest() {
+export function useDeleteOperationsItem() {
   const queryClient = useQueryClient();
   const { t } = useTranslation('common');
 
   return useMutation({
-    mutationFn: deleteServiceRequest,
+    mutationFn: deleteOperationsItem,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: serviceRequestKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: serviceRequestKeys.stats() });
+      queryClient.invalidateQueries({ queryKey: operationsItemKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: operationsItemKeys.stats() });
       toast.success(t('success.deleted'));
     },
     onError: (error) => {
@@ -172,21 +174,61 @@ export function useDeleteServiceRequest() {
 }
 
 /**
- * Cancel a service request.
+ * Cancel an operations item.
  */
-export function useCancelServiceRequest() {
+export function useCancelOperationsItem() {
   const queryClient = useQueryClient();
   const { t } = useTranslation('operations');
 
   return useMutation({
-    mutationFn: cancelServiceRequest,
+    mutationFn: cancelOperationsItem,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: serviceRequestKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: serviceRequestKeys.stats() });
+      queryClient.invalidateQueries({ queryKey: operationsItemKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: operationsItemKeys.stats() });
       toast.success(t('toast.cancelled'));
     },
     onError: (error) => {
       toast.error(getErrorMessage(error, 'common.updateFailed'));
+    },
+  });
+}
+
+/**
+ * Close an operations item with a selected outcome.
+ */
+export function useCloseOperationsItem() {
+  const queryClient = useQueryClient();
+  const { t } = useTranslation('operations');
+
+  return useMutation({
+    mutationFn: ({ id, outcomeType, contactNotes }) =>
+      closeOperationsItem(id, outcomeType, contactNotes),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: operationsItemKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: operationsItemKeys.stats() });
+
+      const toastKey = `toast.outcome.${variables.outcomeType}`;
+      toast.success(t(toastKey, { defaultValue: t('toast.updated') }));
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'common.updateFailed'));
+    },
+  });
+}
+
+export function useImportOperationsItems({ onProgress } = {}) {
+  const queryClient = useQueryClient();
+  const { t } = useTranslation('operations');
+
+  return useMutation({
+    mutationFn: (rows) => importOperationsItems(rows, { onProgress }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: operationsItemKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: operationsItemKeys.stats() });
+      toast.success(t('toast.import.created'));
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'common.importFailed'));
     },
   });
 }

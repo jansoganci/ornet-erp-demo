@@ -5,7 +5,10 @@ const t = (key) => i18n.t(key);
 
 export const REGIONS = ['istanbul_europe', 'istanbul_anatolia', 'outside_istanbul'];
 export const CONTACT_STATUSES = ['not_contacted', 'no_answer', 'confirmed', 'cancelled'];
-export const REQUEST_STATUSES = ['open', 'scheduled', 'completed', 'failed', 'cancelled'];
+export const ITEM_STATUSES = ['open', 'scheduled', 'completed', 'failed', 'closed'];
+export const OUTCOME_TYPES = ['work_order', 'proposal', 'remote_resolved', 'closed_no_action', 'cancelled'];
+export const PLAN_ITEM_TYPES = ['field_work', 'office', 'proposal', 'finance', 'other'];
+export const PLAN_ITEM_STATUSES = ['pending', 'done', 'not_done'];
 export const WORK_TYPES = ['survey', 'installation', 'service', 'maintenance', 'other'];
 export const PRIORITIES = ['low', 'normal', 'high', 'urgent'];
 
@@ -22,7 +25,7 @@ export const FAILURE_REASONS = [
  * Customer + Site + Description. Everything else gets defaults.
  */
 export const quickEntrySchema = z.object({
-  customer_id: z.string().min(1, t('errors:validation.required')).uuid(),
+  customer_id: z.string().uuid().optional().or(z.literal('')),
   site_id: z.string().optional().or(z.literal('')),
   description: z.string().min(1, t('errors:validation.required')).max(1000),
   region: z.enum(REGIONS).default('istanbul_europe'),
@@ -69,4 +72,17 @@ export const contactUpdateSchema = z.object({
  */
 export const failureSchema = z.object({
   failure_reason: z.enum(FAILURE_REASONS),
+});
+
+export const createPlanItemSchema = z.object({
+  plan_date: z.string().min(1, t('errors:validation.required')),
+  description: z.string().min(1, t('errors:validation.required')).max(1000),
+  notes: z.string().max(500).optional().or(z.literal('')),
+  item_type: z.enum(PLAN_ITEM_TYPES).default('office'),
+});
+
+export const addToPlanModalSchema = z.object({
+  plan_date: z.string().min(1, t('errors:validation.required')),
+  notes: z.string().max(500).optional().or(z.literal('')),
+  item_type: z.enum(PLAN_ITEM_TYPES).default('office'),
 });

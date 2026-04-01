@@ -6,7 +6,7 @@ import { Spinner } from '../../../components/ui/Spinner';
 import { EmptyState } from '../../../components/ui/EmptyState';
 import { ErrorState } from '../../../components/ui/ErrorState';
 import { Button } from '../../../components/ui/Button';
-import { useServiceRequests, useCancelServiceRequest, useDeleteServiceRequest } from '../hooks';
+import { useOperationsItems, useDeleteOperationsItem } from '../hooks';
 import { REGIONS, CONTACT_STATUSES, PRIORITIES } from '../schema';
 import { QuickEntryRow } from './QuickEntryRow';
 import { RequestCard } from './RequestCard';
@@ -27,16 +27,9 @@ export function RequestPoolTab() {
     priority: priorityFilter,
   }), [regionFilter, contactFilter, priorityFilter]);
 
-  const { data: requests = [], isLoading, isError, refetch } = useServiceRequests(filters);
+  const { data: requests = [], isLoading, isError, refetch } = useOperationsItems(filters);
 
-  const cancelMutation = useCancelServiceRequest();
-  const deleteMutation = useDeleteServiceRequest();
-
-  const handleCancel = (id) => {
-    if (window.confirm(t('common:confirm.title'))) {
-      cancelMutation.mutate(id);
-    }
-  };
+  const deleteMutation = useDeleteOperationsItem();
 
   const handleDelete = (id) => {
     if (window.confirm(t('operations:delete.message'))) {
@@ -103,12 +96,11 @@ export function RequestPoolTab() {
           description={t('operations:empty.description')}
         />
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-2">
           {requests.map((request) => (
             <RequestCard
               key={request.id}
               request={request}
-              onCancel={handleCancel}
               onDelete={handleDelete}
             />
           ))}

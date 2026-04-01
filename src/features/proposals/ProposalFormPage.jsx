@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -42,6 +42,7 @@ import {
 } from './hooks';
 import { useFinanceSettings, useLatestRate } from '../finance/hooks';
 import { useCustomer } from '../customers/hooks';
+import { useCloseOperationsItem } from '../operations/hooks';
 import { CustomerSiteSelector } from '../workOrders/CustomerSiteSelector';
 import { SiteFormModal } from '../customerSites/SiteFormModal';
 import { ProposalItemsEditor } from './components/ProposalItemsEditor';
@@ -53,6 +54,7 @@ import { calcProposalTotals, calcVatTevkifatSummary } from '../../lib/proposalCa
 export function ProposalFormPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { t } = useTranslation(['proposals', 'common', 'workOrders']);
   const { t: tCommon } = useTranslation('common');
   const isEdit = !!id;
@@ -78,6 +80,12 @@ export function ProposalFormPage() {
   const updateMutation = useUpdateProposal();
   const updateItemsMutation = useUpdateProposalItems();
   const updateAnnualFixedMutation = useUpdateProposalAnnualFixedCosts();
+  const closeOperationsItemMutation = useCloseOperationsItem();
+
+  const sourceCustomerId = searchParams.get('customerId') || '';
+  const sourceSiteId = searchParams.get('siteId') || '';
+  const sourceDescription = searchParams.get('description') || '';
+  const sourceItemId = searchParams.get('sourceItemId') || '';
 
   const {
     register,
@@ -189,6 +197,18 @@ export function ProposalFormPage() {
         setCurrentStep(0);
       }
     } else {
+      if (!hasInitialized) {
+        const nextValues = {
+          ...proposalDefaultValues,
+          site_id: sourceSiteId,
+          title: sourceDescription,
+          scope_of_work: sourceDescription,
+          notes: sourceDescription,
+        };
+
+        reset(nextValues);
+        setSelectedCustomerId(sourceCustomerId);
+      }
       setHasInitialized(true);
     }
   }, [
@@ -200,6 +220,10 @@ export function ProposalFormPage() {
     isItemsLoading,
     isAnnualFixedLoading,
     reset,
+    hasInitialized,
+    sourceCustomerId,
+    sourceDescription,
+    sourceSiteId,
   ]);
 
   const validateStep = useCallback(async (step) => {
@@ -279,6 +303,14 @@ export function ProposalFormPage() {
           items,
           annual_fixed_costs: annualFixedCosts ?? [],
         });
+
+        if (sourceItemId) {
+          await closeOperationsItemMutation.mutateAsync({
+            id: sourceItemId,
+            outcomeType: 'proposal',
+          });
+        }
+
         reset(data);
         if (!skipNavigate) {
           justSavedRef.current = true;

@@ -1,9 +1,15 @@
 {
   "title": "Operasyon Merkezi",
   "tabs": {
-    "pool": "Talep Havuzu",
+    "pool": "Operasyon",
     "calendar": "Takvim",
     "insights": "Özet"
+  },
+  "calendarLegend": {
+    "workOrders": "İş Emirleri",
+    "planPending": "Plan Bekliyor",
+    "planDone": "Plan Yapıldı",
+    "planNotDone": "Plan Yapılmadı"
   },
   "quickEntry": {
     "customerPlaceholder": "Müşteri ara...",
@@ -16,6 +22,31 @@
     "istanbul_anatolia": "İstanbul Anadolu",
     "outside_istanbul": "İstanbul Dışı"
   },
+  "import": {
+    "pageTitle": "Operasyon Excel İçe Aktar",
+    "uploadTitle": "Excel dosyasını yükleyin",
+    "uploadDescription": "A, D ve F sütunlarındaki dolu hücreler operasyon havuzuna kayıt olarak aktarılır.",
+    "downloadTemplate": "Şablonu indir",
+    "selectFile": "Dosya seç",
+    "startImport": "İçe aktar",
+    "backToOperations": "Operasyona dön",
+    "processing": "Excel dosyası işleniyor...",
+    "validRows": "{{count}} kayıt hazır",
+    "progressLabel": "{{current}} / {{total}} kayıt işlendi",
+    "errors": "İçe aktarma hataları",
+    "instructions": {
+      "intro": "Müşterinin mevcut açık iş Excel yapısını bozmadan havuza aktarın. Sistem sadece ilgili sütunlardaki dolu hücreleri kayıt olarak alır.",
+      "fill": "A sütunu Avrupa, D sütunu Anadolu, F sütunu şehir dışı işler içindir."
+    },
+    "previewColumns": {
+      "region": "Bölge",
+      "description": "Açıklama",
+      "status": "Durum"
+    },
+    "errorMessages": {
+      "MAX_ROWS": "Tek seferde en fazla 1000 kayıt içe aktarılabilir."
+    }
+  },
   "contactStatus": {
     "not_contacted": "Aranmadı",
     "no_answer": "Cevap Yok",
@@ -27,7 +58,8 @@
     "scheduled": "Planlandı",
     "completed": "Tamamlandı",
     "failed": "Başarısız",
-    "cancelled": "İptal Edildi"
+    "cancelled": "İptal Edildi",
+    "closed": "Kapatıldı"
   },
   "priority": {
     "low": "Düşük",
@@ -48,9 +80,75 @@
     "boomerang": "Yeniden Planla",
     "callQueue": "Arama Sırası",
     "cancel": "İptal Et",
+    "addToDailyPlan": "Günlük Plana Ekle",
+    "closeWithOutcome": "Sonuç ile Kapat",
     "delete": "Sil",
     "edit": "Düzenle",
-    "viewWorkOrder": "İş Emrine Git"
+    "viewWorkOrder": "İş Emrine Git",
+    "resolvedRemotely": "Uzaktan Çözüldü",
+    "createProposal": "Teklif Oluştur"
+  },
+  "closeOutcome": {
+    "title": "Kapanış Sonucu Seç",
+    "confirm": "Kapat",
+    "outcomeLabel": "Sonuç",
+    "notesLabel": "Not",
+    "notesPlaceholder": "İsteğe bağlı kapanış notu...",
+    "options": {
+      "remote_resolved": "Uzaktan çözüldü",
+      "closed_no_action": "İşlem gerektirmedi",
+      "cancelled": "Müşteri iptal etti"
+    }
+  },
+  "addToPlan": {
+    "title": "Günlük Plana Ekle",
+    "confirm": "Plana Ekle",
+    "sourceLabel": "Kaynak Talep",
+    "date": "Tarih",
+    "itemType": "İş Tipi",
+    "notes": "Not",
+    "notesPlaceholder": "İsteğe bağlı kısa not..."
+  },
+  "carryForward": {
+    "title": "Ertesi Güne Taşı",
+    "confirm": "Taşı",
+    "date": "Yeni Tarih"
+  },
+  "plan": {
+    "title": "Günlük Plan",
+    "today": "Bugün",
+    "quickAdd": "Hızlı Ekle",
+    "carried": "Taşındı",
+    "links": {
+      "operations": "Havuz",
+      "workOrder": "İş Emri",
+      "proposal": "Teklif"
+    },
+    "empty": {
+      "title": "Bu gün için kayıt yok",
+      "description": "Yeni bir plan maddesi ekleyerek başlayın."
+    },
+    "inline": {
+      "placeholder": "Bu gün ne yapılacak?",
+      "add": "Ekle"
+    },
+    "actions": {
+      "toggleStatus": "Durumu değiştir",
+      "carryForward": "Ertesi Güne Taşı",
+      "delete": "Sil"
+    },
+    "itemType": {
+      "field_work": "Saha",
+      "office": "Merkez",
+      "proposal": "Teklif",
+      "finance": "Finans",
+      "other": "Diğer"
+    },
+    "status": {
+      "pending": "Bekliyor",
+      "done": "Yapıldı",
+      "not_done": "Yapılmadı"
+    }
   },
   "callQueue": {
     "title": "Arama Sırası",
@@ -78,7 +176,15 @@
     "thisQuarter": "Bu Çeyrek",
     "totalRequests": "Toplam Talep",
     "generalStats": "Genel İstatistikler",
-    "periodBreakdown": "Dönem Sonuçları"
+    "periodBreakdown": "Dönem Sonuçları",
+    "outcomes": {
+      "title": "Kapanış Sonuçları",
+      "work_order": "İş Emrine Döndü",
+      "proposal": "Teklife Döndü",
+      "remote_resolved": "Uzaktan Çözüldü",
+      "closed_no_action": "İşlem Gerekmedi",
+      "cancelled": "Müşteri İptali"
+    }
   },
   "filters": {
     "allRegions": "Tüm Bölgeler",
@@ -114,7 +220,22 @@
     "updated": "Talep güncellendi",
     "workOrderCreated": "İş emri oluşturuldu",
     "boomeranged": "Talep havuza geri döndürüldü",
-    "cancelled": "Talep iptal edildi"
+    "cancelled": "Talep iptal edildi",
+    "import": {
+      "created": "Operasyon kayıtları içe aktarıldı"
+    },
+    "plan": {
+      "created": "Plan maddesi oluşturuldu",
+      "updated": "Plan maddesi güncellendi",
+      "carriedForward": "Plan maddesi ileri tarihe taşındı",
+      "deleted": "Plan maddesi silindi"
+    },
+    "outcome": {
+      "remote_resolved": "Talep uzaktan çözüldü",
+      "closed_no_action": "Talep işlem gerekmiyor olarak kapatıldı",
+      "cancelled": "Talep müşteri iptali olarak kapatıldı",
+      "proposal": "Talep teklif sürecine taşındı"
+    }
   },
   "delete": {
     "title": "Talebi Sil",

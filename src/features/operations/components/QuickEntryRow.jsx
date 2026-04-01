@@ -5,7 +5,7 @@ import { Spinner } from '../../../components/ui/Spinner';
 import { useDebouncedValue } from '../../../hooks/useDebouncedValue';
 import { useCustomers } from '../../customers/hooks';
 import { useSitesByCustomer } from '../../customerSites/hooks';
-import { useCreateServiceRequest } from '../hooks';
+import { useCreateOperationsItem } from '../hooks';
 import { normalizeForSearch } from '../../../lib/normalizeForSearch';
 import { cn } from '../../../lib/utils';
 
@@ -30,7 +30,7 @@ function detectRegion(city, district) {
 
 export function QuickEntryRow() {
   const { t } = useTranslation('operations');
-  const createMutation = useCreateServiceRequest();
+  const createMutation = useCreateOperationsItem();
 
   // Customer search
   const [customerSearch, setCustomerSearch] = useState('');
@@ -93,7 +93,7 @@ export function QuickEntryRow() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!selectedCustomer || !description.trim()) return;
+    if (!description.trim()) return;
 
     const region = selectedSite
       ? detectRegion(selectedSite.city, selectedSite.district)
@@ -101,7 +101,7 @@ export function QuickEntryRow() {
 
     createMutation.mutate(
       {
-        customer_id: selectedCustomer.id,
+        customer_id: selectedCustomer?.id || null,
         site_id: selectedSite?.id || null,
         description: description.trim(),
         region,
@@ -233,10 +233,10 @@ export function QuickEntryRow() {
       {/* Submit hint */}
       <button
         type="submit"
-        disabled={!selectedCustomer || !description.trim() || createMutation.isPending}
+        disabled={!description.trim() || createMutation.isPending}
         className={cn(
           'shrink-0 h-9 px-3 rounded-lg text-xs font-medium transition-colors',
-          selectedCustomer && description.trim()
+          description.trim()
             ? 'bg-primary-600 hover:bg-primary-700 text-white'
             : 'bg-neutral-200 dark:bg-neutral-800 text-neutral-400 cursor-not-allowed',
         )}

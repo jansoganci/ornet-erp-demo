@@ -1,13 +1,13 @@
 import { supabase } from '../../lib/supabase';
 
 // Query keys
-export const serviceRequestKeys = {
-  all: ['service_requests'],
-  lists: () => [...serviceRequestKeys.all, 'list'],
-  list: (filters) => [...serviceRequestKeys.lists(), filters],
-  details: () => [...serviceRequestKeys.all, 'detail'],
-  detail: (id) => [...serviceRequestKeys.details(), id],
-  stats: (filters) => [...serviceRequestKeys.all, 'stats', filters],
+export const operationsItemKeys = {
+  all: ['operations_items'],
+  lists: () => [...operationsItemKeys.all, 'list'],
+  list: (filters) => [...operationsItemKeys.lists(), filters],
+  details: () => [...operationsItemKeys.all, 'detail'],
+  detail: (id) => [...operationsItemKeys.details(), id],
+  stats: (filters) => [...operationsItemKeys.all, 'stats', filters],
 };
 
 // Lightweight SELECT for operations pool (list view) — only columns displayed on cards
@@ -21,7 +21,7 @@ const POOL_SELECT = `
 `;
 
 // Full SELECT for detail view — includes all fields
-const REQUEST_DETAIL_SELECT = `
+const ITEM_DETAIL_SELECT = `
   *,
   customers ( id, company_name, phone ),
   customer_sites ( id, site_name, account_no, city, district, contact_phone ),
@@ -33,9 +33,9 @@ const REQUEST_DETAIL_SELECT = `
  * Fetch service requests with optional filters.
  * Default: all open requests (the pool).
  */
-export async function fetchServiceRequests(filters = {}) {
+export async function fetchOperationsItems(filters = {}) {
   let query = supabase
-    .from('service_requests')
+    .from('operations_items')
     .select(POOL_SELECT)
     .is('deleted_at', null);
 
@@ -76,12 +76,12 @@ export async function fetchServiceRequests(filters = {}) {
 }
 
 /**
- * Fetch a single service request by ID.
+ * Fetch a single operations item by ID.
  */
-export async function fetchServiceRequest(id) {
+export async function fetchOperationsItem(id) {
   const { data, error } = await supabase
-    .from('service_requests')
-    .select(REQUEST_DETAIL_SELECT)
+    .from('operations_items')
+    .select(ITEM_DETAIL_SELECT)
     .is('deleted_at', null)
     .eq('id', id)
     .single();
@@ -91,18 +91,18 @@ export async function fetchServiceRequest(id) {
 }
 
 /**
- * Create a new service request (quick entry from phone call).
+ * Create a new operations item (quick entry from phone call).
  */
-export async function createServiceRequest(requestData) {
+export async function createOperationsItem(requestData) {
   const { data: { user } } = await supabase.auth.getUser();
 
   const { data, error } = await supabase
-    .from('service_requests')
+    .from('operations_items')
     .insert([{
       ...requestData,
       created_by: user?.id,
     }])
-    .select(REQUEST_DETAIL_SELECT)
+    .select(ITEM_DETAIL_SELECT)
     .single();
 
   if (error) throw error;
@@ -110,14 +110,14 @@ export async function createServiceRequest(requestData) {
 }
 
 /**
- * Update a service request (contact status, priority, region, etc.).
+ * Update an operations item (contact status, priority, region, etc.).
  */
-export async function updateServiceRequest({ id, ...updates }) {
+export async function updateOperationsItem({ id, ...updates }) {
   const { data, error } = await supabase
-    .from('service_requests')
+    .from('operations_items')
     .update(updates)
     .eq('id', id)
-    .select(REQUEST_DETAIL_SELECT)
+    .select(ITEM_DETAIL_SELECT)
     .single();
 
   if (error) throw error;
@@ -125,15 +125,13 @@ export async function updateServiceRequest({ id, ...updates }) {
 }
 
 /**
- * Soft-delete a service request.
+ * Soft-delete an operations item.
  */
-export async function deleteServiceRequest(id) {
-  const { error } = await supabase
-    .from('service_requests')
-    .update({ deleted_at: new Date().toISOString() })
-    .eq('id', id);
+export async function deleteOperationsItem(id) {
+  const { error } = await supabase.rpc('soft_delete_operations_item', { p_id: id });
 
   if (error) throw error;
+  return { success: true };
 }
 
 /**
@@ -153,7 +151,7 @@ export async function updateContactStatus(id, contactStatus, contactNotes = null
   if (contactStatus !== 'cancelled') {
     // Fetch current attempts first
     const { data: current } = await supabase
-      .from('service_requests')
+      .from('operations_items')
       .select('contact_attempts')
       .eq('id', id)
       .single();
@@ -162,10 +160,10 @@ export async function updateContactStatus(id, contactStatus, contactNotes = null
   }
 
   const { data, error } = await supabase
-    .from('service_requests')
+    .from('operations_items')
     .update(updates)
     .eq('id', id)
-    .select(REQUEST_DETAIL_SELECT)
+    .select(ITEM_DETAIL_SELECT)
     .single();
 
   if (error) throw error;
@@ -173,14 +171,14 @@ export async function updateContactStatus(id, contactStatus, contactNotes = null
 }
 
 /**
- * Convert a confirmed request to a work order via RPC.
+ * Convert a confirmed operations item to a work order via RPC.
  * Returns the new work order ID.
  */
-export async function convertRequestToWorkOrder(requestId, scheduleData) {
+export async function convertItemToWorkOrder(itemId, scheduleData) {
   const { data: { user } } = await supabase.auth.getUser();
 
-  const { data, error } = await supabase.rpc('fn_convert_request_to_work_order', {
-    p_request_id: requestId,
+  const { data, error } = await supabase.rpc('fn_convert_item_to_work_order', {
+    p_item_id: itemId,
     p_scheduled_date: scheduleData.scheduled_date,
     p_scheduled_time: scheduleData.scheduled_time || null,
     p_work_type: scheduleData.work_type || null,
@@ -193,13 +191,13 @@ export async function convertRequestToWorkOrder(requestId, scheduleData) {
 }
 
 /**
- * Boomerang a failed request back to the pool via RPC.
+ * Boomerang a failed operations item back to the pool via RPC.
  */
-export async function boomerangRequest(requestId, failureReason = null) {
+export async function boomerangItem(itemId, failureReason = null) {
   const { data: { user } } = await supabase.auth.getUser();
 
-  const { error } = await supabase.rpc('fn_boomerang_failed_request', {
-    p_request_id: requestId,
+  const { error } = await supabase.rpc('fn_boomerang_failed_item', {
+    p_item_id: itemId,
     p_failure_reason: failureReason,
     p_user_id: user?.id,
   });
@@ -221,17 +219,41 @@ export async function fetchOperationsStats(dateFrom, dateTo) {
 }
 
 /**
- * Cancel a service request.
+ * Cancel an operations item.
  */
-export async function cancelServiceRequest(id) {
+export async function cancelOperationsItem(id) {
   const { data, error } = await supabase
-    .from('service_requests')
+    .from('operations_items')
     .update({
-      status: 'cancelled',
-      contact_status: 'cancelled',
+      status: 'closed',
+      outcome_type: 'cancelled',
     })
     .eq('id', id)
-    .select(REQUEST_DETAIL_SELECT)
+    .select(ITEM_DETAIL_SELECT)
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+/**
+ * Close an operations item with an explicit outcome.
+ */
+export async function closeOperationsItem(id, outcomeType, contactNotes = null) {
+  const updates = {
+    status: 'closed',
+    outcome_type: outcomeType,
+  };
+
+  if (contactNotes) {
+    updates.contact_notes = contactNotes;
+  }
+
+  const { data, error } = await supabase
+    .from('operations_items')
+    .update(updates)
+    .eq('id', id)
+    .select(ITEM_DETAIL_SELECT)
     .single();
 
   if (error) throw error;

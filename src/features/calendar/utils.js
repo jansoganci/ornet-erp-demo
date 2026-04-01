@@ -43,7 +43,7 @@ export function getMonthRange(date) {
  * Parse scheduled_date (YYYY-MM-DD) and scheduled_time (HH:mm or HH:mm:ss) into a local Date.
  * Falls back to 09:00 if time is missing.
  */
-function parseScheduledAt(scheduled_date, scheduled_time) {
+export function parseScheduledAt(scheduled_date, scheduled_time) {
   if (!scheduled_date) return null;
   const [y, m, d] = scheduled_date.split('-').map(Number);
   let hour = 9;
@@ -99,6 +99,11 @@ export const calendarEventClassByStatus = {
 
 /** Purple color for plan (task) items — distinct from all work order statuses. */
 export const PLAN_EVENT_CLASS = '!bg-violet-50 !border-l-4 !border-violet-500 !text-violet-800 dark:!bg-violet-900/30 dark:!text-violet-200';
+export const OPERATIONS_PLAN_EVENT_CLASSES = {
+  pending: '!bg-cyan-50 !border-l-4 !border-cyan-500 !text-cyan-800 dark:!bg-cyan-900/30 dark:!text-cyan-200',
+  done: '!bg-success-50 !border-l-4 !border-success-500 !text-success-800 dark:!bg-success-900/30 dark:!text-success-200',
+  not_done: '!bg-rose-50 !border-l-4 !border-rose-500 !text-rose-800 dark:!bg-rose-900/30 dark:!text-rose-200',
+};
 
 /**
  * Return className for a calendar event based on type and status.
@@ -106,8 +111,26 @@ export const PLAN_EVENT_CLASS = '!bg-violet-50 !border-l-4 !border-violet-500 !t
  */
 export function getEventClassName(event) {
   if (event?.resource?._type === 'plan') return PLAN_EVENT_CLASS;
+  if (event?.resource?._type === 'operations_plan') {
+    const status = event?.resource?.status ?? 'pending';
+    return OPERATIONS_PLAN_EVENT_CLASSES[status] ?? OPERATIONS_PLAN_EVENT_CLASSES.pending;
+  }
   const status = event?.resource?.status;
   return calendarEventClassByStatus[status] ?? '!bg-neutral-100 !border-l-4 !border-neutral-300 dark:!bg-[#171717] dark:!text-neutral-300';
+}
+
+export function mapPlanItemToEvent(planItem) {
+  const start = parseScheduledAt(planItem.plan_date, '09:00');
+  if (!start || isNaN(start.getTime())) return null;
+  const end = new Date(start.getTime() + DEFAULT_EVENT_DURATION_MS);
+
+  return {
+    id: `plan-item-${planItem.id}`,
+    title: planItem.description,
+    start,
+    end,
+    resource: { ...planItem, _type: 'operations_plan' },
+  };
 }
 
 /**

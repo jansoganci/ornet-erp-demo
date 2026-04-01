@@ -1,10 +1,16 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { CalendarPlus, MoreVertical, Trash2, X as XIcon, Phone } from 'lucide-react';
+import { CalendarPlus, MoreVertical, Trash2, X as XIcon, Phone, Wifi, FileText, ListPlus } from 'lucide-react';
+import { Button } from '../../../components/ui/Button';
 import { Badge } from '../../../components/ui/Badge';
 import { ContactStatusBadge } from './ContactStatusBadge';
 import { RegionBadge } from './RegionBadge';
 import { InlineScheduler } from './InlineScheduler';
+import { useCloseOperationsItem } from '../hooks';
+import { CloseOutcomeModal } from './CloseOutcomeModal';
+import { AddToPlanModal } from './AddToPlanModal';
+
 const PRIORITY_VARIANT = {
   low: 'default',
   normal: 'info',
@@ -12,14 +18,43 @@ const PRIORITY_VARIANT = {
   urgent: 'error',
 };
 
-export function RequestCard({ request, onCancel, onDelete }) {
+export function RequestCard({ request, onDelete }) {
   const { t } = useTranslation('operations');
+  const navigate = useNavigate();
   const [showScheduler, setShowScheduler] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
+  const [showCloseModal, setShowCloseModal] = useState(false);
+  const [showAddToPlan, setShowAddToPlan] = useState(false);
+  const closeMutation = useCloseOperationsItem();
 
   const customer = request.customers;
   const site = request.customer_sites;
   const isConfirmed = request.contact_status === 'confirmed';
+
+  const handleCloseOutcome = async ({ outcomeType, contactNotes }) => {
+    await closeMutation.mutateAsync({
+      id: request.id,
+      outcomeType,
+      contactNotes,
+    });
+  };
+
+  const handleResolvedRemotely = async () => {
+    await closeMutation.mutateAsync({
+      id: request.id,
+      outcomeType: 'remote_resolved',
+    });
+  };
+
+  const handleCreateProposal = () => {
+    const searchParams = new URLSearchParams();
+    if (request.customer_id) searchParams.set('customerId', request.customer_id);
+    if (request.site_id) searchParams.set('siteId', request.site_id);
+    if (request.description) searchParams.set('description', request.description);
+    searchParams.set('sourceItemId', request.id);
+
+    navigate(`/proposals/new?${searchParams.toString()}`);
+  };
 
   return (
     <div className="bg-white dark:bg-[#171717] rounded-lg border border-neutral-200 dark:border-[#262626] shadow-sm hover:shadow-md transition-shadow">
@@ -53,14 +88,40 @@ export function RequestCard({ request, onCancel, onDelete }) {
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setShowMenu(false)} />
                   <div className="absolute right-0 top-full mt-1 z-50 w-40 bg-white dark:bg-[#171717] border border-neutral-200 dark:border-[#262626] rounded-lg shadow-xl py-1">
-                    {onCancel && request.status === 'open' && (
+                    {request.status === 'open' && (
                       <button
                         type="button"
-                        onClick={() => { setShowMenu(false); onCancel(request.id); }}
+                        onClick={() => { setShowMenu(false); setShowCloseModal(true); }}
                         className="w-full px-3 py-2 text-left text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 flex items-center gap-2"
                       >
                         <XIcon className="w-3.5 h-3.5" />
-                        {t('actions.cancel')}
+                        {t('actions.closeWithOutcome')}
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => { setShowMenu(false); setShowAddToPlan(true); }}
+                      className="w-full px-3 py-2 text-left text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 flex items-center gap-2"
+                    >
+                      <ListPlus className="w-3.5 h-3.5" />
+                      {t('actions.addToDailyPlan')}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setShowMenu(false); handleCreateProposal(); }}
+                      className="w-full px-3 py-2 text-left text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 flex items-center gap-2"
+                    >
+                      <FileText className="w-3.5 h-3.5" />
+                      {t('actions.createProposal')}
+                    </button>
+                    {isConfirmed && (
+                      <button
+                        type="button"
+                        onClick={() => { setShowMenu(false); handleResolvedRemotely(); }}
+                        className="w-full px-3 py-2 text-left text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 flex items-center gap-2"
+                      >
+                        <Wifi className="w-3.5 h-3.5" />
+                        {t('actions.resolvedRemotely')}
                       </button>
                     )}
                     {onDelete && (
@@ -101,6 +162,18 @@ export function RequestCard({ request, onCancel, onDelete }) {
           <div className="flex items-center gap-2">
             <ContactStatusBadge requestId={request.id} status={request.contact_status} />
             {isConfirmed && !showScheduler && (
+              <Button
+                type="button"
+                variant="success"
+                size="sm"
+                leftIcon={<Wifi className="w-3.5 h-3.5" />}
+                onClick={handleResolvedRemotely}
+                loading={closeMutation.isPending}
+              >
+                {t('actions.resolvedRemotely')}
+              </Button>
+            )}
+            {isConfirmed && !showScheduler && (
               <button
                 type="button"
                 onClick={() => setShowScheduler(true)}
@@ -129,6 +202,19 @@ export function RequestCard({ request, onCancel, onDelete }) {
           onClose={() => setShowScheduler(false)}
         />
       )}
+
+      <CloseOutcomeModal
+        open={showCloseModal}
+        onClose={() => setShowCloseModal(false)}
+        onConfirm={handleCloseOutcome}
+        isSubmitting={closeMutation.isPending}
+      />
+
+      <AddToPlanModal
+        open={showAddToPlan}
+        onClose={() => setShowAddToPlan(false)}
+        item={request}
+      />
     </div>
   );
 }

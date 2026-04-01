@@ -95,6 +95,14 @@ const BAR_FILLS = {
   cancelled: CHART_COLORS.cancelled,   // gray-500
 };
 
+const OUTCOME_VARIANT = {
+  work_order: 'info',
+  proposal: 'warning',
+  remote_resolved: 'success',
+  closed_no_action: 'default',
+  cancelled: 'error',
+};
+
 // ── Main component ───────────────────────────────────────────────────────────
 
 export function InsightsTab() {
@@ -110,6 +118,7 @@ export function InsightsTab() {
   // period = historical counts for the selected date range
   const pool        = stats?.pool ?? {};
   const periodStats = stats?.period ?? {};
+  const outcomes    = periodStats.outcomes ?? {};
 
   const totalFinalized  = (periodStats.completed ?? 0) + (periodStats.failed ?? 0);
   const successRate     = totalFinalized > 0
@@ -125,6 +134,15 @@ export function InsightsTab() {
     { status: t('status.failed'),    value: periodStats.failed    ?? 0, fill: BAR_FILLS.failed    },
     { status: t('status.cancelled'), value: periodStats.cancelled ?? 0, fill: BAR_FILLS.cancelled },
   ];
+
+  const outcomeRows = [
+    { key: 'work_order', label: t('insights.outcomes.work_order'), value: outcomes.work_order ?? 0 },
+    { key: 'proposal', label: t('insights.outcomes.proposal'), value: outcomes.proposal ?? 0 },
+    { key: 'remote_resolved', label: t('insights.outcomes.remote_resolved'), value: outcomes.remote_resolved ?? 0 },
+    { key: 'closed_no_action', label: t('insights.outcomes.closed_no_action'), value: outcomes.closed_no_action ?? 0 },
+    { key: 'cancelled', label: t('insights.outcomes.cancelled'), value: outcomes.cancelled ?? 0 },
+  ];
+  const totalClosedOutcomes = outcomeRows.reduce((sum, row) => sum + row.value, 0);
 
   // Theme-aware chart infrastructure colors
   const gridStroke  = isDark ? '#262626' : CHART_COLORS.gridLight;
@@ -313,6 +331,45 @@ export function InsightsTab() {
           </div>
         </Card>
       </div>
+
+      {/* ── Outcome breakdown ────────────────────────────────────────────────── */}
+      {totalClosedOutcomes > 0 && (
+        <Card className="p-5">
+          <h4 className="text-sm font-semibold text-neutral-800 dark:text-neutral-100 mb-4">
+            {t('insights.outcomes.title')}
+          </h4>
+          <div className="space-y-3">
+            {outcomeRows.map((row) => {
+              const pct = totalClosedOutcomes > 0 ? Math.round((row.value / totalClosedOutcomes) * 100) : 0;
+              return (
+                <div key={row.key}>
+                  <div className="flex items-center justify-between mb-1">
+                    <Badge variant={OUTCOME_VARIANT[row.key]} size="sm">
+                      {row.label}
+                    </Badge>
+                    <span className="text-sm font-bold tabular-nums text-neutral-900 dark:text-neutral-50">
+                      {row.value}
+                    </span>
+                  </div>
+                  <div className="h-1.5 rounded-full bg-neutral-100 dark:bg-neutral-800 overflow-hidden">
+                    <div
+                      className={cn(
+                        'h-full rounded-full transition-all duration-500',
+                        row.key === 'work_order' && 'bg-info-500',
+                        row.key === 'proposal' && 'bg-warning-500',
+                        row.key === 'remote_resolved' && 'bg-success-500',
+                        row.key === 'closed_no_action' && 'bg-neutral-400 dark:bg-neutral-500',
+                        row.key === 'cancelled' && 'bg-error-500'
+                      )}
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </Card>
+      )}
 
       {/* ── Period totals ─────────────────────────────────────────────────── */}
       <Card className="p-5">

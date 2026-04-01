@@ -75,7 +75,7 @@ import { ProfilePage } from './features/profile';
 import { FinanceDashboardPage, ExpensesPage, IncomePage, VatReportPage, ExchangeRatePage, ReportsPage, RecurringExpensesPage, CollectionDeskPage } from './features/finance';
 import { SiteAssetsListPage, SiteAssetsImportPage } from './features/siteAssets';
 import { ActionBoardPage } from './features/actionBoard';
-import { OperationsBoardPage } from './features/operations';
+import { OperationsBoardPage, OperationsImportPage } from './features/operations';
 import { TechnicalGuideListPage, TechnicalGuideTopicPage } from './features/technicalGuide';
 
 const router = createBrowserRouter(
@@ -106,6 +106,7 @@ const router = createBrowserRouter(
         <Route path="notifications" element={<NotificationsCenterPage />} />
         <Route path="action-board" element={<ActionBoardPage />} />
         <Route path="operations" element={<RoleRoute><OperationsBoardPage /></RoleRoute>} />
+        <Route path="operations/import" element={<RoleRoute><OperationsImportPage /></RoleRoute>} />
 
         {/* Customer routes */}
         <Route path="customers" element={<CustomersListPage />} />

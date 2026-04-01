@@ -33,7 +33,7 @@ export function InlineScheduler({ request, onClose }) {
   const onSubmit = (data) => {
     convertMutation.mutate(
       {
-        requestId: request.id,
+        itemId: request.id,
         scheduleData: {
           scheduled_date: data.scheduled_date,
           scheduled_time: data.scheduled_time || null,
