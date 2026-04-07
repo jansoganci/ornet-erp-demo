@@ -288,6 +288,8 @@
       "totalRevenue": "Toplam gelir",
       "totalExpenses": "Toplam gider",
       "remaining": "Kalan",
+      "incomeBreakdown": "Gelir Kaynakları",
+      "expenseBreakdown": "Gider Dağılımı",
       "generalExpenses": "Genel Giderler",
       "noExpenses": "Bu dönemde genel gider kaydı yok"
     },

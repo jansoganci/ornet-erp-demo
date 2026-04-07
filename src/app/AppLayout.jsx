@@ -9,6 +9,7 @@ import { Footer } from '../components/layout/Footer';
 import { navItems, getTopNavRoutes } from '../components/layout/navItems';
 import { MobileNavDrawer } from '../components/layout/MobileNavDrawer';
 import { QuickActionsSheet } from '../components/layout/QuickActionsSheet';
+import { FloatingActionMenu } from '../components/layout/FloatingActionMenu';
 import { useTheme } from '../hooks/themeContext';
 import { useCurrentProfile } from '../features/subscriptions/hooks';
 import { Sun, Moon, Menu, ChevronRight, ChevronDown, MoreHorizontal, Plus, User } from 'lucide-react';
@@ -293,17 +294,12 @@ export function AppLayout() {
         canWrite={canWrite}
       />
 
-      {/* Quick Entry FAB - sadece desktop, mobilde tab bar + kullanılıyor */}
-      {hasFinanceAccess && (
-        <button
-          type="button"
-          onClick={() => setQuickEntryState({ open: true, direction: null })}
-          className="fixed max-lg:hidden lg:bottom-8 lg:right-8 z-40 flex items-center justify-center w-14 h-14 rounded-full bg-primary-600 hover:bg-primary-700 text-white shadow-lg hover:shadow-xl transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
-          aria-label={tCommon('finance:expense.addButton')}
-        >
-          <Plus className="w-6 h-6" />
-        </button>
-      )}
+      {/* Desktop FAB menu; mobile uses bottom tab + QuickActionsSheet */}
+      <FloatingActionMenu
+        hasFinanceAccess={hasFinanceAccess}
+        canWrite={canWrite}
+        onQuickEntry={(direction) => setQuickEntryState({ open: true, direction })}
+      />
 
       <QuickEntryModal
         open={quickEntryState.open}

@@ -29,8 +29,8 @@ import { getSourceLabel } from './exportUtils';
 function mapIncomeSourceToGroup(sourceType) {
   if (sourceType === 'subscription') return 'subscriptions';
   if (sourceType === 'sim_rental') return 'sim';
-  if (sourceType === 'proposal') return 'proposals';
-  if (['service', 'installation', 'maintenance', 'sale'].includes(sourceType)) return 'workOrders';
+  if (sourceType === 'sale') return 'proposals';
+  if (['service', 'installation', 'maintenance'].includes(sourceType)) return 'workOrders';
   return 'other';
 }
 
@@ -221,15 +221,6 @@ export function FinanceDashboardPage() {
                 <Calendar className="w-3.5 h-3.5" />
                 {periodLabel}
               </button>
-              <Button
-                variant="outline"
-                size="sm"
-                leftIcon={<Download className="w-4 h-4" />}
-                onClick={handleExportCSV}
-                loading={isExporting}
-              >
-                {t('finance:export.csv')}
-              </Button>
             </div>
           </div>
 
@@ -273,14 +264,14 @@ export function FinanceDashboardPage() {
 
         <div className="grid grid-cols-1 gap-4">
           <BreakdownCard
-            title={t('dashboardV2.overview.totalRevenue')}
+            title={t('dashboardV2.overview.incomeBreakdown')}
             rows={incomeRows}
             total={totalRevenue}
             loading={incomeLoading}
             totalLabel={t('finance:exportColumns.total')}
           />
           <BreakdownCard
-            title={t('dashboardV2.overview.totalExpenses')}
+            title={t('dashboardV2.overview.expenseBreakdown')}
             rows={expenseRows}
             total={totalExpenses}
             loading={expensesLoading}
@@ -314,6 +305,17 @@ export function FinanceDashboardPage() {
             {t('quickActions.addExpense')}
           </button>
         </div>
+
+        <Button
+          variant="outline"
+          size="sm"
+          leftIcon={<Download className="w-4 h-4" />}
+          onClick={handleExportCSV}
+          loading={isExporting}
+          className="w-full"
+        >
+          {t('finance:export.csv')}
+        </Button>
       </div>
 
       <div className="hidden md:block space-y-6">
@@ -386,14 +388,14 @@ export function FinanceDashboardPage() {
 
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
           <BreakdownCard
-            title={t('dashboardV2.overview.totalRevenue')}
+            title={t('dashboardV2.overview.incomeBreakdown')}
             rows={incomeRows}
             total={totalRevenue}
             loading={incomeLoading}
             totalLabel={t('finance:exportColumns.total')}
           />
           <BreakdownCard
-            title={t('dashboardV2.overview.totalExpenses')}
+            title={t('dashboardV2.overview.expenseBreakdown')}
             rows={expenseRows}
             total={totalExpenses}
             loading={expensesLoading}

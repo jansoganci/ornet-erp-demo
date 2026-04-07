@@ -209,6 +209,17 @@
       "newSubscription": "Yeni Abonelik",
       "newProposal": "Yeni Teklif",
       "newWorkOrder": "Yeni İş Emri"
+    },
+    "floatingMenu": {
+      "openMenu": "Hızlı işlemler menüsü",
+      "closeMenu": "Menüyü kapat",
+      "createWorkOrder": "İş Emri Oluştur",
+      "createProposal": "Teklif Oluştur",
+      "addCustomer": "Müşteri Ekle",
+      "addSubscription": "Abonelik Ekle",
+      "addSimCard": "SIM Kart Ekle",
+      "addIncome": "Gelir Gir",
+      "addExpense": "Gider Gir"
     }
   },
   "workType": {
