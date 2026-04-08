@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import * as XLSX from 'xlsx';
@@ -11,7 +11,6 @@ import {
   FileSpreadsheet,
   Pencil,
   Cpu as SimIcon,
-  Calendar,
   ChevronLeft,
   ChevronRight,
   ChevronDown,
@@ -22,10 +21,12 @@ import {
   ArrowLeft,
   MapPin,
   RotateCcw,
+  AlertTriangle,
 } from 'lucide-react';
 import { useSimCardsPaginated, useUpdateSimCard, useSimFinancialStats, useProviderCompanies, useCancelSimCard } from './hooks';
 import { fetchSimCards } from './api';
 import { useDebouncedValue } from '../../hooks/useDebouncedValue';
+import { useUnsavedChanges } from '../../hooks/useUnsavedChanges';
 import { PageContainer, PageHeader } from '../../components/layout';
 import {
   Button,
@@ -43,6 +44,8 @@ import {
 import { formatCurrency, formatDate, cn } from '../../lib/utils';
 import { getErrorMessage } from '../../lib/errorHandler';
 import { QuickStatusSelect } from './components/QuickStatusSelect';
+import { QuickProviderSelect } from './components/QuickProviderSelect';
+import { QuickActivationDateField } from './components/QuickActivationDateField';
 
 /** Uniform trigger height in SIM list filter controls (matches `SearchInput` / `Input` sm). */
 const SIM_FILTER_LISTBOX_TRIGGER = 'h-10 min-h-[2.5rem] md:h-10';
@@ -52,6 +55,10 @@ export function SimCardsListPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [quickEditMode, setQuickEditMode] = useState(false);
+  const [hasUnsavedDateDraft, setHasUnsavedDateDraft] = useState(false);
+  const [quickEditExitConfirmOpen, setQuickEditExitConfirmOpen] = useState(false);
+  const skipQuickEditNavRef = useRef(false);
+  const dateDraftRowsRef = useRef(new Set());
   const [simToCancel, setSimToCancel] = useState(null);
   const [isExporting, setIsExporting] = useState(false);
   const [filtersModalOpen, setFiltersModalOpen] = useState(false);
@@ -363,8 +370,54 @@ export function SimCardsListPage() {
     }
   };
 
+  const handleQuickFieldUpdate = useCallback(
+    async (simId, patch) => {
+      await updateSimCardMutation.mutateAsync({ id: simId, ...patch });
+    },
+    [updateSimCardMutation]
+  );
+
   const handleQuickStatusChange = async (simId, newStatus) => {
-    await updateSimCardMutation.mutateAsync({ id: simId, status: newStatus });
+    await handleQuickFieldUpdate(simId, { status: newStatus });
+  };
+
+  const handleDateDraftDirty = useCallback((simId, isDirty) => {
+    if (isDirty) dateDraftRowsRef.current.add(simId);
+    else dateDraftRowsRef.current.delete(simId);
+    setHasUnsavedDateDraft(dateDraftRowsRef.current.size > 0);
+  }, []);
+
+  const blocker = useUnsavedChanges({
+    isDirty: quickEditMode && hasUnsavedDateDraft,
+    skipBlockingRef: skipQuickEditNavRef,
+  });
+
+  const handleQuickEditToggle = () => {
+    if (quickEditMode && hasUnsavedDateDraft) {
+      setQuickEditExitConfirmOpen(true);
+      return;
+    }
+    setQuickEditMode((v) => !v);
+  };
+
+  const handleQuickEditUnsavedStay = () => {
+    if (blocker.state === 'blocked') blocker.reset();
+    setQuickEditExitConfirmOpen(false);
+  };
+
+  const handleQuickEditUnsavedLeaveDiscard = () => {
+    skipQuickEditNavRef.current = true;
+    dateDraftRowsRef.current.clear();
+    setHasUnsavedDateDraft(false);
+    if (blocker.state === 'blocked') {
+      blocker.proceed();
+    } else {
+      setQuickEditMode(false);
+      setQuickEditExitConfirmOpen(false);
+    }
+    queueMicrotask(() => {
+      skipQuickEditNavRef.current = false;
+    });
   };
 
   const getStatusVariant = (status) => {
@@ -418,28 +471,10 @@ export function SimCardsListPage() {
 
   const columns = [
     {
-      header: t('list.columns.provider'),
-      accessor: 'provider_company',
-      render: (_, row) => (
-        <span className="text-neutral-600 dark:text-neutral-400">
-          {row.provider_company?.name || '-'}
-        </span>
-      ),
-    },
-    {
       header: t('list.columns.phoneNumber'),
       accessor: 'phone_number',
       render: (value) => (
         <div className="font-medium text-neutral-900 dark:text-neutral-50">{value}</div>
-      ),
-    },
-    {
-      header: t('list.columns.imsi'),
-      accessor: 'imsi',
-      render: (value) => (
-        <span className="text-neutral-600 dark:text-neutral-400 font-mono text-sm">
-          {value || '-'}
-        </span>
       ),
     },
     {
@@ -457,8 +492,11 @@ export function SimCardsListPage() {
     {
       header: t('list.columns.gprsSerialNo'),
       accessor: 'gprs_serial_no',
+      maxWidth: 250,
+      headerClassName: 'whitespace-normal break-words line-clamp-2 align-top',
+      cellClassName: 'whitespace-normal break-words line-clamp-2 align-top',
       render: (value) => (
-        <span className="text-neutral-600 dark:text-neutral-400 font-mono text-sm">
+        <span className="text-neutral-600 dark:text-neutral-400 font-mono text-sm break-words line-clamp-2">
           {value || '-'}
         </span>
       ),
@@ -482,12 +520,52 @@ export function SimCardsListPage() {
       ),
     },
     {
+      header: t('list.columns.provider'),
+      accessor: 'provider_company',
+      render: (_, row) =>
+        quickEditMode ? (
+          <div className="min-w-0" onClick={(e) => e.stopPropagation()}>
+            <QuickProviderSelect
+              sim={row}
+              companies={providerCompanies}
+              onUpdate={handleQuickFieldUpdate}
+              t={t}
+            />
+          </div>
+        ) : (
+          <span className="text-neutral-600 dark:text-neutral-400">
+            {row.provider_company?.name || '-'}
+          </span>
+        ),
+    },
+    {
       header: t('list.columns.activationDate'),
       accessor: 'activation_date',
-      render: (value) => (
-        <div className="flex items-center gap-1.5 text-sm text-neutral-600 dark:text-neutral-400 whitespace-nowrap">
-          <Calendar className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
-          {value ? formatDate(value) : '-'}
+      render: (value, row) =>
+        quickEditMode ? (
+          <div className="min-w-0" onClick={(e) => e.stopPropagation()}>
+            <QuickActivationDateField
+              sim={row}
+              onUpdate={handleQuickFieldUpdate}
+              onDraftDirty={handleDateDraftDirty}
+            />
+          </div>
+        ) : (
+          <span className="text-sm text-neutral-600 dark:text-neutral-400 whitespace-nowrap">
+            {value ? formatDate(value) : '-'}
+          </span>
+        ),
+    },
+    {
+      header: t('list.columns.status'),
+      accessor: 'status',
+      render: (value, row) => (
+        <div onClick={quickEditMode ? (e) => e.stopPropagation() : undefined}>
+          {quickEditMode && row.status !== 'subscription' ? (
+            <QuickStatusSelect sim={row} onStatusChange={handleQuickStatusChange} t={t} />
+          ) : (
+            <Badge variant={getStatusVariant(value)}>{t(`status.${value}`)}</Badge>
+          )}
         </div>
       ),
     },
@@ -507,19 +585,6 @@ export function SimCardsListPage() {
         <span className="font-medium text-neutral-900 dark:text-neutral-50">
           {formatCurrency(value ?? 0, row.currency ?? 'TRY')}
         </span>
-      ),
-    },
-    {
-      header: t('list.columns.status'),
-      accessor: 'status',
-      render: (value, row) => (
-        <div onClick={quickEditMode ? (e) => e.stopPropagation() : undefined}>
-          {quickEditMode && row.status !== 'subscription' ? (
-            <QuickStatusSelect sim={row} onStatusChange={handleQuickStatusChange} t={t} />
-          ) : (
-            <Badge variant={getStatusVariant(value)}>{t(`status.${value}`)}</Badge>
-          )}
-        </div>
       ),
     },
     {
@@ -880,7 +945,8 @@ export function SimCardsListPage() {
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-3 xl:shrink-0 xl:ml-auto">
+            <div className="flex flex-col items-end gap-1 xl:shrink-0 xl:ml-auto min-w-0">
+              <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-3">
               {hasActiveSimFilters ? (
                 <Button
                   type="button"
@@ -920,12 +986,18 @@ export function SimCardsListPage() {
                 type="button"
                 variant={quickEditMode ? 'primary' : 'outline'}
                 size="sm"
-                onClick={() => setQuickEditMode(!quickEditMode)}
+                onClick={handleQuickEditToggle}
                 leftIcon={<Pencil className="w-4 h-4" />}
                 className="shrink-0"
               >
                 {t('list.quickEdit')}
               </Button>
+              </div>
+              {quickEditMode ? (
+                <p className="text-[11px] text-neutral-500 dark:text-neutral-400 max-w-md text-right leading-snug">
+                  {t('list.quickEditDateSaveHint')}
+                </p>
+              ) : null}
             </div>
           </div>
 
@@ -1220,6 +1292,33 @@ export function SimCardsListPage() {
             </div>
             {activationPeriodBoundaryFields}
           </div>
+        </div>
+      </Modal>
+      <Modal
+        open={blocker.state === 'blocked' || quickEditExitConfirmOpen}
+        onClose={handleQuickEditUnsavedStay}
+        title={t('common:unsavedChanges.title')}
+        size="sm"
+        footer={
+          <div className="flex flex-col-reverse sm:flex-row gap-2 w-full sm:justify-end">
+            <Button variant="ghost" className="flex-1 sm:flex-none" onClick={handleQuickEditUnsavedStay}>
+              {t('common:unsavedChanges.cancel')}
+            </Button>
+            <Button
+              variant="danger"
+              className="flex-1 sm:flex-none"
+              onClick={handleQuickEditUnsavedLeaveDiscard}
+            >
+              {t('common:unsavedChanges.leave')}
+            </Button>
+          </div>
+        }
+      >
+        <div className="flex items-start gap-3">
+          <div className="p-2 rounded-full bg-amber-100 dark:bg-amber-900/30 shrink-0">
+            <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+          </div>
+          <p className="text-sm text-neutral-600 dark:text-neutral-300">{t('list.quickEditUnsavedDescription')}</p>
         </div>
       </Modal>
       <Modal

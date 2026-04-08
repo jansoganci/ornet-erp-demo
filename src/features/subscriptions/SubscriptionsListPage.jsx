@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { Plus, CreditCard, Tag, TrendingUp, TrendingDown, Minus, Users, Pause, AlertTriangle, FileSpreadsheet, Receipt, Wallet, Building2, Calendar, ChevronLeft, ChevronRight, X, PauseCircle } from 'lucide-react';
+import { Plus, CreditCard, Tag, TrendingUp, TrendingDown, Minus, Users, Pause, AlertTriangle, FileSpreadsheet, Receipt, Wallet, ChevronLeft, ChevronRight, X, PauseCircle } from 'lucide-react';
 import { PageContainer, PageHeader } from '../../components/layout';
 import {
   Button,
@@ -200,12 +200,7 @@ export function SubscriptionsListPage() {
       header: t('subscriptions:list.columns.city'),
       accessor: 'city',
       render: (value) => (
-        <div className="flex items-center gap-2">
-          <Building2 className="w-4 h-4 text-neutral-400 shrink-0" />
-          <span className="text-neutral-900 dark:text-neutral-50">
-            {value || '-'}
-          </span>
-        </div>
+        <span className="text-neutral-900 dark:text-neutral-50">{value || '-'}</span>
       ),
     },
     {
@@ -221,10 +216,9 @@ export function SubscriptionsListPage() {
       header: t('subscriptions:list.columns.startDate'),
       accessor: 'start_date',
       render: (value) => (
-        <div className="flex items-center gap-1.5 text-sm text-neutral-600 dark:text-neutral-400 whitespace-nowrap">
-          <Calendar className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
+        <span className="text-sm text-neutral-600 dark:text-neutral-400 whitespace-nowrap">
           {value ? formatDate(value) : '-'}
-        </div>
+        </span>
       ),
     },
     {

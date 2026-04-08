@@ -60,6 +60,9 @@
       "periodOrderError": "Bitiş dönemi başlangıç döneminden önce olamaz"
     },
     "quickEdit": "Hızlı Düzenleme",
+    "quickEditDateSaveHint": "Tarih: kayıt için alanın dışına tıklayın veya Tab ile çıkın. Kaydedilmeden sayfadan çıkamazsınız.",
+    "quickEditUnsavedDescription": "Aktivasyon tarihinde henüz kaydedilmemiş bir düzenleme var. Çıkarsanız veya hızlı düzenlemeyi kapatırsanız bu düzenleme silinir.",
+    "quickEditNoCompany": "Seçilmedi",
     "unassigned": "Atama Bekliyor"
   },
   "status": {
