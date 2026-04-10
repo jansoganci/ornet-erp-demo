@@ -112,7 +112,7 @@ Optional deploy scripts: `npm run deploy`, `npm run deploy:prod` (Vite build + `
 - **Primary ledger:** `financial_transactions` — all reporting reads this table; do not aggregate finance from `subscription_payments` alone.
 - **Other core tables (illustrative):** `customers`, `customer_sites`, `work_orders`, `work_order_materials`, `materials`, `profiles`, `subscriptions`, `subscription_payments`, `sim_cards`, `sim_static_ips`, `proposals`, `proposal_items`, `proposal_work_orders`, `site_assets`, `expense_categories`, `exchange_rates`, `recurring_expense_templates`, `payment_methods`, `notifications`, `audit_logs` (plus operations/plan-items tables from recent migrations—inspect schema in repo as needed).
 
-Applied behavior for automated finance is defined in Postgres functions/triggers (see `CLAUDE.md`).
+Applied behavior for automated finance is defined in Postgres functions/triggers (see `CLAUDE.md`)..
 
 ## Environment Variables
 
