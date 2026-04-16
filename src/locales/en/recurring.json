@@ -1,0 +1,70 @@
+{
+  "title": "Recurring Payments",
+  "badges": {
+    "variable": "Variable"
+  },
+  "templates": {
+    "title": "Active Templates",
+    "titleWithCount": "Active Templates ({{count}})",
+    "inactive": "Inactive Templates",
+    "addButton": "Add Template",
+    "empty": {
+      "title": "No Templates",
+      "description": "Create a recurring payment template to generate expense records automatically each month."
+    },
+    "dayPrefix": "On the",
+    "daySuffix": " of each month",
+    "lastGenerated": "Last: {{date}}",
+    "neverGenerated": "Not generated yet"
+  },
+  "form": {
+    "createTitle": "Create Template",
+    "editTitle": "Edit Template",
+    "fields": {
+      "name": "Template Name",
+      "category": "Expense Category",
+      "amount": "Amount (₺)",
+      "dayOfMonth": "Payment Day",
+      "paymentMethod": "Payment Method",
+      "hasInvoice": "Invoiced",
+      "vatRate": "VAT Rate (%)",
+      "isVariable": "Variable Amount",
+      "isActive": "Active",
+      "description": "Description Template"
+    },
+    "placeholders": {
+      "name": "e.g. Rent, SGK, Internet",
+      "amount": "0.00",
+      "dayOfMonth": "1-31",
+      "description": "Recurring monthly description..."
+    },
+    "hints": {
+      "isVariable": "Variable amount payments can be edited",
+      "dayOfMonth": "Day 31 is used as the last day in short months"
+    }
+  },
+  "paymentMethods": {
+    "card": "Card",
+    "cash": "Cash",
+    "bank_transfer": "Bank Transfer"
+  },
+  "actions": {
+    "activate": "Activate",
+    "deactivate": "Deactivate",
+    "generate": "Generate"
+  },
+  "status": {
+    "active": "Active",
+    "paused": "Paused"
+  },
+  "confirm": {
+    "pauseTitle": "Pause Template",
+    "pauseMessage": "Are you sure you want to pause this template? Automatic expense generation will stop while paused."
+  },
+  "generate": {
+    "button": "Generate This Month",
+    "success": "{{count}} recurring expense records were generated.",
+    "successGeneric": "Recurring expenses generated.",
+    "noTemplates": "No active templates to generate."
+  }
+}

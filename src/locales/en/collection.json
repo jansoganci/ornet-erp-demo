@@ -1,0 +1,74 @@
+{
+  "title": "Collection Desk",
+  "mobileTitle": "Collection",
+  "subtitle": "Track and collect pending subscription payments here.",
+  "filters": {
+    "allPeriods": "All Periods",
+    "year": "Year",
+    "month": "Month",
+    "search": "Search customer..."
+  },
+  "stats": {
+    "pending": "Pending",
+    "pendingNet": "Pending (Net)",
+    "pendingGross": "Pending (Incl. VAT)",
+    "overdue": "Overdue",
+    "collected": "Collected",
+    "total": "Total"
+  },
+  "summaryBar": {
+    "status": "Status",
+    "pendingSub": "pending payments",
+    "totalVolume": "Total Volume"
+  },
+  "chips": {
+    "all": "All",
+    "overdue": "Overdue",
+    "thisMonth": "This Month",
+    "lastMonth": "Last Month"
+  },
+  "columns": {
+    "customer": "Customer",
+    "site": "Site",
+    "accountNo": "Account No",
+    "period": "Period",
+    "frequency": "Frequency",
+    "net": "Net (\u20ba)",
+    "vat": "VAT (\u20ba)",
+    "total": "Total (\u20ba)",
+    "actions": "Action"
+  },
+  "actions": {
+    "pay": "Pay",
+    "recordPayment": "Record Payment",
+    "viewSubscription": "Go to Subscription"
+  },
+  "badges": {
+    "overdue": "Overdue",
+    "currentMonth": "This Month",
+    "noInvoice": "No Invoice"
+  },
+  "status": {
+    "daysOverdue": "{{count}} days overdue",
+    "paid": "Paid"
+  },
+  "card": {
+    "period": "Period",
+    "periodLine": "Period: {{label}}"
+  },
+  "frequency": {
+    "monthly": "Monthly",
+    "3_month": "Every 3 Months",
+    "6_month": "Every 6 Months",
+    "yearly": "Yearly"
+  },
+  "empty": {
+    "title": "No pending payments",
+    "description": "There are no payments to collect in the selected period.",
+    "noOverdue": {
+      "title": "No overdue payments",
+      "description": "No overdue collections for the selected filter."
+    }
+  },
+  "summary": "{{count}} pending payments"
+}

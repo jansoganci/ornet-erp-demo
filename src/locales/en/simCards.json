@@ -1,0 +1,217 @@
+{
+  "tabs": {
+    "active": "Active",
+    "cancelled": "Cancelled"
+  },
+  "messages": {
+    "cancelConfirmation": "Line {{number}} will be cancelled. Are you sure?"
+  },
+  "title": "SIM Card Management",
+  "list": {
+    "title": "SIM Card List",
+    "searchPlaceholder": "Search line no, buyer, or customer...",
+    "empty": {
+      "title": "No SIM Cards Found",
+      "description": "No SIM cards are registered in the system yet."
+    },
+    "columns": {
+      "provider": "Parent Company",
+      "phoneNumber": "Line No",
+      "imsi": "IMSI",
+      "capacity": "Capacity",
+      "operator": "Operator",
+      "gprsSerialNo": "GPRS Serial No",
+      "accountNo": "Account No",
+      "customerLabel": "Customer Title",
+      "activationDate": "Date",
+      "costPrice": "Monthly Cost",
+      "salePrice": "Monthly Sale Price",
+      "status": "Status",
+      "buyer": "Buyer",
+      "customer": "Customer",
+      "site": "Site"
+    },
+    "filters": {
+      "all": "All",
+      "available": "Available",
+      "active": "Active",
+      "subscription": "Subscription",
+      "cancelled": "Cancelled",
+      "allOperators": "All",
+      "status": "Status",
+      "operator": "Operator",
+      "provider": "Parent Company",
+      "selectYear": "Select Year",
+      "selectMonth": "Select Month",
+      "activationRangeHint": "Activation date (start and end month inclusive)",
+      "periodStartHeading": "Start Period",
+      "periodEndHeading": "End Period",
+      "periodBoundaryEmpty": "Select month and year",
+      "rangeFrom": "From",
+      "rangeTo": "To",
+      "moreFilters": "Parent company and date range",
+      "clearAdvanced": "Clear these filters",
+      "advancedFilters": "Advanced filters",
+      "activationPeriod": "Activation period",
+      "activationPeriodPick": "Select period",
+      "activationPeriodSummary": "{{from}} \u2013 {{to}}",
+      "clearAll": "Clear filters",
+      "clearPeriod": "Clear",
+      "periodOrderError": "End period cannot be before start period"
+    },
+    "quickEdit": "Quick Edit",
+    "quickEditDateSaveHint": "Date and monthly sale price: click outside the field or press Tab to save. You cannot leave the page while the date has unsaved changes.",
+    "quickEditUnsavedDescription": "There is an unsaved change to the activation date. If you leave or close quick edit, it will be discarded.",
+    "quickEditNoCompany": "Not selected",
+    "unassigned": "Awaiting Assignment"
+  },
+  "status": {
+    "available": "Available",
+    "active": "Active",
+    "subscription": "Subscription",
+    "cancelled": "Cancelled"
+  },
+  "operators": {
+    "TURKCELL": "Turkcell",
+    "VODAFONE": "Vodafone",
+    "TURK_TELEKOM": "T\u00fcrk Telekom"
+  },
+  "actions": {
+    "add": "Add SIM Card",
+    "import": "Bulk upload with Excel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "activate": "Activate",
+    "deactivate": "Deactivate",
+    "makeAvailable": "Mark Available"
+  },
+  "form": {
+    "addTitle": "New SIM Card",
+    "editTitle": "Edit SIM Card",
+    "phoneNumber": "Line Number",
+    "buyer": "Buyer Company",
+    "operator": "Operator",
+    "capacity": "Plan Capacity",
+    "imsi": "IMSI",
+    "gprsSerialNo": "GPRS Serial No",
+    "accountNo": "Account No",
+    "costPrice": "Monthly Cost",
+    "salePrice": "Monthly Sale Price",
+    "vatRate": "VAT Rate (%)",
+    "customerLabel": "Subscriber Name",
+    "notes": "Notes",
+    "placeholders": {
+      "selectProvider": "Select parent company...",
+      "customerLabel": "Enter subscriber name...",
+      "selectBuyer": "Select buyer company...",
+      "selectCustomer": "Select customer...",
+      "selectSite": "Select site...",
+      "selectOperator": "Select operator...",
+      "selectStatus": "Select status...",
+      "selectCustomerFirst": "Select customer first..."
+    },
+    "validation": {
+      "phoneNumberRequired": "Line number is required",
+      "operatorRequired": "Operator is required"
+    },
+    "sections": {
+      "simInfo": "SIM Information",
+      "assignment": "Assignment",
+      "advanced": "Advanced",
+      "financial": "Financial",
+      "notes": "Notes"
+    }
+  },
+  "history": {
+    "title": "Activity History",
+    "action": "Action",
+    "date": "Date",
+    "user": "User",
+    "statusChange": "Status Change",
+    "assignment": "Customer Assignment",
+    "import": "System Import"
+  },
+  "delete": {
+    "title": "Delete SIM Card",
+    "message": "Are you sure you want to delete SIM card \"{{phoneNumber}}\"?",
+    "warning": "This action cannot be undone."
+  },
+  "stats": {
+    "total": "Total Lines",
+    "available": "Available Lines",
+    "active": "Active Lines",
+    "subscription": "Subscription Lines",
+    "monthlyProfit": "Est. Monthly Profit",
+    "unassigned": "Unassigned",
+    "monthlyRevenue": "Monthly Revenue"
+  },
+  "import": {
+    "pageTitle": "SIM cards \u2014 Bulk upload with Excel",
+    "uploadTitle": "Upload Excel File",
+    "uploadDescription": "Drag and drop or select a .xlsx or .xls file containing your SIM card list.",
+    "selectFile": "Select File",
+    "downloadTemplate": "Download Template",
+    "excelFormat": "Excel format",
+    "formatIntro": "The first row must be column headers. <strong>LINE NO</strong> is required; others are optional.",
+    "formatIntroNew": "Required columns: <strong>LINE NO</strong>, <strong>PARENT COMPANY</strong>, <strong>MONTHLY COST</strong>, <strong>MONTHLY SALE PRICE</strong>. Date can be DD.MM.YYYY or Excel serial date.",
+    "formatHatNo": "LINE NO \u2014 Phone number (e.g. +90 555 123 4567)",
+    "formatProvider": "PARENT COMPANY \u2014 Owning company (e.g. Ornet, Metbel). Created automatically if missing.",
+    "formatOperator": "OPERATOR \u2014 Turkcell, Vodafone, or T\u00fcrk Telekom",
+    "formatCapacity": "CAPACITY \u2014 e.g. 100MB, 1GB",
+    "formatBuyer": "BUYER \u2014 Buyer company name (must match a customer in the system)",
+    "formatCost": "MONTHLY COST \u2014 Monthly cost (\u20ba, TRY, spaces cleaned automatically)",
+    "formatSale": "MONTHLY SALE PRICE \u2014 Monthly sale price (\u20ba, TRY, spaces cleaned automatically)",
+    "formatDate": "DATE \u2014 Activation date (DD.MM.YYYY, MM/DD/YYYY, or Excel serial date)",
+    "formatCustomerTitle": "CUSTOMER TITLE \u2014 Assigned customer (saved empty if not in system)",
+    "formatImsi": "IMSI \u2014 Technical identifier",
+    "formatGprsSerialNo": "GPRS SERIAL NO \u2014 Device serial number",
+    "formatAccountNo": "ACCOUNT NO \u2014 Operator account number",
+    "formatStatus": "STATUS \u2014 available, active, subscription, cancelled (default: available)",
+    "formatNotes": "NOTES \u2014 Notes",
+    "validRows": "{{count}} Valid Rows",
+    "invalidRows": "{{count}} Invalid Rows",
+    "cancel": "Cancel",
+    "startImport": "Start Import",
+    "errors": "Errors",
+    "parseError": "File could not be read. Please upload a valid Excel file.",
+    "missingPhone": "Row {{row}}: Line number missing.",
+    "missingProvider": "Row {{row}}: Parent company (PARENT COMPANY) missing.",
+    "missingCost": "Row {{row}}: Monthly cost missing or invalid.",
+    "missingSale": "Row {{row}}: Monthly sale price missing or invalid.",
+    "buyerNotFound": "Row {{row}}: Buyer \"{{name}}\" not found.",
+    "skippedDuplicates": "{{count}} rows skipped (line no or IMSI already registered).",
+    "allSkippedDuplicates": "All {{count}} rows already exist; nothing was imported.",
+    "partialImportWithSkips": "{{created}} records added. {{skipped}} rows skipped \u2014 details below.",
+    "skippedRowsTitle": "Skipped rows",
+    "skippedReasonColumn": "Reason",
+    "skipReason": {
+      "existing_phone": "Line number is already registered.",
+      "duplicate_import_phone": "Duplicate line number earlier in this Excel file.",
+      "existing_imsi": "IMSI is already registered.",
+      "duplicate_import_imsi": "Duplicate IMSI earlier in this Excel file."
+    },
+    "processing": "Processing Excel file...",
+    "andMoreRows": "... and {{count}} more rows",
+    "failed": "Import failed",
+    "partialFailureWarning": "Some records may have been saved. Please check the SIM card list.",
+    "goToList": "Go to SIM card list"
+  },
+  "staticIp": {
+    "title": "Static IP",
+    "noIp": "No static IP assigned",
+    "assign": "Assign IP",
+    "cancel": "Cancel IP",
+    "history": "IP History",
+    "fields": {
+      "ipAddress": "IP Address",
+      "notes": "Notes",
+      "activatedAt": "Assigned At",
+      "cancelledAt": "Cancelled At"
+    },
+    "success": {
+      "assigned": "Static IP assigned",
+      "cancelled": "Static IP cancelled"
+    }
+  }
+}

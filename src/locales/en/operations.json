@@ -1,0 +1,270 @@
+{
+  "title": "Operations Center",
+  "tabs": {
+    "pool": "Operations",
+    "calendar": "Calendar",
+    "insights": "Summary",
+    "archive": "Archive"
+  },
+  "calendarLegend": {
+    "workOrders": "Work Orders",
+    "planPending": "Plan Pending",
+    "planDone": "Plan Done",
+    "planNotDone": "Plan Not Done"
+  },
+  "quickEntry": {
+    "customerPlaceholder": "Search customer...",
+    "sitePlaceholder": "Select site...",
+    "descriptionPlaceholder": "Problem description...",
+    "hint": "\u21b5 Press Enter to save"
+  },
+  "regions": {
+    "istanbul_europe": "Istanbul Europe",
+    "istanbul_anatolia": "Istanbul Anatolia",
+    "outside_istanbul": "Outside Istanbul"
+  },
+  "import": {
+    "pageTitle": "Import Operations Excel",
+    "uploadTitle": "Upload Excel file",
+    "uploadDescription": "Filled cells in columns A, D, and F are imported as records into the operations pool.",
+    "downloadTemplate": "Download template",
+    "selectFile": "Select file",
+    "startImport": "Import",
+    "backToOperations": "Back to operations",
+    "processing": "Processing Excel file...",
+    "validRows": "{{count}} records ready",
+    "progressLabel": "{{current}} / {{total}} records processed",
+    "errors": "Import errors",
+    "instructions": {
+      "intro": "Import into the pool without changing the customer's existing open-work Excel layout. The system only takes filled cells from the relevant columns as records.",
+      "fill": "Column A is Europe, column D is Anatolia, column F is out-of-city work."
+    },
+    "previewColumns": {
+      "region": "Region",
+      "description": "Description",
+      "status": "Status"
+    },
+    "errorMessages": {
+      "MAX_ROWS": "At most 1000 records can be imported at once."
+    }
+  },
+  "contactStatus": {
+    "not_contacted": "Not Called",
+    "no_answer": "No Answer",
+    "confirmed": "Confirmed",
+    "cancelled": "Cancelled"
+  },
+  "status": {
+    "open": "In Pool",
+    "scheduled": "Scheduled",
+    "completed": "Completed",
+    "failed": "Failed",
+    "cancelled": "Cancelled",
+    "closed": "Closed"
+  },
+  "priority": {
+    "low": "Low",
+    "normal": "Normal",
+    "high": "High",
+    "urgent": "Urgent"
+  },
+  "workType": {
+    "survey": "Survey",
+    "installation": "Installation",
+    "service": "Service",
+    "maintenance": "Maintenance",
+    "other": "Other"
+  },
+  "actions": {
+    "schedule": "Schedule",
+    "createWorkOrder": "Create Work Order",
+    "boomerang": "Reschedule",
+    "callQueue": "Call Queue",
+    "cancel": "Cancel",
+    "addToDailyPlan": "Add to Daily Plan",
+    "closeWithOutcome": "Close Open Item",
+    "delete": "Delete",
+    "edit": "Edit",
+    "viewWorkOrder": "Go to Work Order",
+    "resolvedRemotely": "Resolved Remotely",
+    "createProposal": "Create Proposal"
+  },
+  "closeOutcome": {
+    "title": "Select Close-out Category",
+    "confirm": "Close Open Item",
+    "outcomeLabel": "Close Reason / Outcome",
+    "notesLabel": "Note",
+    "notesPlaceholder": "Optional close-out note...",
+    "options": {
+      "field_resolved": "Service Provided",
+      "remote_resolved": "Resolved with Remote Support",
+      "closed_no_action": "Closed Without Action",
+      "cancelled": "Cancelled"
+    }
+  },
+  "addToPlan": {
+    "title": "Add to Daily Plan",
+    "confirm": "Add to Plan",
+    "sourceLabel": "Source Request",
+    "date": "Date",
+    "itemType": "Work Type",
+    "notes": "Note",
+    "notesPlaceholder": "Optional short note..."
+  },
+  "carryForward": {
+    "title": "Carry to Next Day",
+    "confirm": "Carry",
+    "date": "New Date"
+  },
+  "plan": {
+    "title": "Daily Plan",
+    "today": "Today",
+    "quickAdd": "Quick Add",
+    "carried": "Carried",
+    "links": {
+      "operations": "Pool",
+      "workOrder": "Work Order",
+      "proposal": "Proposal"
+    },
+    "empty": {
+      "title": "No entries for this day",
+      "description": "Add a plan item to get started."
+    },
+    "inline": {
+      "placeholder": "What needs to be done today?",
+      "add": "Add"
+    },
+    "actions": {
+      "toggleStatus": "Toggle status",
+      "carryForward": "Carry to Next Day",
+      "delete": "Delete"
+    },
+    "itemType": {
+      "field_work": "Field",
+      "office": "Office",
+      "proposal": "Proposal",
+      "finance": "Finance",
+      "other": "Other"
+    },
+    "status": {
+      "pending": "Pending",
+      "done": "Done",
+      "not_done": "Not Done"
+    }
+  },
+  "callQueue": {
+    "title": "Call Queue",
+    "remaining": "{{count}} remaining",
+    "noAnswer": "No Answer",
+    "busy": "Busy",
+    "confirmed": "Confirmed",
+    "skip": "Skip",
+    "notePlaceholder": "Add note...",
+    "summary": "{{confirmed}} confirmed, {{noAnswer}} no answer, {{cancelled}} cancelled",
+    "complete": "Calling complete",
+    "empty": "No requests to call"
+  },
+  "insights": {
+    "inPool": "In Pool",
+    "scheduled": "Scheduled",
+    "successRate": "Success Rate",
+    "failed": "Failed",
+    "avgReschedules": "Avg. Reschedules",
+    "regionBreakdown": "Region Breakdown",
+    "contactBreakdown": "Contact Status",
+    "period": "Period",
+    "thisMonth": "This Month",
+    "lastMonth": "Last Month",
+    "thisQuarter": "This Quarter",
+    "totalRequests": "Total Requests",
+    "generalStats": "General Statistics",
+    "periodBreakdown": "Period Results",
+    "outcomes": {
+      "title": "Close-out Outcomes",
+      "work_order": "Became Work Order",
+      "proposal": "Became Proposal",
+      "remote_resolved": "Resolved Remotely",
+      "closed_no_action": "No Action Needed",
+      "cancelled": "Customer Cancelled"
+    }
+  },
+  "filters": {
+    "allRegions": "All Regions",
+    "allStatuses": "All Statuses",
+    "allPriorities": "All Priorities",
+    "search": "Search customer..."
+  },
+  "empty": {
+    "title": "Request pool is empty",
+    "description": "Use the quick entry row above to add a new customer request."
+  },
+  "archive": {
+    "empty": {
+      "title": "No archive records",
+      "description": "Completed, closed, or failed items are listed here."
+    }
+  },
+  "outcome": {
+    "work_order": "Became Work Order",
+    "proposal": "Became Proposal",
+    "field_resolved": "Service Provided",
+    "remote_resolved": "Resolved Remotely",
+    "closed_no_action": "No Action Needed",
+    "cancelled": "Customer Cancelled",
+    "completed_via_work_order": "Completed via Work Order",
+    "work_order_cancelled": "Work Order Cancelled"
+  },
+  "scheduler": {
+    "date": "Date",
+    "time": "Time",
+    "workType": "Work Type",
+    "notes": "Notes",
+    "create": "Create Work Order"
+  },
+  "failure": {
+    "title": "Failed Work Order",
+    "reason": "Failure Reason",
+    "reasons": {
+      "customer_absent": "Customer not on site",
+      "parts_needed": "Parts needed",
+      "access_denied": "Access denied",
+      "incomplete_work": "Work could not be completed",
+      "other": "Other"
+    },
+    "rescheduleCount": "Attempt {{count}}"
+  },
+  "toast": {
+    "created": "Request created successfully",
+    "updated": "Request updated",
+    "workOrderCreated": "Work order created",
+    "boomeranged": "Request returned to pool",
+    "cancelled": "Request cancelled",
+    "import": {
+      "created": "Operation records imported"
+    },
+    "plan": {
+      "created": "Plan item created",
+      "updated": "Plan item updated",
+      "carriedForward": "Plan item moved forward",
+      "deleted": "Plan item deleted"
+    },
+    "outcome": {
+      "field_resolved": "Open item closed with service",
+      "remote_resolved": "Request resolved remotely",
+      "closed_no_action": "Request closed as no action needed",
+      "cancelled": "Request closed as customer cancellation",
+      "proposal": "Request moved to proposal process"
+    }
+  },
+  "delete": {
+    "title": "Delete Request",
+    "message": "Are you sure you want to delete this request?",
+    "warning": "This action cannot be undone."
+  },
+  "card": {
+    "attempt": "Attempt {{count}}",
+    "noSite": "Site not specified",
+    "workOrderLinked": "Work Order",
+    "createdBy": "Created by: {{name}}"
+  }
+}

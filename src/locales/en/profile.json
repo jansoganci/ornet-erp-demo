@@ -1,0 +1,75 @@
+{
+  "title": "Profile",
+  "subtitle": "View and edit your account details",
+  "accountSettings": {
+    "title": "Account Settings",
+    "subtitle": "Manage your profile details and security."
+  },
+  "usersManagement": {
+    "title": "User Management",
+    "subtitle": "Access list",
+    "searchPlaceholder": "Search by name or role…",
+    "filterRole": "Role filter",
+    "filterAllRoles": "All roles",
+    "columns": {
+      "user": "User",
+      "role": "Role"
+    },
+    "empty": "No users found.",
+    "loadError": "User list could not be loaded."
+  },
+  "accountCard": {
+    "title": "Account Information"
+  },
+  "securityCard": {
+    "title": "Security",
+    "subtitle": "Update your login password"
+  },
+  "session": {
+    "active": "Active"
+  },
+  "fields": {
+    "fullName": "Full Name",
+    "email": "Email",
+    "phone": "Phone",
+    "role": "Role",
+    "avatar": "Profile Photo"
+  },
+  "roles": {
+    "admin": "Administrator",
+    "fieldWorker": "Field Team",
+    "accountant": "Accountant"
+  },
+  "placeholders": {
+    "fullName": "Enter your full name",
+    "phone": "0555 123 4567"
+  },
+  "sections": {
+    "personalInfo": "Personal Information",
+    "security": "Security",
+    "preferences": "Preferences"
+  },
+  "actions": {
+    "save": "Save Changes",
+    "changePassword": "Change Password",
+    "logout": "Log Out"
+  },
+  "success": {
+    "updated": "Profile updated successfully"
+  },
+  "validation": {
+    "fullNameRequired": "Full name is required"
+  },
+  "changePassword": {
+    "currentPassword": "Current Password",
+    "password": "New Password",
+    "confirmPassword": "Confirm New Password",
+    "success": "Your password has been updated successfully.",
+    "forgotLink": "I forgot my password"
+  },
+  "logout": {
+    "title": "Log Out",
+    "message": "Are you sure you want to log out?",
+    "confirm": "Log Out"
+  }
+}

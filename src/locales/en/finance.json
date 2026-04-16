@@ -1,0 +1,340 @@
+{
+  "quickEntry": {
+    "title": "Quick Entry"
+  },
+  "expense": {
+    "title": "Add Expense",
+    "addButton": "Add Expense",
+    "addAnother": "Save and Add New",
+    "saveAndClose": "Save and Close",
+    "editTitle": "Edit Expense",
+    "fields": {
+      "date": "Date",
+      "amount": "Net Amount (Excl. VAT)",
+      "amountHint": "Entered amount is net amount excluding VAT. For invoiced transactions, VAT is calculated automatically.",
+      "category": "Category",
+      "customer": "Customer",
+      "source": "Source",
+      "paymentMethod": "Payment Method",
+      "hasInvoice": "Invoiced",
+      "vatRate": "VAT Rate (%)",
+      "description": "Description"
+    },
+    "placeholders": {
+      "date": "Select date",
+      "amount": "0 (excl. VAT)",
+      "category": "Select category",
+      "paymentMethod": "Select payment method",
+      "description": "Optional description"
+    },
+    "paymentMethods": {
+      "card": "Credit Card",
+      "cash": "Cash",
+      "bank_transfer": "Bank Transfer"
+    },
+    "kpi": {
+      "total": "Total Expenses",
+      "count": "Transaction Count",
+      "average": "Average per Transaction",
+      "largest": "Highest Expense"
+    }
+  },
+  "income": {
+    "title": "Add Income",
+    "addButton": "Add Income",
+    "addAnother": "Save and Add New",
+    "saveAndClose": "Save and Close",
+    "fields": {
+      "date": "Date",
+      "amount": "Amount",
+      "currency": "Currency",
+      "exchangeRate": "Exchange Rate",
+      "amountTry": "Amount (TRY)",
+      "incomeType": "Income Type",
+      "customer": "Customer",
+      "proposal": "Proposal",
+      "workOrder": "Work Order",
+      "paymentMethod": "Payment Method",
+      "shouldInvoice": "Invoice it",
+      "vatRate": "VAT Rate (%)",
+      "cogs": "Cost (TRY)",
+      "description": "Description"
+    },
+    "placeholders": {
+      "date": "Select date",
+      "amount": "0",
+      "exchangeRate": "Enter rate",
+      "amountTry": "TRY amount",
+      "proposal": "Search proposal...",
+      "workOrder": "Search work order...",
+      "description": "Optional description",
+      "noProposals": "No proposals found",
+      "noWorkOrders": "No work orders found"
+    },
+    "incomeTypes": {
+      "subscription": "Subscription",
+      "sim_rental": "SIM Rental",
+      "sale": "Sale",
+      "service": "Service",
+      "installation": "Installation",
+      "maintenance": "Maintenance",
+      "other": "Other"
+    },
+    "editTitle": "Edit Income",
+    "kpi": {
+      "total": "Total Income",
+      "count": "Transaction Count",
+      "average": "Average per Transaction",
+      "largest": "Highest Income"
+    }
+  },
+  "list": {
+    "title": "Expenses",
+    "titleIncome": "Income",
+    "empty": "No expense records yet",
+    "emptyIncome": "No income records yet",
+    "addFirst": "Get started by adding your first expense.",
+    "addFirstIncome": "Get started by adding your first income."
+  },
+  "quickActions": {
+    "addIncome": "Add Income",
+    "addExpense": "Add Expense"
+  },
+  "dashboard": {
+    "title": "Finance Overview",
+    "mrr": "MRR",
+    "arpc": "Average Revenue Per Customer",
+    "grossMargin": "Gross Margin",
+    "netProfit": "Net Profit",
+    "vatPayable": "VAT Payable",
+    "materialCostPct": "Material Cost %",
+    "simNetProfit": "SIM Net Profit",
+    "subscriptionNetProfit": "Subscription Net Profit",
+    "revenueVsExpenses": "Income vs Expense Comparison",
+    "recentTransactions": "Recent Transactions",
+    "expenseByCategory": "Expenses by Category"
+  },
+  "filters": {
+    "period": "Period",
+    "customer": "Customer",
+    "category": "Category",
+    "incomeType": "Income Type",
+    "paymentMethod": "Payment Method",
+    "all": "All",
+    "recurringFilterLabel": "Type",
+    "recurringAll": "All",
+    "recurringOnly": "Recurring Only",
+    "viewMode": {
+      "total": "Total",
+      "official": "Official",
+      "unofficial": "Unofficial"
+    }
+  },
+  "expenseRecurring": {
+    "badge": "Recurring",
+    "variableBadge": "Variable"
+  },
+  "categories": {
+    "manageTitle": "Category Management",
+    "manageButton": "Manage Categories",
+    "addButton": "Add Category",
+    "editTitle": "Edit Category",
+    "createTitle": "New Category",
+    "deleteInUse": "This category is used in recurring expense templates and cannot be deleted.",
+    "deleteRateConfirm": "Are you sure you want to delete this exchange rate record?",
+    "empty": "No categories yet"
+  },
+  "categoryForm": {
+    "code": "Code",
+    "nameTr": "Name (Turkish)",
+    "nameEn": "Name (English)",
+    "sortOrder": "Order"
+  },
+  "expenseCategories": {
+    "material": "Material / Equipment",
+    "sim_operator": "Operator Invoices",
+    "fuel": "Fuel",
+    "payroll": "Payroll",
+    "rent": "Rent",
+    "utilities": "Electricity / Water / Gas",
+    "communication": "Communication",
+    "vehicle": "Vehicle Expenses",
+    "fixed_assets": "Fixed Assets",
+    "other": "Other",
+    "sgk": "SGK Premium",
+    "tax_withholding": "Withholding Tax",
+    "accounting": "Accounting Service",
+    "insurance": "Insurance",
+    "software": "Software Subscriptions",
+    "food_transport": "Food / Transportation",
+    "office_supplies": "Stationery / Office",
+    "subscription_cogs": "Subscription Cost"
+  },
+  "mobile": {
+    "filterButton": "Filter",
+    "thisMonth": "This Month",
+    "noDescription": "No description",
+    "perTransaction": "Per transaction",
+    "addForm": "Add Form",
+    "lastUpdated": "Last Updated",
+    "latestRate": "Latest Rate",
+    "monthlyTotal": "Monthly Total",
+    "activeCount": "Active Template",
+    "pausedCount": "Inactive",
+    "nextDay": "Next Payment"
+  },
+  "grouped": {
+    "viewToggle": "View",
+    "listLabel": "List",
+    "groupedLabel": "Grouped",
+    "countHeader": "Record",
+    "count": "{{count}} records",
+    "noCategory": "Uncategorized",
+    "moreItems": "and {{count}} more records..."
+  },
+  "actions": {
+    "edit": "Edit",
+    "delete": "Delete"
+  },
+  "deleteConfirm": {
+    "title": "Are you sure you want to delete?",
+    "message": "This action cannot be undone."
+  },
+  "vatReport": {
+    "title": "VAT Report",
+    "outputVat": "Output VAT",
+    "inputVat": "Input VAT",
+    "netVat": "Net VAT Payable",
+    "periodType": "Period Type",
+    "month": "Month",
+    "quarter": "Quarter",
+    "total": "Total",
+    "empty": "No VAT data for the selected period",
+    "emptyDescription": "Try again by selecting a different period."
+  },
+  "exchangeRates": {
+    "title": "Exchange Rates",
+    "addRate": "Add Rate",
+    "currency": "Currency",
+    "date": "Date",
+    "buyRate": "Buy",
+    "sellRate": "Sell",
+    "effectiveRate": "Effective Rate",
+    "source": "Source",
+    "empty": "No exchange rate records yet",
+    "emptyDescription": "Start by fetching rates from CBRT or adding manually.",
+    "duplicateDate": "A rate already exists for this date.",
+    "fetchTcmb": "Fetch from CBRT",
+    "fetchSuccess": "{{count}} rates updated successfully ({{date}})",
+    "fetchNoData": "No rates found from CBRT for today."
+  },
+  "reports": {
+    "title": "Profit and Loss Report",
+    "revenue": "Income",
+    "cogs": "Cost of Sales",
+    "grossProfit": "Gross Profit",
+    "operatingExpenses": "Operating Expenses",
+    "netProfit": "Net Profit",
+    "empty": "No data in the selected period",
+    "emptyDescription": "Try again by selecting a different period."
+  },
+  "export": {
+    "csv": "Download CSV",
+    "plFilename": "Income_Expense",
+    "vatFilename": "VAT_Report"
+  },
+  "exportColumns": {
+    "date": "Date",
+    "period": "Period",
+    "source": "Source",
+    "category": "Category",
+    "direction": "Direction",
+    "amount": "Amount",
+    "currency": "Currency",
+    "vatRate": "VAT Rate",
+    "outputVat": "Output VAT",
+    "inputVat": "Input VAT",
+    "netVat": "Net VAT",
+    "total": "Total",
+    "cogs": "Cost",
+    "income": "Income",
+    "expense": "Expense"
+  },
+  "dashboardV2": {
+    "title": "Finance Overview",
+    "mobileTitle": "Finance",
+    "mobile": {
+      "cashFlow": "Cash Flow",
+      "viewAll": "View All",
+      "efficient": "Efficient",
+      "loss": "Loss",
+      "netProfit": "Net Profit",
+      "margin": "Margin",
+      "income": "Income",
+      "expense": "Expense"
+    },
+    "tabs": {
+      "overview": "Overview",
+      "work": "Work",
+      "subscriptions": "Subscriptions",
+      "sim": "SIM Cards"
+    },
+    "filters": {
+      "year": "Year",
+      "month": "Month",
+      "allMonths": "Full Year"
+    },
+    "overview": {
+      "totalRevenue": "Total income",
+      "totalExpenses": "Total expense",
+      "remaining": "Remaining",
+      "incomeBreakdown": "Income Sources",
+      "expenseBreakdown": "Expense Distribution",
+      "generalExpenses": "General Expenses",
+      "noExpenses": "No general expense records in this period"
+    },
+    "work": {
+      "revenue": "Income from work",
+      "costs": "Total work cost",
+      "grossMargin": "Gross profit margin",
+      "chartTitle": "Monthly income from work",
+      "noData": "No work income records in this period"
+    },
+    "subscriptions": {
+      "estimatedMonthly": "Estimated monthly income from subscriptions",
+      "perCustomer": "Subscription income per customer",
+      "grossMargin": "Gross profit margin",
+      "chartTitle": "Monthly income from subscriptions",
+      "hint": "This figure is the total of currently active subscriptions.",
+      "noData": "No subscription income in this period"
+    },
+    "sim": {
+      "revenue": "Income from SIM cards",
+      "operatorCost": "Operator cost",
+      "grossMargin": "Gross profit margin",
+      "chartTitle": "Monthly income from SIM cards",
+      "noData": "No SIM card income in this period"
+    },
+    "chart": {
+      "revenue": "Income",
+      "costs": "Cost",
+      "expenses": "Expense"
+    },
+    "loading": "Loading data...",
+    "error": "An error occurred while loading data.",
+    "noDataGeneral": "No data found for the selected period."
+  },
+  "healthBanner": {
+    "message": "{{count}} records require financial integrity checks.",
+    "sourceType": {
+      "work_order": "Work Order",
+      "proposal": "Proposal"
+    },
+    "status": {
+      "MISSING_INCOME": "Missing Income",
+      "ZERO_VALUE_INCOME": "Zero Value",
+      "CURRENCY_MISMATCH": "Currency Mismatch",
+      "MISSING_EXPENSE": "Missing Expense"
+    }
+  }
+}

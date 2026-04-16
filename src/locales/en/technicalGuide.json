@@ -1,0 +1,27 @@
+{
+  "title": "Technical Guide",
+  "listDescription": "Step-by-step notes for remote support and common field work. New topics appear here as they are added.",
+  "categories": {
+    "camera": "Camera systems",
+    "alarm": "Alarm systems"
+  },
+  "list": {
+    "mobileTitle": "Technical Guide",
+    "emptyCategory": "No topics in this section yet.",
+    "readMore": "Read more",
+    "searchPlaceholder": "Search guide title or summary…",
+    "allCategories": "All",
+    "noResults": "No guides match your search.",
+    "openMenu": "Open menu"
+  },
+  "article": {
+    "backToList": "Back to Technical Guide",
+    "backAria": "Return to technical guide list",
+    "readingProgress": "Reading progress"
+  },
+  "rich": {
+    "flowCaption": "Workflow (summary)",
+    "stepsHeading": "Operational steps",
+    "goldenRulesTitle": "Golden rules — before you start"
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "title": "Work History",
+  "subtitle": "Search all completed and historical work orders",
+  "search": {
+    "placeholder": "Account no or customer name..."
+  },
+  "filters": {
+    "workType": "Work Type",
+    "worker": "Staff",
+    "dateRange": "Date Range",
+    "allWorkers": "All Staff",
+    "allTypes": "All Work Types",
+    "datePresets": {
+      "all": "All",
+      "7": "Last 7 days",
+      "30": "Last 30 days",
+      "90": "Last 3 months",
+      "custom": "Custom"
+    },
+    "from": "From",
+    "to": "To"
+  },
+  "results": {
+    "title": "Search Results",
+    "count": "{{count}} records found",
+    "noResults": "No work records found for your search criteria.",
+    "columns": {
+      "customer": "Customer / Site",
+      "accountNo": "Account No",
+      "workType": "Work Type",
+      "date": "Date",
+      "workers": "Staff"
+    }
+  }
+}

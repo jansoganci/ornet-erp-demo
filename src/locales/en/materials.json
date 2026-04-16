@@ -1,0 +1,108 @@
+{
+  "title": "Materials List",
+  "list": {
+    "mobileTitle": "Materials",
+    "addButton": "Add Material",
+    "searchPlaceholder": "Search by code or name...",
+    "noMaterials": "No materials added yet.",
+    "columns": {
+      "code": "Code",
+      "name": "Material Name",
+      "category": "Category",
+      "unit": "Unit",
+      "status": "Status"
+    }
+  },
+  "form": {
+    "createTitle": "New Material",
+    "editTitle": "Edit Material",
+    "fields": {
+      "code": "Material Code",
+      "name": "Material Name",
+      "description": "Description",
+      "category": "Category",
+      "unit": "Unit",
+      "isActive": "Active"
+    },
+    "placeholders": {
+      "code": "e.g. DED-001",
+      "name": "e.g. Optical Smoke Detector",
+      "description": "Product description shown to customers (optional)",
+      "category": "Select category"
+    }
+  },
+  "categories": {
+    "dedektor": "Detector",
+    "siren": "Siren",
+    "panel": "Panel",
+    "buton": "Button",
+    "kablo": "Cable",
+    "aksesuar": "Accessory",
+    "kamera": "Camera",
+    "diger": "Other"
+  },
+  "units": {
+    "adet": "pcs",
+    "metre": "m",
+    "paket": "pack"
+  },
+  "status": {
+    "active": "Active",
+    "inactive": "Inactive"
+  },
+  "import": {
+    "title": "Bulk upload with Excel",
+    "pageTitle": "Materials — Bulk upload with Excel",
+    "uploadTitle": "Upload Excel File",
+    "uploadHint": "Drag and drop or select a .xlsx or .xls file containing your materials list.",
+    "validRows": "Valid Rows",
+    "invalidRows": "Invalid Rows",
+    "cancel": "Cancel",
+    "startImport": "Start Import",
+    "downloadTemplate": "Download Template",
+    "selectFile": "Select File",
+    "processing": "Processing Excel file...",
+    "errors": "Errors",
+    "moreRows": "... and {{count}} more rows",
+    "success": "{{created}} added, {{updated}} updated",
+    "parse": "File could not be read. Please upload a valid Excel file.",
+    "missingCode": "Row {{row}}: Code missing.",
+    "missingName": "Row {{row}}: Name missing.",
+    "parseError": "File could not be read. Please check the Excel format.",
+    "goToList": "Go to materials list"
+  },
+  "filters": {
+    "all": "All",
+    "category": "Category",
+    "status": "Status",
+    "selectYear": "Select Year",
+    "selectMonth": "Select Month",
+    "period": "Period",
+    "allPeriods": "All periods",
+    "periodPanelTitle": "Year and month"
+  },
+  "kpi": {
+    "total": "Total",
+    "active": "Active",
+    "filtered": "Results",
+    "categories": "Category"
+  },
+  "mobile": {
+    "openMenu": "Open menu"
+  },
+  "usage": {
+    "title": "Usage History",
+    "columnHeader": "Usage",
+    "empty": "This material has not been used on any work order yet.",
+    "columns": {
+      "customer": "Customer",
+      "site": "Site",
+      "workOrder": "Work Order",
+      "workType": "Work Type",
+      "date": "Date",
+      "status": "Status",
+      "quantity": "Quantity"
+    },
+    "workOrderLink": "Go to work order"
+  }
+}

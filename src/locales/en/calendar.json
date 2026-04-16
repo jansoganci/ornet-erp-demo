@@ -1,0 +1,42 @@
+{
+  "view": {
+    "weekly": "Weekly",
+    "monthly": "Monthly"
+  },
+  "nav": {
+    "calendar": "Calendar"
+  },
+  "filter": {
+    "all": "All",
+    "workOrders": "Work Orders",
+    "plans": "Annual Plan"
+  },
+  "toolbar": {
+    "assigned": "Assigned"
+  },
+  "empty": {
+    "week": "No events this week",
+    "month": "No events this month",
+    "day": "No events on this day",
+    "hint": "Click a time slot to create a new event"
+  },
+  "detail": {
+    "title": "Work order",
+    "customer": "Customer",
+    "time": "Time",
+    "openFull": "Open full details"
+  },
+  "planDetail": {
+    "title": "Plan Details",
+    "openFull": "Go to Plan",
+    "noPriority": "Normal"
+  },
+  "slotAction": {
+    "addWorkOrder": "Add Work Order",
+    "addPlan": "Add Plan Note"
+  },
+  "error": {
+    "loadFailed": "Work orders could not be loaded",
+    "loadListFailed": "Calendar data could not be loaded"
+  }
+}

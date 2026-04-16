@@ -1,0 +1,29 @@
+{
+  "title": "Daily Work List",
+  "subtitle": "Work scheduled for {{date}}",
+  "today": "Today",
+  "tomorrow": "Tomorrow",
+  "filters": {
+    "date": "Select Date",
+    "worker": "Staff Filter",
+    "allWorkers": "All"
+  },
+  "week": {
+    "prevWeek": "Previous week",
+    "nextWeek": "Next week"
+  },
+  "table": {
+    "workType": "Work Type",
+    "customer": "Customer / Site",
+    "time": "Time",
+    "status": "Status"
+  },
+  "empty": {
+    "title": "No work for today",
+    "description": "No work orders are scheduled for the selected date."
+  },
+  "todayPlans": {
+    "title": "Today's Plans",
+    "empty": "No plans for today"
+  }
+}

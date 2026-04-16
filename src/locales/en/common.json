@@ -1,0 +1,295 @@
+{
+  "appName": "Ornet ERP",
+  "footer": {
+    "copyright": "Ornet ERP",
+    "support": "Support",
+    "privacy": "Privacy"
+  },
+  "actions": {
+    "menu": "Menu",
+    "actionsColumn": "Actions",
+    "add": "Add",
+    "edit": "Edit",
+    "delete": "Delete",
+    "save": "Save",
+    "cancel": "Cancel",
+    "search": "Search",
+    "filter": "Filter",
+    "back": "Back",
+    "close": "Close",
+    "done": "Done",
+    "confirm": "Confirm",
+    "call": "Call",
+    "viewDetails": "View Details",
+    "view": "View Details",
+    "create": "Create",
+    "update": "Update",
+    "submit": "Submit",
+    "reset": "Reset",
+    "clear": "Clear",
+    "select": "Select",
+    "upload": "Upload",
+    "download": "Download",
+    "copy": "Copy",
+    "refresh": "Refresh",
+    "retry": "Try Again",
+    "export": "Export",
+    "collapse": "Collapse",
+    "expand": "Expand"
+  },
+  "status": {
+    "pending": "Pending",
+    "scheduled": "Scheduled",
+    "inProgress": "In Progress",
+    "in_progress": "In Progress",
+    "completed": "Completed",
+    "cancelled": "Cancelled",
+    "active": "Active",
+    "inactive": "Inactive"
+  },
+  "priority": {
+    "low": "Low",
+    "normal": "Normal",
+    "high": "High",
+    "urgent": "Urgent"
+  },
+  "theme": {
+    "darkMode": "Dark Mode",
+    "lightMode": "Light Mode",
+    "toggle": "Toggle Theme"
+  },
+  "type": {
+    "service": "Service",
+    "installation": "Installation",
+    "survey": "Survey",
+    "maintenance": "Maintenance",
+    "other": "Other"
+  },
+  "monthsShort": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+  "monthsFull": ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+  "time": {
+    "at": "At",
+    "today": "Today",
+    "tomorrow": "Tomorrow",
+    "yesterday": "Yesterday",
+    "thisWeek": "This Week",
+    "thisMonth": "This Month",
+    "overdue": "Overdue",
+    "daysAgo": "{{count}} days ago",
+    "hoursAgo": "{{count}} hours ago",
+    "minutesAgo": "{{count}} minutes ago",
+    "justNow": "Just now"
+  },
+  "filters": {
+    "title": "Filters",
+    "clear": "Clear",
+    "all": "All",
+    "allStatuses": "All Statuses",
+    "allTypes": "All Types",
+    "dateFrom": "Start Date",
+    "dateTo": "End Date"
+  },
+  "empty": {
+    "noData": "No data found",
+    "noResults": "No results found",
+    "noItems": "No items found"
+  },
+  "fields": {
+    "amount": "Amount",
+    "currency": "Currency",
+    "notes": "Notes"
+  },
+  "currencies": {
+    "TRY": "TRY (₺)",
+    "USD": "USD ($)",
+    "EUR": "EUR (€)"
+  },
+  "deleteConfirm": "Delete this item?",
+  "noResults": "No results found",
+  "success": {
+    "saved": "Saved successfully",
+    "created": "Created successfully",
+    "updated": "Updated successfully",
+    "deleted": "Deleted successfully",
+    "statusUpdated": "Status updated successfully"
+  },
+  "loading": "Loading...",
+  "saving": "Saving...",
+  "deleting": "Deleting...",
+  "successLabel": "Success",
+  "error": {
+    "title": "Something went wrong",
+    "description": "An unexpected error occurred. Please try again.",
+    "boundaryTitle": "Application Error",
+    "boundaryDescription": "An unexpected error occurred. Please refresh the page or try again later."
+  },
+  "errors": {
+    "saveFailed": "Save failed. Please try again.",
+    "loadFailed": "Data could not be loaded. Please try again.",
+    "deleteFailed": "Delete operation failed. Please try again.",
+    "systemHealth": "System Health"
+  },
+  "warning": "Warning",
+  "info": "Info",
+  "confirm": {
+    "title": "Are you sure?",
+    "deleteMessage": "This action cannot be undone.",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "validation": {
+    "required": "This field is required",
+    "email": "Enter a valid email address",
+    "phone": "Enter a valid phone number",
+    "minLength": "Must be at least {{count}} characters",
+    "maxLength": "Can be at most {{count}} characters"
+  },
+  "pagination": {
+    "previous": "Previous",
+    "next": "Next",
+    "page": "Page",
+    "of": "/",
+    "showing": "Showing",
+    "total": "Total"
+  },
+  "breadcrumb": {
+    "new": "New",
+    "detail": "Details",
+    "edit": "Edit",
+    "import": "Bulk upload with Excel",
+    "priceRevision": "Price Revision"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "dailyWork": "Daily Work",
+    "customers": "Customers",
+    "workOrders": "Work Orders",
+    "workHistory": "Work History",
+    "tasks": "Annual Plan",
+    "calendar": "Calendar",
+    "materials": "Materials List",
+    "technicalGuide": "Technical Guide",
+    "subscriptions": "Subscriptions",
+    "priceRevision": "Price Revision",
+    "proposals": "Proposals",
+    "equipment": "Asset Tracking",
+    "profile": "Profile",
+    "settings": "Settings",
+    "logout": "Log Out",
+    "notifications": "Notifications",
+    "operations": "Operations Center",
+    "actionBoard": "Action List",
+    "more": "Menu",
+    "collapseSidebar": "Collapse Menu",
+    "expandSidebar": "Expand Menu",
+    "groups": {
+      "planning": "Planning",
+      "revenueInfra": "Revenue & Infrastructure",
+      "finance": "Finance",
+      "settings": "Settings",
+      "operations": "Operations"
+    },
+    "finance": {
+      "dashboard": "Finance Overview",
+      "collection": "Collection Desk",
+      "income": "Income",
+      "expenses": "Expenses",
+      "vat": "VAT Report",
+      "exchange": "Exchange Rates",
+      "recurring": "Automated Expenses",
+      "reports": "Reports"
+    },
+    "account": "Account",
+    "quickActions": {
+      "title": "Quick Actions",
+      "addIncome": "Add Income",
+      "addExpense": "Add Expense",
+      "newSimCard": "New SIM Card",
+      "newCustomer": "New Customer",
+      "newSubscription": "New Subscription",
+      "newProposal": "New Proposal",
+      "newWorkOrder": "New Work Order"
+    },
+    "floatingMenu": {
+      "openMenu": "Quick actions menu",
+      "closeMenu": "Close menu",
+      "createWorkOrder": "Create Work Order",
+      "createProposal": "Create Proposal",
+      "addCustomer": "Add Customer",
+      "addSubscription": "Add Subscription",
+      "addSimCard": "Add SIM Card",
+      "addIncome": "Add Income",
+      "addExpense": "Add Expense"
+    }
+  },
+  "workType": {
+    "survey": "Survey",
+    "installation": "Installation",
+    "service": "Service",
+    "maintenance": "Maintenance",
+    "other": "Other",
+    "kesif": "Survey",
+    "montaj": "Installation",
+    "servis": "Service",
+    "bakim": "Maintenance",
+    "diger": "Other"
+  },
+  "placeholders": {
+    "search": "Search...",
+    "selectCustomer": "Select customer...",
+    "searchCustomer": "Search customer...",
+    "noNotes": "No notes",
+    "notes": "No notes"
+  },
+  "combobox": {
+    "searchCustomer": "Search customer...",
+    "noCustomerFound": "No customer found",
+    "clearSelection": "Clear selection"
+  },
+  "labels": {
+    "admin": "Administrator",
+    "unknown": "Unknown",
+    "untitled": "Untitled",
+    "phone": "Phone",
+    "address": "Address",
+    "statusUpdate": "Status Update",
+    "records": "Records",
+    "areYouSure": "Are you sure?"
+  },
+  "roles": {
+    "admin": "Administrator",
+    "field_worker": "Field Worker",
+    "accountant": "Accountant"
+  },
+  "import": {
+    "instructionTitle": "How to import with Excel?",
+    "instructionIntro": "Download the template first, fill in the rows, select your file, then import after fixing warnings.",
+    "stepDownload": "Download the template",
+    "stepDownloadDesc": "Save the blank template to your computer; do not change column headers.",
+    "stepFill": "Fill in the Excel file",
+    "stepFillDesc": "Each row is one record. Do not leave required cells empty.",
+    "stepUpload": "Select the file",
+    "stepUploadDesc": "Choose your .xlsx file via Upload; the system will show a preview.",
+    "stepReview": "Review warnings",
+    "stepReviewDesc": "Fix red or warning rows; if needed, upload the Excel file again.",
+    "stepImport": "Import",
+    "stepImportDesc": "If everything is correct, click save / import.",
+    "summaryTitle": "Result summary",
+    "summaryCreated": "Created",
+    "summaryUpdated": "Updated",
+    "summarySkipped": "Skipped",
+    "summaryFailed": "Failed",
+    "summarySuccess": "Operation completed.",
+    "summaryPartial": "Partially completed; see details below.",
+    "summaryError": "Operation could not be completed.",
+    "fileReadFailed": "File could not be opened. Make sure you selected .xlsx or .xls and that the first sheet contains data.",
+    "bulkImportButton": "Bulk upload with Excel"
+  },
+  "unsavedChanges": {
+    "title": "Unsaved Changes",
+    "description": "You have unsaved changes on this page. Would you like to save before leaving?",
+    "save": "Save and Leave",
+    "cancel": "Cancel (Stay on Page)",
+    "leave": "Leave Without Saving"
+  }
+}

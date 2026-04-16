@@ -1,0 +1,126 @@
+{
+  "title": "Notifications",
+  "subtitle": "Operational alerts and activity tracking",
+  "resolvedAt": "Resolved",
+  "page": {
+    "title": "Notification Center"
+  },
+  "tabs": {
+    "all": "All",
+    "alerts": "Alerts",
+    "system": "System",
+    "activity": "Activity",
+    "resolved": "History"
+  },
+  "resolved": {
+    "emptyTitle": "No notification history",
+    "emptyDescription": "Completed and dismissed notifications appear here",
+    "completedAt": "Completed {{time}}"
+  },
+  "dateHeaders": {
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "older": "Older"
+  },
+  "filters": {
+    "undone": "Pending",
+    "done": "Completed",
+    "timeAll": "All",
+    "timeToday": "Today",
+    "timeThisWeek": "This week",
+    "timeOlder": "Older",
+    "year": "Year",
+    "month": "Month",
+    "status": "Status",
+    "clear": "Clear Filters",
+    "search": "Search alert, log, or activity..."
+  },
+  "months": {
+    "1": "January",
+    "2": "February",
+    "3": "March",
+    "4": "April",
+    "5": "May",
+    "6": "June",
+    "7": "July",
+    "8": "August",
+    "9": "September",
+    "10": "October",
+    "11": "November",
+    "12": "December"
+  },
+  "table": {
+    "type": "Type",
+    "content": "Content",
+    "date": "Date",
+    "resolvedDate": "Resolved Date",
+    "actions": "Actions"
+  },
+  "empty": {
+    "title": "No notifications",
+    "description": "All notifications are up to date",
+    "undone": "No notifications require attention right now.",
+    "done": "No notifications were completed in this period."
+  },
+  "error": {
+    "loadFailed": "Notifications could not be loaded"
+  },
+  "actions": {
+    "resolve": "Mark as completed",
+    "dismiss": "Dismiss",
+    "viewLogs": "View Details",
+    "viewAll": "View All",
+    "retry": "Try Again",
+    "markAllRead": "Mark All as Read",
+    "loadOlder": "Load older notifications",
+    "newIncident": "New Work Order",
+    "completeReminder": "Complete"
+  },
+  "sidebar": {
+    "health": "Notification Status",
+    "alertsThisWeek": "Alerts This Week",
+    "storedNotifications": "Pending Notifications",
+    "overdueItems": "Overdue",
+    "quickReminder": "Quick Reminder"
+  },
+  "types": {
+    "open_work_order": "Open Work Order",
+    "overdue_work_order": "Overdue Work Order",
+    "today_not_started": "Not Started Today",
+    "proposal_awaiting_response": "Proposal Awaiting Response",
+    "proposal_no_response_2d": "Proposal No Response 2+ Days",
+    "proposal_approved_no_wo": "Proposal Awaiting Installation",
+    "subscription_cancelled": "Subscription Cancelled",
+    "subscription_paused": "Subscription Paused",
+    "payment_due_soon": "Payment Due Soon",
+    "renewal_due_soon": "Renewal Due Soon",
+    "work_order_assigned": "Work Order Assigned",
+    "task_due_soon": "Task Due Soon",
+    "user_reminder": "Reminder",
+    "sim_card_cancelled": "SIM Card Cancelled",
+    "pending_payments_summary": "Monthly subscription payment summary"
+  },
+  "categories": {
+    "alerts": "Alert",
+    "system": "System",
+    "activity": "Activity"
+  },
+  "reminder": {
+    "addButton": "Add Reminder",
+    "createTitle": "Create Reminder",
+    "myReminders": "My Reminders",
+    "fields": {
+      "title": "Title",
+      "content": "Note",
+      "date": "Date",
+      "time": "Time"
+    },
+    "placeholders": {
+      "title": "What should we remind you about?",
+      "content": "Extra details...",
+      "time": "09:00"
+    },
+    "created": "Reminder created",
+    "completed": "Reminder completed"
+  }
+}

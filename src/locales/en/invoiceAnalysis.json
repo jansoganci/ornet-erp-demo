@@ -1,0 +1,85 @@
+{
+  "title": "Invoice Analysis",
+  "upload": {
+    "title": "Upload Turkcell Invoice PDF",
+    "description": "Upload your monthly Turkcell invoice. The system reads line data from the PDF and compares it with your inventory.",
+    "button": "Select PDF",
+    "parsing": "Reading PDF...",
+    "accept": ".pdf"
+  },
+  "summary": {
+    "totalLines": "Lines on Invoice",
+    "totalAmount": "Amount Due",
+    "matched": "In System",
+    "invoiceOnly": "Not in System",
+    "costIncreaseCount": "Price Variance",
+    "estimatedProfitLoss": "Estimated Loss"
+  },
+  "alerts": {
+    "invoiceOnly": {
+      "title": "Lines on Invoice, Not in System",
+      "description": "These phone numbers appear on the invoice but are not registered in your SIM inventory. You are paying for them but not tracking them."
+    },
+    "costIncrease": {
+      "title": "Lines Charged Higher Than Expected",
+      "description": "Invoice amounts for these lines are at least 1 TRY higher than your recorded unit cost."
+    },
+    "loss": {
+      "title": "Lines Where Cost Exceeds Sale Price",
+      "description": "Amount paid to Turkcell exceeds what you charge the customer. This is a direct loss."
+    },
+    "inventoryOnly": {
+      "title": "In System, Not on Invoice",
+      "description": "These Turkcell lines are in your SIM inventory but show no charge on this invoice."
+    },
+    "unknownCost": "No cost entered for {{count}} lines",
+    "unknownCostDescription": "Profit/loss may still be calculated, but variance analysis is not possible without cost. Enter costs on SIM card records."
+  },
+  "tabs": {
+    "matched": "Matched",
+    "invoiceOnly": "Invoice Only",
+    "inventoryOnly": "Inventory Only"
+  },
+  "table": {
+    "hatNo": "Line No",
+    "tariff": "Tariff",
+    "invoiceAmount": "Invoice Amount",
+    "costPrice": "Cost",
+    "salePrice": "Sale Price",
+    "profitLoss": "P&L",
+    "kdv": "VAT",
+    "oiv": "SCT",
+    "status": "Status",
+    "buyer": "Buyer",
+    "costIncrease": "Cost Increase",
+    "diff": "Diff",
+    "lineUnit": "lines",
+    "unknownCost": "No Cost"
+  },
+  "chart": {
+    "title": "Tariff Distribution",
+    "byCount": "Line Count",
+    "byAmount": "Amount (\u20ba)",
+    "noData": "No tariff data found."
+  },
+  "filters": {
+    "costIncreaseOnly": "Show cost increases only",
+    "showMore": "Show {{count}} more rows"
+  },
+  "errors": {
+    "parseFailed": "PDF could not be read. Please upload a valid Turkcell invoice file.",
+    "noLinesFound": "No line data found in the PDF. The invoice format may not be supported.",
+    "fetchFailed": "Inventory data could not be loaded. Please try again.",
+    "integrityWarning": "Invoice integrity warning: Line totals do not match the cover page total. Some pages may be unreadable — results may be incomplete."
+  },
+  "reset": "Upload New Invoice",
+  "loading": {
+    "inventory": "Loading inventory..."
+  },
+  "invoice": {
+    "period": "Invoice Period",
+    "no": "Invoice No",
+    "date": "Invoice Date",
+    "paymentDate": "Payment Date"
+  }
+}

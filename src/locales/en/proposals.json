@@ -1,0 +1,291 @@
+{
+  "title": "Proposals",
+  "list": {
+    "title": "Proposals",
+    "addButton": "New Proposal",
+    "searchPlaceholder": "Search proposal or customer...",
+    "columns": {
+      "proposalNo": "Proposal No",
+      "customer": "Customer",
+      "city": "City",
+      "title": "Title",
+      "amount": "Amount",
+      "status": "Status",
+      "workOrders": "Work Orders",
+      "dates": "Dates",
+      "createdAt": "Created At"
+    },
+    "tabs": {
+      "active": "Active",
+      "archive": "Archive"
+    },
+    "empty": {
+      "title": "No proposals yet",
+      "description": "Create your first proposal.",
+      "activeTitle": "No active proposals",
+      "activeDescription": "No draft, sent, or accepted proposals found.",
+      "archiveTitle": "Archive is empty",
+      "archiveDescription": "No completed, rejected, or cancelled proposals found."
+    },
+    "noResults": {
+      "title": "No results found",
+      "description": "Change your search criteria."
+    }
+  },
+  "detail": {
+    "title": "Proposal Details",
+    "annualFixed": "Annual Fixed Expenses",
+    "items": "Items",
+    "total": "Total",
+    "scopeOfWork": "Scope of Work",
+    "notes": "Internal Notes",
+    "workOrders": "Work Orders",
+    "workOrderCount": "{{completed}}/{{total}} Completed",
+    "noWorkOrders": "No work orders added yet.",
+    "customerCard": {
+      "customerLabel": "Customer",
+      "locationLabel": "Location",
+      "noLocation": "No location selected",
+      "viewCustomer": "Go to customer profile"
+    },
+    "openWorkOrdersHint": "{{count}} work orders are not completed yet. Installation may not be completed in one go; create additional work orders if needed.",
+    "addWorkOrder": "Add Work Order",
+    "addSiteAndWorkOrder": "Add Location and Create Work Order",
+    "addWorkOrderNoSite": "Location required",
+    "addWorkOrderNoSiteHint": "To add a work order, first add a location to the proposal (Edit).",
+    "unlinkWorkOrder": "Remove Link",
+    "confirmUnlink": "Are you sure you want to remove this work order's proposal link?",
+    "completionBanner": {
+      "title": "All installations are complete.",
+      "description": "Continue to create financial records.",
+      "action": "Create Financial Record"
+    },
+    "proposalLink": "Proposal",
+    "actions": {
+      "edit": "Edit",
+      "downloadPdf": "Download PDF",
+      "markSent": "Mark as Sent",
+      "accept": "Accept",
+      "reject": "Reject",
+      "cancel": "Cancel",
+      "markComplete": "Mark Installation Complete",
+      "createWorkOrder": "Create work order",
+      "bill": "Invoice",
+      "duplicate": "Duplicate"
+    },
+    "comingSoon": "This feature will be available soon.",
+    "duplicateSuccess": "Proposal duplicated.",
+    "confirmAccept": "Are you sure you want to accept this proposal?",
+    "confirmReject": "Are you sure you want to reject this proposal?",
+    "confirmSent": "Are you sure you want to mark this proposal as sent?",
+    "confirmComplete": "This will be marked as installation completed. Are you sure?",
+    "netProfit": "Net Profit",
+    "subtotal": "Subtotal",
+    "pricingDiscount": "Discount",
+    "pricingNetExclVat": "Net Amount (Excl. VAT)",
+    "pricingVatAtRate": "VAT (%{{rate}})",
+    "pricingWithholdingDeduction": "Withholding Tax Deduction",
+    "pricingGrandTotalPayable": "Grand Total (Payable)",
+    "discountPercent": "Discount %{{percent}}",
+    "discountAmount": "Discount Amount",
+    "vatAmount": "VAT Amount",
+    "totalWithVat": "Total Incl. VAT",
+    "withheldVat": "Withholding Tax",
+    "totalPayable": "Total Payable",
+    "summaryTitle": "Summary Information",
+    "summary": {
+      "createdAt": "Created At",
+      "sentAt": "Sent At",
+      "acceptedOrRejectedAt": "Accepted / Rejected At",
+      "contacts": "Contacts"
+    }
+  },
+  "form": {
+    "addTitle": "New Proposal",
+    "noSite": "No location selected",
+    "siteOptional": "(optional)",
+    "editTitle": "Edit Proposal",
+    "customerRequired": "Please select a customer",
+    "validation": {
+      "toastLine": "{{where}}: {{message}}",
+      "where": {
+        "site": "Location",
+        "title": "Proposal title",
+        "items": "At least one item row",
+        "discount": "Discount",
+        "itemMaterial": "Item row {{n}} (material name)",
+        "itemQuantity": "Item row {{n}} (quantity)",
+        "itemUnitPrice": "Item row {{n}} (unit price)",
+        "itemUnit": "Item row {{n}} (unit)",
+        "annualDescription": "Annual fixed expense row {{n}} (description)",
+        "annualQuantity": "Annual fixed expense row {{n}} (quantity)"
+      }
+    },
+    "stepper": {
+      "general": "General Information",
+      "services": "Services",
+      "review": "Preview"
+    },
+    "preview": {
+      "openButton": "Preview",
+      "title": "Live Preview",
+      "companyLabel": "Company",
+      "projectLabel": "Project",
+      "noItems": "No items added yet.",
+      "subtotal": "Subtotal",
+      "discount": "Discount",
+      "grandTotal": "Grand Total",
+      "vat": "VAT",
+      "totalWithVat": "Total Incl. VAT",
+      "withheldVat": "Withholding Tax",
+      "totalPayable": "Total Payable",
+      "preparedBy": "Prepared By",
+      "approvalLine": "Stamp / Full Name / Signature"
+    },
+    "fields": {
+      "title": "Proposal Title",
+      "scopeOfWork": "Scope",
+      "notes": "Internal Notes",
+      "proposalDate": "Proposal Date",
+      "surveyDate": "Survey Date",
+      "authorizedPerson": "Authorized Person",
+      "installationDate": "Installation Date",
+      "customerRepresentative": "Customer Representative",
+      "completionDate": "Completion Date",
+      "discountPercent": "Discount Rate (%)",
+      "hasVat": "VAT?",
+      "hasTevkifat": "Withholding Tax?",
+      "vatRate": "VAT Rate (%)",
+      "termsEngineering": "Engineering Services",
+      "termsPricing": "Pricing",
+      "termsWarranty": "Warranty",
+      "termsOther": "Other",
+      "termsAttachments": "Attachments"
+    },
+    "placeholders": {
+      "title": "e.g. Security Camera System Installation",
+      "scopeOfWork": "Describe the scope of work...",
+      "notes": "For internal use only..."
+    },
+    "sections": {
+      "items": "Items",
+      "notes": "Notes",
+      "logoAndHeader": "Logo and PDF Header Information",
+      "postAcceptanceDates": "Dates to fill after customer approval",
+      "terms": "Terms and Conditions"
+    },
+    "saveDraft": "Save Draft",
+    "draftSaved": "Draft saved",
+    "tevkifatConfirm": {
+      "title": "Withholding Tax Confirmation",
+      "message": "Amount is above the threshold. Continue without adding withholding tax?",
+      "confirm": "Continue"
+    }
+  },
+  "annualFixed": {
+    "cardTitle": "Annual Fixed Expenses",
+    "sectionTitle": "Annual Fixed Expenses",
+    "description": "Description",
+    "hint": "Add annual expenses like SIM card, monitoring center, or software license for customer information purposes. These are not included in the proposal total.",
+    "empty": "No rows yet. Start with \"Add row\".",
+    "addRow": "Add row",
+    "removeRow": "Delete row",
+    "subtotalForCurrency": "Subtotal ({{currency}})"
+  },
+  "items": {
+    "description": "Description",
+    "material": "Material",
+    "quantity": "Quantity",
+    "unit": "Unit",
+    "unitPrice": "Unit Price",
+    "total": "Total",
+    "addItem": "Add Material",
+    "removeRow": "Delete Row",
+    "units": {
+      "adet": "piece",
+      "metre": "meter",
+      "set": "set",
+      "takim": "set"
+    },
+    "sequence": "Order",
+    "costTracking": "Cost Tracking (internal)",
+    "cost": "Cost",
+    "costProduct": "Product Cost",
+    "costLabor": "Labor",
+    "costShipping": "Shipping",
+    "costMaterial": "Material",
+    "costMisc": "Other"
+  },
+  "status": {
+    "draft": "Draft",
+    "sent": "Sent",
+    "accepted": "Accepted",
+    "rejected": "Rejected",
+    "cancelled": "Cancelled",
+    "completed": "Completed"
+  },
+  "dateLabels": {
+    "sent": "Sent",
+    "accepted": "Accepted",
+    "rejected": "Rejected"
+  },
+  "filters": {
+    "allStatuses": "All",
+    "statusLabel": "Status Filter",
+    "status": "Status",
+    "selectYear": "Select Year",
+    "selectMonth": "Select Month"
+  },
+  "createWorkOrder": {
+    "title": "Create Work Order from Proposal",
+    "loadingItems": "Loading materials...",
+    "itemsCount": "{{count}} items will be transferred",
+    "workTypeLabel": "Work Type",
+    "scheduledDate": "Scheduled Date",
+    "scheduledTime": "Scheduled Time",
+    "submit": "Create Work Order"
+  },
+  "pdf": {
+    "headerLabels": {
+      "companyName": "COMPANY NAME :",
+      "surveyDate": "SURVEY DATE :",
+      "authorizedPerson": "AUTHORIZED PERSON :",
+      "proposalDate": "PROPOSAL DATE :",
+      "title": "PROJECT NAME :",
+      "installationDate": "INSTALLATION DATE :",
+      "customerRepresentative": "CUSTOMER REPRESENTATIVE :",
+      "completionDate": "COMPLETION DATE :"
+    },
+    "date": "Date",
+    "scopeOfWork": "Scope of Work",
+    "itemTable": {
+      "description": "Description",
+      "material": "Material",
+      "quantity": "Qty",
+      "unitPrice": "Unit Price ($)",
+      "total": "Total ($)"
+    },
+    "grandTotal": "Grand Total",
+    "exportError": "An error occurred while generating PDF",
+    "filenameModalTitle": "PDF file name",
+    "filenameLabel": "File name",
+    "filenameHint": "Do not write extension; .pdf is added automatically.",
+    "downloadButton": "Download",
+    "annualFixedTitle": "ANNUAL FIXED EXPENSES",
+    "annualFixedSubtotal": "Subtotal ({{currency}})",
+    "annualFixedDisclaimer": "Proposal is not VAT-inclusive. Annual expenses above are for information only."
+  },
+  "sections": {
+    "addSection": "Add Section",
+    "deleteSection": "Delete Section",
+    "titlePlaceholder": "Section name (e.g. Alarm System, CCTV...)",
+    "ungrouped": "General",
+    "emptySection": "No materials added yet.",
+    "sectionSubtotal": "Section Subtotal",
+    "sectionCount": "{{count}} sections",
+    "discount": "Discount",
+    "discountAmount": "Discount Amount",
+    "sectionTotal": "Section Total",
+    "sectionTotalWithVat": "Section Total Incl. VAT"
+  }
+}

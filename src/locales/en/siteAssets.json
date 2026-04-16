@@ -1,0 +1,137 @@
+{
+  "title": "Asset Tracking List",
+  "subtitle": "Operational hardware and asset tracking at customer sites",
+  "addButton": "Add Asset",
+  "exportButton": "Export",
+  "empty": {
+    "title": "No Asset Records",
+    "description": "No equipment is registered at this site."
+  },
+  "fields": {
+    "customer": "Customer Name",
+    "site": "Site",
+    "siteAcc": "Site / ACC",
+    "equipmentName": "Equipment Name",
+    "materialName": "Material / Product Name",
+    "equipmentList": "Material / Product Quantities",
+    "quantity": "Quantity",
+    "installationDate": "Installation Date",
+    "subscriptionStatus": "Subscription Status",
+    "deviceAge": "Device Age"
+  },
+  "subscriptionStatus": {
+    "active": "Active",
+    "paused": "Paused",
+    "cancelled": "Cancelled",
+    "none": "None"
+  },
+  "alert": {
+    "deviceRetrieval": "Device Must Be Retrieved / Demount Required"
+  },
+  "actions": {
+    "viewSubscription": "Subscription"
+  },
+  "kpi": {
+    "totalAssets": "Total Equipment",
+    "sitesCovered": "Sites Covered",
+    "cancelledSites": "To Retrieve",
+    "cancelledSitesHint": "Sites with cancelled subscription",
+    "recentInstalls": "Last 30 Days",
+    "recentInstallsHint": "Equipment installed in the last 30 days",
+    "unit": "pcs",
+    "sites": "sites",
+    "activeSubscriptions": "Active Subscriptions",
+    "totalDevices": "Total Devices"
+  },
+  "sidebar": {
+    "distribution": "Equipment Distribution",
+    "distributionDesc": "Most common equipment types",
+    "retrievalQueue": "Retrieval Queue",
+    "retrievalQueueDesc": "Subscription cancelled — equipment must be retrieved",
+    "retrievalQueueEmpty": "No equipment to retrieve",
+    "equipmentCount": "{{count}} equipment",
+    "recentActivity": "Recent Installations",
+    "recentActivityEmpty": "No installation records yet",
+    "viewAll": "View All",
+    "otherTypes": "Other"
+  },
+  "age": {
+    "new": "New",
+    "months": "{{count}} mo",
+    "years": "{{count}} yr",
+    "overdue": "Aging"
+  },
+  "filters": {
+    "allSites": "All Sites",
+    "allStatuses": "All",
+    "search": "Search customer, ACC, or equipment...",
+    "subscriptionStatus": "Subscription Status",
+    "retrievalNeeded": "Awaiting Device Retrieval"
+  },
+  "placeholders": {
+    "equipmentName": "e.g. Alarm Panel, Camera",
+    "materialName": "e.g. Alarm Panel, Camera",
+    "searchCustomer": "Search customer..."
+  },
+  "items": {
+    "sectionTitle": "Materials List",
+    "addItem": "Add Material",
+    "sequence": "Order",
+    "materialName": "Material / Product Name",
+    "quantity": "Quantity"
+  },
+  "alertCancelled": "WARNING: This site's subscription is cancelled. Equipment must be retrieved!",
+  "section": {
+    "title": "Assets",
+    "sites": "sites"
+  },
+  "mobile": {
+    "summaryTitle": "Summary & Activity",
+    "summarySubtitle": "Recent activity",
+    "moreEquipment": "+{{count}} more",
+    "assetList": "Asset List"
+  },
+  "import": {
+    "title": "Bulk upload with Excel",
+    "pageTitle": "Asset tracking — Bulk upload with Excel",
+    "uploadTitle": "Upload Excel file",
+    "uploadDescription": "Download and fill the Excel template to bulk import customer asset data.",
+    "selectFile": "Select File",
+    "downloadTemplate": "Download Template",
+    "importButton": "Bulk upload with Excel",
+    "cancel": "Cancel",
+    "startImport": "Import",
+    "processing": "Processing file...",
+    "validRows": "{{count}} valid rows",
+    "willImport": "to import",
+    "invalidRows": "{{count}} invalid rows",
+    "unresolvedAcc": "{{count}} ACC not found",
+    "unresolvedWarning": "Rows with unmatched ACC",
+    "unresolvedDetail": "These ACC numbers were not found on a registered site. They will be skipped during import.",
+    "errors": "Validation Errors",
+    "rowError": "Row {{row}} ({{field}}): {{message}}",
+    "errorMessages": {
+      "required": "Required field",
+      "invalid_quantity": "Invalid quantity",
+      "invalid_date": "Invalid date",
+      "MAX_ROWS": "Maximum row count exceeded.",
+      "PARSE_FAILED": "Excel file could not be read. Use the template or check file format."
+    },
+    "previewColumns": {
+      "customer": "Customer",
+      "acc": "ACC",
+      "equipment": "Equipment",
+      "quantity": "Quantity",
+      "installationDate": "Installation Date",
+      "status": "Status"
+    },
+    "statusOk": "OK",
+    "statusInvalid": "Invalid",
+    "statusUnresolved": "No ACC",
+    "andMoreRows": "+{{count}} more rows",
+    "resultSummary": "{{count}} asset records imported successfully.",
+    "resultSummaryWithSkipped": "{{imported}} rows imported successfully, {{skipped}} rows skipped (site ACC not found).",
+    "success": "{{count}} asset records imported.",
+    "noResolvedRows": "No rows could be imported. Check ACC numbers."
+  }
+}

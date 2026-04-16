@@ -1,0 +1,518 @@
+{
+  "tabs": {
+    "list": "Subscription List",
+    "collection": "Collection Desk"
+  },
+  "multiService": {
+    "otherServices": "Other Services",
+    "noOtherServices": "No subscriptions at this location yet",
+    "addService": "Add Service",
+    "subscriptionsAtSite": "Subscriptions at this location"
+  },
+  "list": {
+    "title": "Subscriptions",
+    "searchPlaceholder": "Search customer, location, or account no...",
+    "addButton": "New Subscription",
+    "filters": {
+      "allStatuses": "All",
+      "allTypes": "All",
+      "billingFrequency": "Billing Frequency",
+      "allFrequencies": "All",
+      "selectYear": "Select Year",
+      "selectMonth": "Select Month",
+      "status": "Status",
+      "serviceType": "Service Type",
+      "type": "Payment Type",
+      "overduePayments": "Overdue Payments"
+    },
+    "empty": {
+      "title": "No subscriptions yet",
+      "description": "Get started by creating a new subscription."
+    },
+    "pagination": {
+      "subscriptions": "subscription",
+      "perPage": "{{count}} / page"
+    },
+    "columns": {
+      "customer": "Customer",
+      "site": "Location",
+      "accountNo": "Account No",
+      "city": "City",
+      "type": "Type",
+      "serviceType": "Service Type",
+      "startDate": "Start",
+      "billingFrequency": "Billing Frequency",
+      "monthly": "Monthly",
+      "lineTl": "Line TRY",
+      "simTl": "SIM TRY",
+      "totalAmount": "Total TRY",
+      "totalAmountCalc": "Total Amount (TRY)",
+      "totalWithVatCalc": "Total Incl. VAT",
+      "vat": "VAT (%20)",
+      "vatIncluded": "VAT Included",
+      "cost": "Cost",
+      "officialInvoice": "Invoiced?",
+      "status": "Status"
+    }
+  },
+  "detail": {
+    "title": "Subscription Details",
+    "heroEyebrow": "Subscription summary",
+    "viewCustomer": "Customer profile",
+    "sections": {
+      "customerSite": "Customer & Location",
+      "quickInfo": "Customer Information",
+      "notesAndRevision": "Notes and Revision",
+      "extraInfo": "Additional Information",
+      "payments": "Payment Schedule",
+      "pricing": "Pricing",
+      "paymentMethod": "Payment Method",
+      "actions": "Actions",
+      "assignment": "Assignment",
+      "notes": "Notes",
+      "statusHistory": "Status History",
+      "staticIp": "Static IP"
+    },
+    "callButton": "Call",
+    "moreOptions": "Options",
+    "fields": {
+      "subtotal": "Subtotal",
+      "vatAmount": "VAT",
+      "totalAmount": "Total",
+      "cost": "Cost",
+      "staticIpFee": "Static IP Revenue",
+      "staticIpCost": "Static IP Cost",
+      "profit": "Profit",
+      "startDate": "Start Date",
+      "endDate": "End Date",
+      "billingDay": "Invoice Day",
+      "pausedDate": "Paused At",
+      "cancelledDate": "Cancelled At",
+      "reactivatedDate": "Reactivated At",
+      "soldBy": "Sold By",
+      "managedBy": "Managed By",
+      "createdBy": "Created By",
+      "setupNotes": "Setup Notes",
+      "pauseReason": "Pause Reason",
+      "cancelReason": "Cancellation Reason",
+      "serviceType": "Service Type",
+      "billingFrequency": "Billing Frequency",
+      "officialInvoice": "Invoice",
+      "cashCollector": "Collected By",
+      "paymentStartMonth": "Payment Start Month"
+    },
+    "officialInvoiceResmi": "Invoiced",
+    "officialInvoiceGayri": "Not Invoiced",
+    "noDescription": "No description",
+    "noNotes": "No notes",
+    "tabs": {
+      "workOrders": "Work Orders",
+      "assets": "Assets"
+    },
+    "tabContent": {
+      "searchPlaceholder": "Search...",
+      "exportCsv": "Download CSV",
+      "workOrders": {
+        "empty": "No work orders at this location yet.",
+        "exportFilename": "location_work_orders",
+        "columns": {
+          "workType": "Work Type",
+          "description": "Description",
+          "status": "Status",
+          "scheduledDate": "Date",
+          "assignedWorkers": "Staff"
+        }
+      },
+      "assets": {
+        "empty": "No assets at this location yet.",
+        "exportFilename": "location_assets",
+        "columns": {
+          "equipmentName": "Equipment",
+          "quantity": "Quantity",
+          "installationDate": "Installation Date"
+        }
+      }
+    }
+  },
+  "form": {
+    "addTitle": "New Subscription",
+    "editTitle": "Edit Subscription",
+    "sections": {
+      "customer": "Customer & Location",
+      "details": "Subscription Details",
+      "pricing": "Pricing",
+      "payment": "Payment Information",
+      "assignment": "Assignment",
+      "notes": "Notes"
+    },
+    "fields": {
+      "site": "Location",
+      "subscriptionType": "Subscription Type",
+      "startDate": "Start Date",
+      "billingDay": "Invoice Day",
+      "basePrice": "Base Price",
+      "smsFee": "SMS Fee",
+      "lineFee": "Line Fee",
+      "simAmount": "SIM Card Fee",
+      "vatRate": "VAT Rate (%)",
+      "cost": "Cost",
+      "staticIpFee": "Static IP Revenue",
+      "staticIpCost": "Static IP Cost",
+      "currency": "Currency",
+      "paymentMethod": "Payment Method",
+      "soldBy": "Sold By",
+      "managedBy": "Managed By",
+      "notes": "Notes",
+      "setupNotes": "Setup Notes",
+      "serviceType": "Service Type",
+      "simCard": "SIM Card",
+      "subscriberTitle": "Subscriber Title",
+      "alarmCenter": "Center",
+      "alarmCenterAccount": "Center ACC",
+      "noSim": "SIM card not selected",
+      "simCardSearchHint": "Try a different search or add a new SIM",
+      "simCardSelectSiteFirst": "Select a location first",
+      "simCardClearSelection": "Clear selection",
+      "billingFrequency": "Billing Frequency",
+      "monthly": "Monthly",
+      "3_month": "3 Months",
+      "6_month": "6 Months",
+      "yearly": "Yearly",
+      "officialInvoice": "Official invoice (sent to Paraşüt)",
+      "cardBankName": "Bank Name",
+      "cardLast4": "Last 4 Digits",
+      "cashCollector": "Collector",
+      "paymentStartMonth": "Payment Start Month"
+    },
+    "placeholders": {
+      "selectSite": "Select location...",
+      "selectType": "Select subscription type...",
+      "selectPaymentMethod": "Select payment method...",
+      "selectPerson": "Select person...",
+      "selectServiceType": "Select service type...",
+      "selectMonth": "Select month...",
+      "notes": "Notes about the subscription...",
+      "setupNotes": "Setup details, equipment notes...",
+      "subscriberTitle": "e.g. Alarm + Camera Subscriber"
+    },
+    "success": {
+      "created": "Subscription created successfully",
+      "updated": "Subscription updated successfully"
+    },
+    "conflict": {
+      "title": "Concurrent Edit Warning",
+      "message": "This subscription was changed by another user after you opened the form. Saving anyway will overwrite their changes.",
+      "overwrite": "Save Anyway",
+      "cancel": "Cancel and Go Back"
+    }
+  },
+  "types": {
+    "recurring_card": "Card (Automatic)",
+    "manual_cash": "Cash",
+    "manual_bank": "Bank Transfer",
+    "annual": "Yearly",
+    "internet_only": "Internet Only"
+  },
+  "serviceTypes": {
+    "A.KIRA.KK": "Alarm Rental (Credit Card)",
+    "A.KIRA.ELDEN": "Alarm Rental (Cash)",
+    "A.KIRA.ELDEN.MET": "Alarm Rental Met(Cash)",
+    "A.KIRA.BANKA": "Alarm Rental (Bank)",
+    "A.S.ALMA": "Alarm Purchase",
+    "A.S.ALMA.YILLIK": "Alarm Purchase (Yearly)",
+    "A.S.ALMA.BANKA": "Alarm Purchase (Bank)",
+    "INT.AYLIK.KK": "Internet Monthly (Credit Card)",
+    "INT.AYLIK.BANKA": "Internet Monthly (Bank)",
+    "INT.YILLIK": "Internet Yearly",
+    "K.KIRA.KK": "Camera Rental (Credit Card)",
+    "K.KIRA.BANKA": "Camera Rental (Bank)"
+  },
+  "statuses": {
+    "active": "Active",
+    "paused": "Paused",
+    "cancelled": "Cancelled"
+  },
+  "paymentGrid": {
+    "prevYear": "Previous year",
+    "nextYear": "Next year",
+    "loading": "Loading calendar...",
+    "noData": "No payment schedule found for this year."
+  },
+  "payment": {
+    "title": "Payment Schedule",
+    "recordTitle": "Record Payment",
+    "statuses": {
+      "pending": "Pending",
+      "paid": "Paid",
+      "failed": "Failed",
+      "projected": "Projected",
+      "skipped": "Skipped",
+      "write_off": "Written Off"
+    },
+    "fields": {
+      "paymentDate": "Payment Date",
+      "paymentMethod": "Payment Method",
+      "invoiceNo": "Invoice No",
+      "posCode": "POS Collection Code",
+      "invoiceType": "Invoice Type",
+      "notes": "Note",
+      "referenceNo": "Receipt no",
+      "cardBrand": "Brand",
+      "cardHolder": "Card Holder",
+      "bankName": "Bank Name",
+      "label": "Label",
+      "labelPlaceholder": "e.g. Cash in Hand",
+      "defaultPaymentMethod": "Default payment method"
+    },
+    "methods": {
+      "card": "Credit Card",
+      "cash": "Cash",
+      "bank_transfer": "Bank Transfer"
+    },
+    "invoiceTypes": {
+      "e_fatura": "e-Invoice",
+      "e_arsiv": "e-Archive",
+      "kagit": "Paper Invoice"
+    },
+    "amountLabels": {
+      "amount": "Amount",
+      "vat": "VAT",
+      "total": "Total"
+    },
+    "invoice": {
+      "shouldInvoice": "Issue invoice?",
+      "cardAutoInvoice": "Card payments are invoiced automatically",
+      "noInvoiceWarning": "This payment will be recorded without invoice",
+      "vatRate": "VAT Rate (%)"
+    },
+    "success": "Payment recorded successfully",
+    "errors": {
+      "paymentLocked": "This payment has been invoiced and cannot be changed.",
+      "paymentNotFound": "Payment record not found."
+    },
+    "revertWriteOff": {
+      "title": "This payment is marked as written off.",
+      "description": "Click the button below to revert. Payment will be moved back to 'Pending' status.",
+      "button": "Revert Write-off",
+      "success": "Payment reverted successfully"
+    }
+  },
+  "compliance": {
+    "overdueAlert": "invoice due date exceeded by 7 days!",
+    "overdueCount": "{{count}} payment invoices are overdue"
+  },
+  "actions": {
+    "recordPayment": "Record Payment",
+    "pause": "Pause",
+    "cancel": "Cancel",
+    "reactivate": "Reactivate",
+    "recordPayment": "Record Payment"
+  },
+  "pause": {
+    "title": "Pause Subscription",
+    "message": "Are you sure you want to pause this subscription? Pending payments will be skipped.",
+    "reasonLabel": "Pause Reason",
+    "reasonPlaceholder": "Enter pause reason...",
+    "confirm": "Pause"
+  },
+  "cancel": {
+    "title": "Cancel Subscription",
+    "message": "Are you sure you want to cancel this subscription?",
+    "warning": "This action cannot be undone.",
+    "writeOffLabel": "Write unpaid amounts off as loss",
+    "unpaidInfo": "{{count}} unpaid records exist.",
+    "confirm": "Cancel"
+  },
+  "stats": {
+    "mrr": "Monthly Revenue (MRR)",
+    "mrrHint": "Monthly recurring revenue",
+    "fromCustomers": "from {{count}} customers",
+    "activeCount": "Active Subscriptions",
+    "customers": "{{count}} customers",
+    "pausedCount": "Paused",
+    "overdueCount": "Overdue Invoices",
+    "overdueHint": "More than 7 days",
+    "unpaidCount": "Past Due Payments",
+    "unpaidHint": "Pending before this month",
+    "trendUp": "+{{value}}% vs last month",
+    "trendDown": "{{value}}% vs last month",
+    "trendSame": "Same as last month"
+  },
+  "import": {
+    "title": "Bulk upload with Excel",
+    "pageTitle": "Subscriptions — Bulk upload with Excel",
+    "downloadTemplate": "Download Template",
+    "selectFile": "Select File",
+    "preview": "Preview",
+    "previewRows": "First {{count}} rows",
+    "totalRows": "Total {{count}} rows",
+    "validationErrors": "Validation Errors",
+    "importErrors": "Import Errors",
+    "importButton": "Import",
+    "progressLabel": "{{current}} / {{total}} processing",
+    "success": "{{created}} subscriptions created successfully.",
+    "partialSuccess": "{{created}} subscriptions created, {{failed}} rows failed.",
+    "failed": "Import failed.",
+    "limitError": "You can upload up to 500 rows.",
+    "rowError": "Row {{row}}: {{message}}",
+    "summaryTitle": "Import Result",
+    "errorCodes": {
+      "required": "Required field is empty",
+      "invalid_date": "Invalid date format",
+      "invalid_number": "Invalid number",
+      "min_zero": "Value cannot be less than 0",
+      "invalid_type": "Invalid subscription type",
+      "invalid_service_type": "Invalid service type",
+      "MAX_ROWS": "Row limit exceeded (max 500)"
+    },
+    "errorTableHeaders": {
+      "row": "Row",
+      "field": "Field",
+      "error": "Error"
+    },
+    "previewColumns": {
+      "rowNum": "#",
+      "customer": "Customer",
+      "site": "Location",
+      "subscriberTitle": "Subscriber Title",
+      "serviceType": "Type",
+      "startDate": "Start",
+      "basePrice": "Rental",
+      "simAmount": "SIM"
+    }
+  },
+  "priceRevision": {
+    "title": "Price Revision",
+    "unauthorized": "You do not have permission to access this page.",
+    "filters": {
+      "title": "Filters",
+      "serviceType": "Service Type",
+      "billingFrequency": "Billing Frequency",
+      "startMonth": "Start Month",
+      "all": "All",
+      "monthly": "Monthly",
+      "3_month": "3 Months",
+      "6_month": "6 Months",
+      "yearly": "Yearly",
+      "months": {
+        "1": "January",
+        "2": "February",
+        "3": "March",
+        "4": "April",
+        "5": "May",
+        "6": "June",
+        "7": "July",
+        "8": "August",
+        "9": "September",
+        "10": "October",
+        "11": "November",
+        "12": "December"
+      }
+    },
+    "columns": {
+      "customer": "Customer",
+      "site": "Location",
+      "accountNo": "Account No",
+      "startDate": "Start",
+      "type": "Type",
+      "serviceType": "Service Type",
+      "billingFrequency": "Billing Frequency",
+      "amountBreakdown": "Amounts",
+      "officialInvoice": "Invoice",
+      "staticIpFeeColumn": "Static IP",
+      "simInventoryTl": "SIM inv.",
+      "simInventoryTlHint": "Linked SIM card inventory sale price (sim_cards.sale_price)",
+      "pricing": "Pricing",
+      "basePrice": "Base Price",
+      "smsFee": "SMS Fee",
+      "lineFee": "Line Fee",
+      "vatRate": "VAT (%)",
+      "cost": "Cost",
+      "currentTotal": "Current Amount",
+      "smsTl": "SMS TRY",
+      "netSubtotal": "Subtotal",
+      "pricingTotalLine": "Total",
+      "vatAmount": "VAT Amount",
+      "totalWithVat": "Total Incl. VAT",
+      "notesColumn": "Note"
+    },
+    "export": {
+      "columns": {
+        "setupNotes": "Setup / previous period notes",
+        "notes": "Description note",
+        "vatRateReadonly": "VAT % (record)"
+      }
+    },
+    "pricingBlockFootnote": "The «Amounts» column is a read-only breakdown (Monthly, SIM TRY, SMS TRY, subtotal, VAT, VAT included). Editing is done from the «Pricing» column. Subtotal = Monthly + SIM TRY + SMS TRY. VAT rate is not changed on this screen. There is no line fee row in «Pricing»; line/SIM is entered as a single SIM TRY amount.",
+    "zamPercent": "Increase %",
+    "zamPercentPlaceholder": "%",
+    "messageColumn": "Message",
+    "copyMessage": "Copy",
+    "copied": "Copied!",
+    "messageAyLabel": "Message month",
+    "noPriceChange": "Make a price change",
+    "exportExcel": "Download Excel",
+    "messageTemplate": {
+      "greeting": "Hello,",
+      "intro": "{{service}} {{frequency}} rental fee has increased as of {{month}} due to current market conditions and rising costs:",
+      "basePrice": "Subscription fee",
+      "lineFee": "Line fee",
+      "subscriptionSimAmount": "SIM TRY amount",
+      "staticIpFee": "Static IP fee",
+      "smsFee": "SMS fee",
+      "total": "Total",
+      "unchangedParts": "Remaining sections will stay unchanged",
+      "closing": "Current prices will be reflected as of {{month}}. For your information; we wish you good work."
+    },
+    "serviceLabelsForMessage": {
+      "A.KIRA.KK": "Alarm Rental (Credit Card)",
+      "A.KIRA.ELDEN": "Alarm Rental (Cash)",
+      "A.KIRA.ELDEN.MET": "Alarm Rental Met(Cash)",
+      "A.KIRA.BANKA": "Alarm Rental (Bank)",
+      "A.S.ALMA": "Alarm Purchase",
+      "A.S.ALMA.YILLIK": "Alarm Purchase (Yearly)",
+      "A.S.ALMA.BANKA": "Alarm Purchase (Bank)",
+      "INT.AYLIK.KK": "Internet Monthly (Credit Card)",
+      "INT.AYLIK.BANKA": "Internet Monthly (Bank)",
+      "INT.YILLIK": "Internet Yearly",
+      "K.KIRA.KK": "Camera Rental (Credit Card)",
+      "K.KIRA.BANKA": "Camera Rental (Bank)"
+    },
+    "frequencyLabelsForMessage": {
+      "monthly": "monthly",
+      "3_month": "every 3 months",
+      "6_month": "every 6 months",
+      "yearly": "yearly"
+    },
+    "notes": {
+      "title": "Price revision notes",
+      "add": "Add note",
+      "revisionDate": "Revision date",
+      "empty": "No notes yet.",
+      "timelineTitle": "Revision timeline",
+      "subscriptionRecordTitle": "Notes in subscription record",
+      "setupNotesSection": "Previous period / setup",
+      "generalNotesSection": "Description",
+      "noteLabel": "Note",
+      "successCreated": "Note saved"
+    },
+    "saveButton": "Save changes",
+    "saveSuccess": "Prices updated successfully",
+    "confirm": {
+      "title": "Confirm Price Update",
+      "message": "You are about to update prices for {{count}} subscriptions. Amounts of all pending payments will also be recalculated.",
+      "warning": "This action cannot be undone. Are you sure you want to continue?",
+      "save": "Yes, Update"
+    },
+    "empty": {
+      "title": "No subscriptions found",
+      "description": "No subscriptions match the selected filter."
+    }
+  },
+  "priceUpdatePartialError": "Subscription price updated but payment amounts could not be updated. Please check payments manually.",
+  "validation": {
+    "paymentMethodRequired": "Payment method is required for card subscriptions",
+    "cardPaymentsMustBeInvoiced": "Card payments must be invoiced",
+    "paymentStartMonthRequired": "Payment start month is required for non-monthly subscriptions"
+  }
+}

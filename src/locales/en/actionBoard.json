@@ -1,0 +1,50 @@
+{
+  "title": "Action List",
+  "sections": {
+    "lateWorkOrders": {
+      "title": "Overdue Work Orders",
+      "empty": "No overdue work orders."
+    },
+    "overduePayments": {
+      "title": "Subscribers With No Payment 30+ Days",
+      "empty": "No overdue payments."
+    },
+    "pendingProposals": {
+      "title": "Proposals Awaiting Work Order",
+      "empty": "No pending proposals."
+    }
+  },
+  "columns": {
+    "customer": "Customer",
+    "site": "Site",
+    "workType": "Work Type",
+    "scheduledDate": "Scheduled Date",
+    "daysLate": "{{count}} days late",
+    "paymentMonth": "Payment Month",
+    "daysOverdue": "Unpaid for {{count}} days",
+    "amountDue": "Amount",
+    "proposalNo": "Proposal No",
+    "proposalTitle": "Title",
+    "acceptedDate": "Accepted Date"
+  },
+  "actions": {
+    "editWorkOrder": "Edit",
+    "goToSubscription": "Go to Subscription",
+    "goToProposal": "Create Work Order"
+  },
+  "allClear": "Clear",
+  "partialLoadWarning": "Some data could not be loaded.",
+  "sectionLoadFailed": "This section could not be loaded.",
+  "retrySection": "Try Again",
+  "realtimeNote": "All lists are calculated in real time.",
+  "dashboard": {
+    "title": "Needs Action",
+    "items": "actions",
+    "allClear": "All clear",
+    "viewAll": "View All",
+    "loadError": "Data could not be loaded",
+    "lateWorkOrders": "{{count}} overdue work orders",
+    "pendingProposals": "{{count}} pending proposals",
+    "overduePayments": "{{count}} payments"
+  }
+}

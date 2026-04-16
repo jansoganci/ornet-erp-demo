@@ -1,0 +1,266 @@
+{
+  "list": {
+    "title": "Work Orders",
+    "eyebrow": "All records",
+    "kpi": {
+      "matched": "Matched by filter",
+      "open": "Open work orders",
+      "pendingInstall": "Pending installation",
+      "completed": "Completed",
+      "placeholder": "—"
+    },
+    "tabs": {
+      "active": "Active",
+      "archive": "Archive"
+    },
+    "searchPlaceholder": "Search customer...",
+    "addButton": "New Work Order",
+    "columns": {
+      "customer": "Customer",
+      "title": "Title",
+      "type": "Type",
+      "status": "Status",
+      "city": "City",
+      "priority": "Priority",
+      "amount": "Amount",
+      "scheduledDate": "Scheduled Date"
+    },
+    "unit": "work order",
+    "empty": {
+      "title": "No work orders found",
+      "description": "Change filters or create a new work order",
+      "action": "New Work Order",
+      "activeTitle": "No active work orders",
+      "activeDescription": "No pending, scheduled, or in-progress work orders.",
+      "archiveTitle": "Archive is empty",
+      "archiveDescription": "No completed or cancelled work orders found."
+    },
+    "filters": {
+      "all": "All",
+      "type": "Type",
+      "workType": "Work Type",
+      "allTypes": "All",
+      "status": "Status",
+      "allStatuses": "All",
+      "priority": "Priority",
+      "allPriorities": "All Priorities",
+      "dateRange": "Date Range",
+      "statusPlaceholder": "Status Filter",
+      "typePlaceholder": "Type Filter",
+      "selectYear": "Select Year",
+      "selectMonth": "Select Month"
+    }
+  },
+  "detail": {
+    "title": "Work Order Details",
+    "errorTitle": "Error",
+    "notFound": "Work order not found.",
+    "customerInfo": "Customer Information",
+    "siteInfo": "Site Information",
+    "companyInfo": "Company",
+    "materialsUsed": "Materials Used",
+    "customer": "Customer",
+    "details": "Details",
+    "fields": {
+      "customer": "Customer",
+      "phone": "Phone",
+      "address": "Address",
+      "type": "Type",
+      "status": "Status",
+      "priority": "Priority",
+      "description": "Description",
+      "panelNumber": "Panel No",
+      "materials": "Materials",
+      "amount": "Amount",
+      "assignedTo": "Assigned To",
+      "scheduledDate": "Scheduled Date",
+      "scheduledTime": "Scheduled Time",
+      "createdAt": "Created At",
+      "completedAt": "Completed At",
+      "cancelledAt": "Cancelled At",
+      "notes": "Notes"
+    },
+    "statusModal": {
+      "title": "Update Status"
+    },
+    "noDescription": "No description added",
+    "noMaterials": "No material information",
+    "noNotes": "No notes",
+    "history": "Work History",
+    "proposalLink": "Proposal",
+    "viewProposal": "View Proposal",
+    "notAssignedYet": "Not assigned yet",
+    "assignedCount": "{{count}} Staff",
+    "amountNotEntered": "Amount not entered",
+    "withheldVat": "Withholding VAT",
+    "totalPayable": "Total Payable",
+    "activity": {
+      "title": "Activity History",
+      "subtitle": "Audit trail",
+      "empty": "No activity records yet.",
+      "loadError": "History could not be loaded.",
+      "unknownUser": "Unknown user"
+    },
+    "auditActions": {
+      "insert": "Record created",
+      "update": "Record updated",
+      "status_change": "Status changed",
+      "delete": "Record deleted"
+    },
+    "auditDescriptions": {
+      "work_order": {
+        "created": "Work order created",
+        "updated": "Work order updated",
+        "status_changed": "Work order status changed",
+        "soft_deleted": "Work order deleted (archived)"
+      }
+    }
+  },
+  "form": {
+    "addTitle": "New Work Order",
+    "editTitle": "Edit Work Order",
+    "addSubtitle": "Start by selecting a customer and site.",
+    "editSubtitle": "Update work order details.",
+    "customerNotFound": "Customer not found.",
+    "sections": {
+      "customerSelection": "Customer Selection",
+      "customerInfo": "Customer and Site",
+      "workInfo": "Work Information",
+      "materials": "Materials Used",
+      "workers": "Staff Assignment",
+      "notes": "Internal Notes"
+    },
+    "fields": {
+      "customer": "Customer",
+      "site": "Site",
+      "selectCustomer": "Select customer",
+      "selectSite": "Select site",
+      "workType": "Work Type",
+      "workTypeOther": "Other Work Type",
+      "priority": "Priority",
+      "scheduledDate": "Scheduled Date",
+      "scheduledTime": "Scheduled Time",
+      "assignedTo": "Assigned Staff",
+      "formNo": "Form No",
+      "description": "Work Description",
+      "amount": "Amount",
+      "quantity": "Quantity",
+      "title": "Title",
+      "notes": "Notes",
+      "hasVat": "VAT?",
+      "hasTevkifat": "Withholding VAT?",
+      "vatRate": "VAT Rate (%)"
+    },
+    "noFieldWorkers": "No field staff to list. Please add users with the field worker role first.",
+    "placeholders": {
+      "selectCustomer": "Select customer",
+      "searchCustomer": "Search customer...",
+      "selectSite": "Select site",
+      "workTypeOther": "Specify work type",
+      "formNo": "e.g. 12345",
+      "description": "Details of the work to be done",
+      "notes": "Notes visible only to staff"
+    },
+    "hints": {
+      "description": "Work details that will be shared with the customer",
+      "notes": "Only your team can see this, it is not shared with the customer",
+      "materialsOptional": "Adding materials is not mandatory for survey work orders",
+      "addAccountNoNeedCustomer": "Select a customer first"
+    },
+    "success": {
+      "created": "Work order created successfully",
+      "updated": "Work order updated successfully"
+    },
+    "addNewCustomer": "Add new customer",
+    "customerSelect": {
+      "noResults": "No customer found",
+      "addNew": "Add new customer"
+    },
+    "materialSelect": {
+      "noResults": "No material found",
+      "addNew": "Add New Material",
+      "selected": "Selected"
+    },
+    "buttons": {
+      "addCustomer": "Add New Customer",
+      "addSite": "Add New Site",
+      "addAccountNo": "Add Account No",
+      "changeCustomer": "Change"
+    },
+    "linkedProposal": "Link to Proposal",
+    "noProposal": "Do not link (optional)",
+    "tevkifatConfirm": {
+      "title": "Withholding Confirmation",
+      "message": "Amount is above the threshold. Continue without adding withholding VAT?",
+      "confirm": "Continue"
+    }
+  },
+  "common": {
+    "edit": "Edit",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "save": "Save",
+    "confirm": "Confirm",
+    "create": "Create",
+    "backToList": "Back to List"
+  },
+  "types": {
+    "service": "Service",
+    "installation": "Installation",
+    "survey": "Survey",
+    "maintenance": "Maintenance",
+    "other": "Other"
+  },
+  "statuses": {
+    "pending": "Pending",
+    "scheduled": "Scheduled",
+    "inProgress": "In Progress",
+    "in_progress": "In Progress",
+    "completed": "Completed",
+    "cancelled": "Cancelled"
+  },
+  "priorities": {
+    "low": "Low",
+    "normal": "Normal",
+    "high": "High",
+    "urgent": "Urgent"
+  },
+  "actions": {
+    "start": "Start Work",
+    "complete": "Complete",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "viewCustomer": "View Customer"
+  },
+  "statusChange": {
+    "startConfirm": "Are you sure you want to start this work?",
+    "completeConfirm": "Are you sure you want to complete this work?",
+    "cancelConfirm": "Are you sure you want to cancel this work?",
+    "started": "Work started",
+    "completed": "Work completed",
+    "cancelled": "Work cancelled"
+  },
+  "delete": {
+    "title": "Delete Work Order",
+    "message": "Are you sure you want to delete this work order?",
+    "warning": "This action cannot be undone.",
+    "success": "Work order deleted successfully",
+    "permissionDenied": "Only an administrator account can delete a work order. Please check your account role."
+  },
+  "validation": {
+    "fillRequired": "Please check required fields (customer/site selection is required).",
+    "accountNoRequired": "Account number is required for this work type",
+    "accountNoRequiredHint": "An account number must be entered to save this work type.",
+    "siteRequired": "Site selection is required",
+    "assignedToMin": "Select at least 1 staff member",
+    "assignedToMax": "A maximum of 3 staff members can be selected",
+    "workTypeOtherRequired": "Other work type must be specified"
+  },
+  "warnings": {
+    "montajNoAccountNo": "No account number entered for installation. It can be added later.",
+    "montajNoAccountNoHint": "The account number received from the alarm monitoring center can be added after installation.",
+    "installationNoAccountNo": "No account number entered for installation. It can be added later.",
+    "installationNoAccountNoHint": "You can continue without an account number, but adding it later is recommended."
+  }
+}

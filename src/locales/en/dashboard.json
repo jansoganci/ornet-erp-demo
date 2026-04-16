@@ -1,0 +1,92 @@
+{
+  "title": "Dashboard",
+  "welcome": "Welcome",
+  "greeting": {
+    "morning": "Good morning",
+    "afternoon": "Good afternoon",
+    "evening": "Good evening"
+  },
+  "stats": {
+    "todayWorkOrders": "Today's Work Orders",
+    "pendingWorkOrders": "Pending Work Orders",
+    "inProgressWorkOrders": "In Progress",
+    "completedThisWeek": "Completed This Week",
+    "openTasks": "Open Tasks",
+    "overdueTasks": "Overdue Tasks",
+    "totalCustomers": "Total Customers",
+    "activeSubscriptions": "Active Subscriptions"
+  },
+  "todaySchedule": {
+    "title": "Today's Schedule",
+    "empty": "No work scheduled for today",
+    "viewAll": "View All"
+  },
+  "pendingTasks": {
+    "title": "Pending Tasks",
+    "empty": "No pending tasks",
+    "viewAll": "View All"
+  },
+  "quickActions": {
+    "title": "Quick Actions",
+    "addCustomer": "Add Customer",
+    "addWorkOrder": "Create Work Order",
+    "addTask": "Add Task",
+    "dailyWork": "Daily Work",
+    "workHistory": "Search Work History",
+    "tasks": "My Tasks",
+    "actionBoard": "Action Board"
+  },
+  "todoSection": {
+    "title": "To-Do",
+    "viewWorkOrders": "Work orders",
+    "viewTasks": "Tasks",
+    "empty": "No work or open tasks for today",
+    "openTasksLabel": "Open tasks"
+  },
+  "recentActivity": {
+    "title": "Recent Activity"
+  },
+  "kpi": {
+    "overdueWorkOrders": "Overdue Work Orders",
+    "todayPlanned": "Planned for Today",
+    "activeSubscriptions": "Active Subscriptions",
+    "mrr": "Monthly Recurring Revenue",
+    "uncollectedPayments": "Overdue Subscription Debt",
+    "netProfit": "Net Profit This Month",
+    "subscriptionRevenue": "Subscription Revenue",
+    "waitingLabel": "waiting"
+  },
+  "sparkline": {
+    "monthlyRevenue": "Monthly Total Revenue",
+    "subscriptions": "Active Subscriptions",
+    "mrrTrend": "MRR Trend"
+  },
+  "sections": {
+    "todaySchedule": "Today's Schedule",
+    "overduePayments": "Overdue Payments",
+    "todayTasks": "Today's Tasks",
+    "revenueChart": "Revenue / Expense"
+  },
+  "feed": {
+    "viewAll": "View All",
+    "emptySchedule": "No work orders scheduled for today.",
+    "emptyTasks": "No tasks for today.",
+    "emptyPayments": "No overdue payments.",
+    "daysOverdue_one": "waiting for {{count}} day",
+    "daysOverdue_other": "waiting for {{count}} days",
+    "monthsOverdue_one": "{{count}} month overdue",
+    "monthsOverdue_other": "{{count}} months overdue",
+    "call": "Call",
+    "moreItems": "more payments"
+  },
+  "checklist": {
+    "counter": "{{completed}} / {{total}} completed"
+  },
+  "overduePayments": {
+    "empty": "No overdue payments."
+  },
+  "chart": {
+    "revenue": "Revenue",
+    "expense": "Expense"
+  }
+}

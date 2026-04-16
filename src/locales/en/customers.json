@@ -1,0 +1,315 @@
+{
+  "list": {
+    "title": "Customers",
+    "searchPlaceholder": "Search customer...",
+    "addButton": "Add Customer",
+    "exportButton": "Download Excel",
+    "importButton": "Import",
+    "columns": {
+      "name": "Customer Name",
+      "contact": "Contact",
+      "city": "City",
+      "siteCount": "Site Count",
+      "activeSubscriptions": "Active Subscriptions",
+      "openWorkOrders": "Open Work Orders"
+    },
+    "empty": {
+      "title": "No customers yet",
+      "description": "Get started by adding your first customer",
+      "action": "Add Customer"
+    },
+    "count": "{{count}} customers",
+    "siteCount": "{{count}} sites",
+    "siteColumns": {
+      "company": "Customer",
+      "subscriberTitle": "Subscriber Title",
+      "alarmCenter": "Center",
+      "accountNo": "ACC.",
+      "siteName": "Site",
+      "city": "Province",
+      "district": "District",
+      "connectionDate": "Connection Date"
+    },
+    "noResults": {
+      "title": "No results found",
+      "description": "No customers match your search criteria"
+    }
+  },
+  "detail": {
+    "title": "Customer Details",
+    "notFound": "Customer not found.",
+    "accountNumber": "Customer Code",
+    "contactInfo": "Contact Information",
+    "noContactInfo": "No contact information added",
+    "address": "Address",
+    "notes": "Notes",
+    "noNotes": "No notes",
+    "monthlyRevenue": "Monthly Revenue",
+    "workHistory": {
+      "title": "Past Work",
+      "empty": "No work records for this customer",
+      "count": "{{count}} work records"
+    },
+    "actions": {
+      "call": "Call",
+      "edit": "Edit",
+      "delete": "Delete",
+      "newWorkOrder": "New Work Order"
+    },
+    "tabs": {
+      "overview": "Overview",
+      "locations": "Locations",
+      "workOrders": "Work Orders",
+      "simCards": "SIM Cards",
+      "equipment": "Assets"
+    },
+    "overview": {
+      "metrics": {
+        "activeSubscriptions": "Active Subscriptions",
+        "openWorkOrders": "Open Work Orders",
+        "activeSimCards": "Active SIM Cards",
+        "faultyEquipment": "Faulty Equipment"
+      },
+      "alerts": {
+        "faultyEquipment": "{{count}} faulty equipment items found",
+        "faultyEquipmentDesc": "Coordination with the technical service team is required."
+      },
+      "recentWorkOrders": {
+        "title": "Recent Work Orders",
+        "viewAll": "View All Work Orders",
+        "empty": "No work orders yet"
+      },
+      "locationSummary": {
+        "title": "Location Summary",
+        "viewAll": "View All Locations",
+        "empty": "No locations yet"
+      },
+      "customerInfo": {
+        "title": "Customer Information",
+        "customerNo": "Customer No",
+        "registrationDate": "Registration Date",
+        "totalLocations": "Total Locations",
+        "totalEquipment": "Total Equipment"
+      },
+      "contact": {
+        "title": "Contact",
+        "phone1": "Phone 1",
+        "phone2": "Secondary Phone",
+        "email": "Email",
+        "address": "Address"
+      }
+    },
+    "profileLayout": {
+      "stickyIdLabel": "Customer",
+      "siteScopeLabel": "Site",
+      "siteAll": "All",
+      "statusActive": "Active",
+      "linkSummary": "Summary",
+      "moreActions": "Actions",
+      "linkOverview": "Overview",
+      "linkLocations": "Locations",
+      "linkSimCards": "SIM cards",
+      "addSubscription": "New subscription",
+      "columnInfo": "Customer information",
+      "columnSubscriptions": "Active subscriptions",
+      "columnFinancial": "Financial summary",
+      "servicesCount": "{{count}} services",
+      "primaryContact": "Contact Person",
+      "contactRoleHint": "Site contact person",
+      "emailPhone": "Email and phone",
+      "billingAddress": "Billing address",
+      "accountManager": "Account Manager",
+      "noManager": "Not assigned",
+      "financial": {
+        "monthlyBilling": "Total monthly billing",
+        "perMonth": "/month",
+        "nextInvoiceHint": "Next payment period: {{date}}",
+        "nextInvoiceUnknown": "No pending payment records",
+        "pendingBalance": "Pending balance",
+        "pendingHint": "Overdue subscription payments (VAT included)",
+        "payBalance": "Go to collection desk",
+        "primaryPayment": "Payment method",
+        "noPaymentMethod": "No method on file",
+        "autoPayHint": "Card / automatic collection on subscription",
+        "manageSubscription": "Manage"
+      },
+      "subscriptions": {
+        "empty": "No active subscriptions",
+        "nextDue": "Next payment period: {{date}}",
+        "nextDueUnknown": "Payment schedule —"
+      },
+      "bottomTabs": {
+        "workOrders": "Work order history",
+        "assets": "Asset list",
+        "logs": "Record history"
+      },
+      "workOrdersPanel": {
+        "searchPlaceholder": "Search in work orders…",
+        "filterStatus": "Status",
+        "allStatuses": "All",
+        "exportCsv": "Download CSV",
+        "showing": "{{from}}–{{to}} / {{total}} records",
+        "columnId": "No",
+        "columnService": "Service type",
+        "columnTechnician": "Staff",
+        "columnScheduled": "Scheduled date",
+        "columnStatus": "Status",
+        "columnActions": "Actions"
+      },
+      "logs": {
+        "emptyAdmin": "No records found",
+        "emptyNoAccess": "This section is for administrators only.",
+        "columnWhen": "Date",
+        "columnAction": "Action",
+        "columnTable": "Source",
+        "columnDetail": "Description"
+      }
+    }
+  },
+  "sites": {
+    "title": "Locations",
+    "addButton": "Add New Location",
+    "editButton": "Edit Location",
+    "deactivate": "Deactivate",
+    "activate": "Activate",
+    "delete": "Delete",
+    "deleteTitle": "Delete Location",
+    "deleteMessage": "Are you sure you want to delete location \"{{name}}\"?",
+    "deleteBlocked": "This location cannot be deleted because it has a subscription. You can deactivate it instead.",
+    "noSites": "No locations have been added for this customer yet.",
+    "siteCount": "{{count}} Locations",
+    "fields": {
+      "accountNo": "Account No",
+      "location": "Location",
+      "alarmCenter": "Alarm Center",
+      "siteName": "Location Name",
+      "siteType": "Location Type",
+      "address": "Address",
+      "city": "City",
+      "district": "District",
+      "contactName": "Contact Person",
+      "contactPhone": "Contact Phone",
+      "panelInfo": "Panel Info",
+      "connectionDate": "Connection Date",
+      "notes": "Notes",
+      "isActive": "Active"
+    },
+    "siteTypes": {
+      "residential": "Residential",
+      "business": "Business"
+    },
+    "placeholders": {
+      "accountNo": "e.g. 123456",
+      "siteName": "e.g. Central Branch",
+      "siteType": "Select (optional)",
+      "address": "Full address (optional - can be added later)",
+      "contactName": "Contact person name",
+      "contactPhone": "0555 123 4567",
+      "panelInfo": "e.g. DSC 1616",
+      "notes": "Location-specific notes"
+    }
+  },
+  "form": {
+    "addTitle": "New Customer",
+    "editTitle": "Edit Customer",
+    "firstSite": {
+      "title": "Location Information",
+      "description": "Optional — you can add the first location here. You can also add it later from the detail page.",
+      "editDescription": "You can edit the first location here.",
+      "moreLocations": "{{count}} more locations exist. For all of them,",
+      "moreLocationsLink": "go to the detail page"
+    },
+    "fields": {
+      "name": "Customer Name",
+      "companyName": "Customer Name",
+      "subscriberTitle": "Subscriber Title",
+      "accountNumber": "Customer Code",
+      "phone": "Phone",
+      "phoneSecondary": "Secondary Phone",
+      "email": "Email",
+      "address": "Address",
+      "city": "City",
+      "district": "District",
+      "notes": "Notes",
+      "taxNumber": "Tax Number"
+    },
+    "placeholders": {
+      "name": "Name or company name",
+      "companyName": "Name or company name",
+      "subscriberTitle": "For the customer to identify their own customer (max 400 characters)",
+      "accountNumber": "Will be generated automatically",
+      "phone": "0555 123 4567",
+      "phoneSecondary": "0555 987 6543",
+      "email": "example@email.com",
+      "address": "Full address",
+      "city": "Select city",
+      "district": "Select district",
+      "notes": "Notes about the customer",
+      "taxNumber": "Tax number (optional)"
+    },
+    "success": {
+      "created": "Customer created successfully",
+      "updated": "Customer updated successfully"
+    }
+  },
+  "import": {
+    "title": "Bulk upload with Excel",
+    "pageTitle": "Customers — Bulk upload with Excel",
+    "uploadTitle": "Upload Excel file",
+    "uploadDescription": "Bulk import customer and location data from an Excel file. Download and fill the template first.",
+    "selectFile": "Select File",
+    "downloadTemplate": "Download Template",
+    "validRows": "{{count}} valid rows",
+    "willImport": "({{count}} rows will be imported)",
+    "willSkip": "(will be skipped)",
+    "invalidRows": "{{count}} invalid rows",
+    "errors": "Validation Errors",
+    "rowError": "Row {{row}}: {{field}} — {{message}}",
+    "resultRowError": "Row {{row}}: {{message}}",
+    "startImport": "Start Import",
+    "cancel": "Cancel",
+    "processing": "Processing file...",
+    "progressLabel": "{{current}} / {{total}} processing",
+    "success": "{{created}} locations created, {{skipped}} skipped",
+    "partialSuccess": "Import completed: {{created}} created, {{skipped}} skipped, {{failed}} errors",
+    "failed": "Import failed",
+    "resultSummary": "{{created}} created, {{skipped}} skipped, {{failed}} errors",
+    "validationSkippedCount": "{{count}} rows were not imported due to validation errors (fix in Excel and try again)",
+    "status": {
+      "created": "Created",
+      "skipped": "Skipped",
+      "validationSkipped": "Skipped (invalid)",
+      "failed": "Failed"
+    },
+    "andMoreRows": "{{count}} more rows...",
+    "errorMessages": {
+      "required": "Required field is empty",
+      "invalid_date": "Invalid date format (DD.MM.YYYY or YYYY-MM-DD)",
+      "MAX_ROWS": "Maximum 500 rows",
+      "PARSE_FAILED": "Excel file could not be read. Use the template or check file format."
+    },
+    "previewColumns": {
+      "customer": "Customer",
+      "subscriberTitle": "Subscriber Title",
+      "center": "Center",
+      "accountNo": "ACC.",
+      "location": "Location",
+      "cityDistrict": "Province / District",
+      "connectionDate": "Connection Date",
+      "status": "Status"
+    },
+    "duplicates": {
+      "warning": "{{count}} customers are already registered in the system",
+      "detail": "These customers will not be skipped — new locations will be added to existing records.",
+      "statusColumn": "Status",
+      "statusNew": "New",
+      "statusExisting": "Existing"
+    }
+  },
+  "delete": {
+    "title": "Delete Customer",
+    "message": "Are you sure you want to delete customer \"{{name}}\"?",
+    "warning": "This action cannot be undone. All work orders belonging to this customer will also be deleted.",
+    "success": "Customer deleted successfully"
+  }
+}

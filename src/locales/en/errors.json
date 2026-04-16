@@ -1,0 +1,60 @@
+{
+  "validation": {
+    "required": "This field is required",
+    "maxLength": "Maximum {{max}} characters allowed",
+    "phone": "Enter a valid phone number",
+    "email": "Enter a valid email address",
+    "accountNoRequired": "Account number is required for this work type",
+    "invalidNumber": "Enter a valid number",
+    "invalidForTransactionType": "This field is invalid for this transaction type",
+    "invalidDate": "Enter a valid date (YYYY-MM-DD)",
+    "quantityPositive": "Quantity must be greater than 0"
+  },
+  "workOrder": {
+    "notFound": "Work order not found."
+  },
+  "site": {
+    "notFound": "Site not found."
+  },
+  "customer": {
+    "notFound": "Customer not found."
+  },
+  "common": {
+    "saveFailed": "Save operation failed",
+    "createFailed": "Create operation failed",
+    "updateFailed": "Update operation failed",
+    "deleteFailed": "Delete operation failed",
+    "unexpected": "An unexpected error occurred",
+    "networkError": "A connection error occurred. Please check your internet connection.",
+    "unauthorized": "You are not authorized for this action",
+    "importFailed": "Import failed"
+  },
+  "auth": {
+    "sessionExpired": "Your session has expired, please sign in again",
+    "supabaseNotConfigured": "System is not configured. Please contact your administrator."
+  },
+  "dashboard": {
+    "loadFailed": "Dashboard data could not be loaded"
+  },
+  "subscriptions": {
+    "importFailed": "Import failed",
+    "duplicateActive": "An active subscription for this service type already exists at this site. Choose a different service type or cancel the existing subscription.",
+    "required_for_non_monthly": "PAYMENT NOTE is required for non-monthly subscriptions (e.g., JANUARY, JULY)"
+  },
+  "simCards": {
+    "loadFailed": "SIM cards could not be loaded",
+    "createFailed": "SIM card could not be created",
+    "updateFailed": "SIM card could not be updated",
+    "deleteFailed": "SIM card could not be deleted",
+    "rlsOrForbidden": "You do not have permission for this action or a database rule was violated. Please contact an administrator."
+  },
+  "invalid": "Invalid action. Please try again.",
+  "db": {
+    "duplicate": "This record already exists.",
+    "foreignKey": "Operation could not be completed due to related records.",
+    "notNull": "A required field is missing.",
+    "notNullWithField": "A required field is missing: {{field}}",
+    "checkViolation": "An invalid value was entered.",
+    "invalidFormat": "Invalid data format."
+  }
+}
