@@ -4,6 +4,8 @@
 --
 -- Lock ordering: take work_orders BEFORE operations_items to reduce deadlock risk (40P01).
 
+BEGIN;
+
 LOCK TABLE public.work_orders IN ACCESS EXCLUSIVE MODE;
 LOCK TABLE public.operations_items IN ACCESS EXCLUSIVE MODE;
 
@@ -78,3 +80,5 @@ CREATE TRIGGER trg_sync_work_order_to_operations
   AFTER UPDATE ON public.work_orders
   FOR EACH ROW
   EXECUTE FUNCTION public.fn_sync_work_order_to_operations();
+
+COMMIT;

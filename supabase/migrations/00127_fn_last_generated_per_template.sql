@@ -14,3 +14,4 @@ AS $$
   WHERE recurring_template_id IS NOT NULL
   GROUP BY recurring_template_id;
 $$;
+

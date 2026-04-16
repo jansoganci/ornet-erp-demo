@@ -2,6 +2,8 @@
 -- Allow outcome_type = 'field_resolved' (servis verildi / yerinde çözüm).
 -- Idempotent: drop any CHECK referencing outcome_type, then add unified constraint.
 
+BEGIN;
+
 LOCK TABLE public.operations_items IN ACCESS EXCLUSIVE MODE;
 
 DO $$
@@ -34,3 +36,5 @@ ALTER TABLE public.operations_items
       'field_resolved'
     )
   );
+
+COMMIT;

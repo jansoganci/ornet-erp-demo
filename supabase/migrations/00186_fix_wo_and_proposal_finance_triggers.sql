@@ -423,6 +423,8 @@ $$;
 -- 4. Recovery: backfill last 10 days of completed proposals
 --    with no COGS expense entry
 -- ============================================================
+-- On fresh installs, some historical columns may not exist. This recovery block
+-- is only relevant for existing datasets, so guard it.
 DO $$
 DECLARE
   r               RECORD;
@@ -436,6 +438,16 @@ DECLARE
   v_has_detail    BOOLEAN;
   v_item_cogs     DECIMAL(12,2);
 BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM information_schema.columns
+    WHERE table_schema = 'public'
+      AND table_name = 'proposals'
+      AND column_name = 'cost_usd'
+  ) THEN
+    RETURN;
+  END IF;
+
   SELECT id INTO v_ec_id FROM expense_categories WHERE code = 'material' LIMIT 1;
   SELECT effective_rate INTO v_rate
   FROM exchange_rates WHERE currency = 'USD' ORDER BY rate_date DESC LIMIT 1;
